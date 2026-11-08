@@ -42,7 +42,7 @@ const APP: &str = "wordcraft";
 const DEFAULT_NAME: &str = "Document.docx";
 
 /// The largest document taken from the host page, refused before it is copied.
-const MAX_OPEN_BYTES: u64 = 512 << 20;
+pub(crate) const MAX_OPEN_BYTES: u64 = 512 << 20;
 
 /// The longest user name taken from `?author=`.
 const MAX_AUTHOR_CHARS: usize = 200;

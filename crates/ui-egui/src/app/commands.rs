@@ -179,7 +179,7 @@ impl WordApp {
                 (None, None) => Ok(()),
             };
             if let Err(e) = delivered {
-                let msg = i18n::fmt(tl!("Couldn't download {name}: {error}"), &[("name", &name), ("error", &e)]);
+                let msg = self.delivery_failed(&name, &e);
                 log::error!("download of {name} failed: {e}");
                 self.status(msg.clone());
                 return Err(msg);

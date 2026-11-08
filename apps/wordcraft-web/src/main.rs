@@ -8,6 +8,8 @@
 //! browser file picker (bytes arrive through `Services::inbox`); Save and Export download.
 //! Preferences (theme, interface size, editing options…) are kept in `localStorage` (`prefs`).
 //! URL flags: `?webgl` forces WebGL2; `?sample` opens the sample document.
+//! `?src=&save=&token=&name=&origin=` opens a document from a server and saves it back there
+//! (Deskwerk Server, `remote`).
 //! `?host=parent` (inside an `<iframe>`) talks to a same-origin parent page instead: it sends the
 //! document to open and stores what WordCraft saves (`host`). A page can also host WordCraft in
 //! its own document (no iframe) with `data-host="page"` on the canvas, talking over DOM
@@ -17,6 +19,8 @@
 
 #[cfg(any(target_arch = "wasm32", test))]
 mod prefs;
+#[cfg(any(target_arch = "wasm32", test))]
+mod remote;
 #[cfg(any(target_arch = "wasm32", test))]
 mod save_fallback;
 

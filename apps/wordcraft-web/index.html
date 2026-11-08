@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- A server's link carries its token (`?src=…&token=`): never send it on as a referrer. -->
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Deskwerk Docs</title>
   <link data-trunk rel="icon" href="../../assets/app-icon/wordcraft.ico" />
