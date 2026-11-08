@@ -372,7 +372,7 @@ fn txt_export_writes_symbol_font_text_as_unicode() {
     assert_eq!(String::from_utf8(out).unwrap(), "Done \u{263A}\u{2713}");
 }
 
-/// #1080: `txt` export (and so `wordcraft-cli text`) keeps list labels, so a list item reads
+/// #1080: `txt` export (and so `deskwerk-docs-cli text`) keeps list labels, so a list item reads
 /// apart from an ordinary paragraph.
 #[test]
 fn txt_export_keeps_list_labels() {

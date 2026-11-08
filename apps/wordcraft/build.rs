@@ -1,4 +1,4 @@
-//! Windows only: embed the app icon and version info (VERSIONINFO) into `wordcraft.exe`, so it
+//! Windows only: embed the app icon and version info (VERSIONINFO) into `deskwerk-docs.exe`, so it
 //! shows in Explorer, the taskbar, the Start menu and Alt-Tab.
 //!
 //! On every other target this does nothing. A missing resource compiler is a warning, so a
@@ -16,15 +16,15 @@ fn main() {
     res.set_icon("../../assets/app-icon/wordcraft.ico")
         .set("ProductName", "Deskwerk Docs")
         .set("FileDescription", "Deskwerk Docs word processor")
-        .set("CompanyName", "Deskwerk contributors")
+        .set("CompanyName", "Deskwerk")
         .set("LegalCopyright", "Copyright (c) the Deskwerk Docs contributors and the WordCraft contributors. MIT OR Apache-2.0.")
-        .set("OriginalFilename", "wordcraft.exe")
-        .set("InternalName", "wordcraft");
+        .set("OriginalFilename", "deskwerk-docs.exe")
+        .set("InternalName", "deskwerk-docs");
     if let Err(e) = res.compile() {
         if std::env::var_os("WORDCRAFT_REQUIRE_WINRES").is_some() {
             eprintln!("embedding Windows resources failed: {e}");
             std::process::exit(1);
         }
-        println!("cargo:warning=wordcraft.exe built without icon/version resources: {e}");
+        println!("cargo:warning=deskwerk-docs.exe built without icon/version resources: {e}");
     }
 }

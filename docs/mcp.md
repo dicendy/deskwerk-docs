@@ -4,12 +4,12 @@ WordCraft speaks the [Model Context Protocol](https://modelcontextprotocol.io) o
 Claude and other agents can write and edit documents.
 
 ```sh
-wordcraft-cli mcp                          # headless session (no window)
-wordcraft --control 7981 &                 # or: drive the running app…
-wordcraft-cli mcp --connect 127.0.0.1:7981 # …including clicks, keys and screenshots
+deskwerk-docs-cli mcp                          # headless session (no window)
+deskwerk-docs --control 7981 &                 # or: drive the running app…
+deskwerk-docs-cli mcp --connect 127.0.0.1:7981 # …including clicks, keys and screenshots
 ```
 
-Claude Code: `claude mcp add wordcraft -- wordcraft-cli mcp`.
+Claude Code: `claude mcp add wordcraft -- deskwerk-docs-cli mcp`.
 
 With `--connect`, the bridge sends the app's control key, which it reads from
 `WORDCRAFT_CONTROL_KEY` or from the key file the app writes at start. It sends the key only to
@@ -20,7 +20,7 @@ its whole session.
 
 ## Scripts from the command line
 
-`wordcraft-cli run --script job.json` (`--script -` reads standard input) runs the commands in a
+`deskwerk-docs-cli run --script job.json` (`--script -` reads standard input) runs the commands in a
 file, in order, exactly like repeated `--cmd`, and then saves. Use it to generate a DOCX and its
 PDF in one run without a window:
 
@@ -46,19 +46,19 @@ status 1, and nothing is saved. Every output is checked (known extension, folder
 
 Tracked changes and comments are recorded under the session's user name ("Deskwerk Docs User" by
 default). Name the agent so reviewers can tell its edits from people's: start the headless server
-with `wordcraft-cli mcp --author "Claude (copyedit)"`, or run
+with `deskwerk-docs-cli mcp --author "Claude (copyedit)"`, or run
 `file.setAuthor {"name": "Claude (copyedit)"}`. Turn tracking on explicitly with
 `review.trackChanges {"value": true}`; without `value` it toggles, which turns tracking *off* in
-a document that was saved with it on. `wordcraft-cli run` takes `--author` too.
+a document that was saved with it on. `deskwerk-docs-cli run` takes `--author` too.
 
 ## Confining file access
 
 ```sh
-wordcraft-cli mcp --automation-read-root /work/project --automation-write-root /work/project/out
+deskwerk-docs-cli mcp --automation-read-root /work/project --automation-write-root /work/project/out
 ```
 
 ```json
-{"mcpServers": {"wordcraft": {"command": "/abs/path/target/release/wordcraft-cli",
+{"mcpServers": {"wordcraft": {"command": "/abs/path/target/release/deskwerk-docs-cli",
   "args": ["mcp", "--automation-read-root", "/work/project", "--automation-write-root", "/work/project/out"]}}}
 ```
 
@@ -99,7 +99,7 @@ config works across the suite) keep the agent to the folders you give it:
 
 The flags confine the headless server; `--connect` with them is an error, since the server would
 otherwise talk to an app that isn't confined. WordCraft's desktop app has no equivalent flags yet,
-so a running app (`wordcraft --control`) is not confined.
+so a running app (`deskwerk-docs --control`) is not confined.
 
 What the roots do not cover: commands that take no path (`text.insert`, `execute` of anything that
 works on the open document) can still read and change that document, and `get_text` and
@@ -139,7 +139,7 @@ downloading on either: only the person's own click does; the app shows why inste
 
 Installing reads the pinned index of craft-i18n's language-packs-2 release (75 languages). For
 testing packs before they are released, set `CRAFT_LANGUAGE_PACK_INDEX` to another index (a URL or a path
-to an `index.json`) when starting WordCraft or `wordcraft-cli`. That index isn't pinned, so the
+to an `index.json`) when starting WordCraft or `deskwerk-docs-cli`. That index isn't pinned, so the
 sha256 of each archive only matches what that index says: it catches a broken download, not a
 changed pack. `proof.packs` then returns `"index_override": "<url or path>"`, and the app shows the
 test source in File › Options › Language and on the bar's Install.

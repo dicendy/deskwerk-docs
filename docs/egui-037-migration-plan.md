@@ -77,7 +77,7 @@ changed by this migration. The app remains `Session`-driven; egui remains a thin
 workspace and no vendor directory. `cargo metadata --no-deps` lists these packages:
 
 - application: `wordcraft` (`apps/wordcraft`, native eframe app), `wordcraft-web`
-  (`apps/wordcraft-web`, wasm eframe app), `wordcraft-cli` (no egui dependency).
+  (`apps/wordcraft-web`, wasm eframe app), `deskwerk-docs-cli` (no egui dependency).
 - UI: `wordcraft-ui-egui` (`crates/ui-egui`, the only direct egui/eframe consumer in the
   workspace). It also depends on `craft-ui` for print-page controls and on `egui_kittest` as a
   dev-dependency.

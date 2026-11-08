@@ -11603,7 +11603,7 @@ fn opened_documents_with_their_own_page_size_keep_it() {
 
 #[test]
 fn html_converted_to_docx_keeps_bold_headers_and_right_aligned_cells() {
-    // #1381: `wordcraft-cli convert S05.html out.docx`: the <th> runs are bold and the
+    // #1381: `deskwerk-docs-cli convert S05.html out.docx`: the <th> runs are bold and the
     // `text-align:right` cells' paragraphs carry `w:jc w:val="right"`.
     use std::io::Read;
     let mut s = s();
@@ -11630,7 +11630,7 @@ fn html_converted_to_docx_keeps_bold_headers_and_right_aligned_cells() {
 
 #[test]
 fn exported_page_images_draw_headers_at_full_strength() {
-    // file.exportPng (and `wordcraft-cli render`) drew headers and footers dimmed, as the screen
+    // file.exportPng (and `deskwerk-docs-cli render`) drew headers and footers dimmed, as the screen
     // does while the body is edited; Word's exported pages and WordCraft's PDF don't.
     let mut s = s();
     run(&mut s, "text.insert", json!({"text": "Body"}));

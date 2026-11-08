@@ -183,7 +183,7 @@ impl Server {
                 Ok(json!({
                     "protocolVersion": version,
                     "capabilities": {"tools": {}, "resources": {}},
-                    "serverInfo": {"name": "wordcraft", "title": "Deskwerk Docs", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": "https://github.com/dicendy/deskwerk-docs"},
+                    "serverInfo": {"name": "deskwerk-docs", "title": "Deskwerk Docs", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": "https://github.com/dicendy/deskwerk-docs"},
                     "instructions": format!(
                         "{INSTRUCTIONS} Backend: {}. Project: https://github.com/dicendy/deskwerk-docs",
                         self.backend.describe()

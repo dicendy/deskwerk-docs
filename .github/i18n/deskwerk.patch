@@ -1,5 +1,83 @@
+diff --git a/locales/ar/wordcraft.tsv b/locales/ar/wordcraft.tsv
+index 3fdb2ac..3ea803d 100644
+--- a/locales/ar/wordcraft.tsv
++++ b/locales/ar/wordcraft.tsv
+@@ -849,7 +849,7 @@ numerals	Context	حسب السياق
+ 	Even Banded Rows	صفوف زوجية مخططة
+ 	Even Page	الصفحة الزوجية
+ 	Every change is recorded as a tracked change.	يُسجَّل كل تغيير كتغيير متعقَّب.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	كل الأوامر متاحة للبرامج النصية ووكلاء الذكاء الاصطناعي: شغّل `wordcraft-cli mcp` للحصول على خادم MCP، أو ابدأ التطبيق بالخيار `--control <port>` لقناة التحكم JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	كل الأوامر متاحة للبرامج النصية ووكلاء الذكاء الاصطناعي: شغّل `deskwerk-docs-cli mcp` للحصول على خادم MCP، أو ابدأ التطبيق بالخيار `--control <port>` لقناة التحكم JSON.
+ 	Every field needs a name.	كل حقل يحتاج إلى اسم.
+ 	Everyone	الجميع
+ 	Exactly	بالضبط
+diff --git a/locales/bg/wordcraft.tsv b/locales/bg/wordcraft.tsv
+index f802772..b3e441b 100644
+--- a/locales/bg/wordcraft.tsv
++++ b/locales/bg/wordcraft.tsv
+@@ -762,7 +762,7 @@
+ 	Even Banded Rows	Четни редуващи се редове
+ 	Even Page	Четна страница
+ 	Every change is recorded as a tracked change.	Всяка промяна се записва като проследена промяна.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Всяка команда е достъпна за скриптове и AI агенти: изпълнете `wordcraft-cli mcp` за MCP сървър или стартирайте приложението с `--control <port>` за JSON канала за управление.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Всяка команда е достъпна за скриптове и AI агенти: изпълнете `deskwerk-docs-cli mcp` за MCP сървър или стартирайте приложението с `--control <port>` за JSON канала за управление.
+ 	Every field needs a name.	Всяко поле трябва да има име.
+ 	Everyone	Всички
+ 	Exactly	Точно
+diff --git a/locales/bn/wordcraft.tsv b/locales/bn/wordcraft.tsv
+index d073418..2ee2054 100644
+--- a/locales/bn/wordcraft.tsv
++++ b/locales/bn/wordcraft.tsv
+@@ -784,7 +784,7 @@ numerals	Arabic	আরবি
+ #	Even Banded Rows	
+ 	Even Page	জোড় পৃষ্ঠা
+ #	Every change is recorded as a tracked change.	
+-#	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	
++#	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	
+ #	Every field needs a name.	
+ #	Everyone	
+ #	Exactly	
+diff --git a/locales/bs/wordcraft.tsv b/locales/bs/wordcraft.tsv
+index 6866058..b1472d8 100644
+--- a/locales/bs/wordcraft.tsv
++++ b/locales/bs/wordcraft.tsv
+@@ -784,7 +784,7 @@ numerals	Context	Kontekst
+ 	Even Banded Rows	Parni naizmjenični redovi
+ 	Even Page	Parna stranica
+ 	Every change is recorded as a tracked change.	Svaka promjena se bilježi kao praćena promjena.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Svaka naredba je dostupna skriptama i AI agentima: pokrenite `wordcraft-cli mcp` za MCP server ili pokrenite aplikaciju s `--control <port>` za JSON kontrolni kanal.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Svaka naredba je dostupna skriptama i AI agentima: pokrenite `deskwerk-docs-cli mcp` za MCP server ili pokrenite aplikaciju s `--control <port>` za JSON kontrolni kanal.
+ 	Every field needs a name.	Svako polje treba naziv.
+ 	Everyone	Svi
+ 	Exactly	Tačno
+diff --git a/locales/cs/wordcraft.tsv b/locales/cs/wordcraft.tsv
+index cf053ac..c714474 100644
+--- a/locales/cs/wordcraft.tsv
++++ b/locales/cs/wordcraft.tsv
+@@ -778,7 +778,7 @@
+ 	Even Banded Rows	Sudé pruhované řádky
+ 	Even Page	Sudá stránka
+ 	Every change is recorded as a tracked change.	Každá úprava se zaznamená jako sledovaná změna.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Každý příkaz je dostupný skriptům a AI agentům: spusťte `wordcraft-cli mcp` pro server MCP, nebo spusťte aplikaci s parametrem `--control <port>` pro řídicí kanál JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Každý příkaz je dostupný skriptům a AI agentům: spusťte `deskwerk-docs-cli mcp` pro server MCP, nebo spusťte aplikaci s parametrem `--control <port>` pro řídicí kanál JSON.
+ 	Every field needs a name.	Každé pole musí mít název.
+ 	Everyone	Všichni
+ 	Exactly	Přesně
+diff --git a/locales/da/wordcraft.tsv b/locales/da/wordcraft.tsv
+index 9dd63a9..941b56e 100644
+--- a/locales/da/wordcraft.tsv
++++ b/locales/da/wordcraft.tsv
+@@ -799,7 +799,7 @@
+ 	Even Page	Lige side
+ 	Even pages only	Kun lige sider
+ 	Every change is recorded as a tracked change.	Alle ændringer registreres som en sporet ændring.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Alle kommandoer er tilgængelige for scripts og AI-agenter: kør `wordcraft-cli mcp` for en MCP-server, eller start appen med `--control <port>` for JSON-kanalen.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Alle kommandoer er tilgængelige for scripts og AI-agenter: kør `deskwerk-docs-cli mcp` for en MCP-server, eller start appen med `--control <port>` for JSON-kanalen.
+ 	Every field needs a name.	Alle felter skal have et navn.
+ 	Everyone	Alle
+ 	Exactly	Nøjagtigt
 diff --git a/locales/de/wordcraft.tsv b/locales/de/wordcraft.tsv
-index 61322bd..8903ef6 100644
+index 61322bd..941633e 100644
 --- a/locales/de/wordcraft.tsv
 +++ b/locales/de/wordcraft.tsv
 @@ -39,7 +39,7 @@
@@ -38,6 +116,15 @@ index 61322bd..8903ef6 100644
  	Couldn't open {path}: {error}	{path} konnte nicht geöffnet werden: {error}
  	Count by:	Zählintervall:
  	Count words in text boxes and notes	Wörter in Textfeldern und Notizen mitzählen
+@@ -640,7 +640,7 @@
+ 	Even Banded Rows	Gerade gestreifte Zeilen
+ 	Even Page	Gerade Seite
+ 	Every change is recorded as a tracked change.	Jede Änderung wird als nachverfolgte Änderung erfasst.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Jeder Befehl steht Skripten und KI-Agenten zur Verfügung: Führen Sie `wordcraft-cli mcp` für einen MCP-Server aus, oder starten Sie die App mit `--control <Port>` für den JSON-Steuerkanal.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Jeder Befehl steht Skripten und KI-Agenten zur Verfügung: Führen Sie `deskwerk-docs-cli mcp` für einen MCP-Server aus, oder starten Sie die App mit `--control <Port>` für den JSON-Steuerkanal.
+ 	Every field needs a name.	Jedes Feld braucht einen Namen.
+ 	Everyone	Jeder
+ 	Exactly	Genau
 @@ -831,7 +831,7 @@
  	Immersive	Immersiv
  	Immersive Reader	Immersiver Lesemodus
@@ -569,8 +656,47 @@ index 61322bd..8903ef6 100644
 +	✓ None	✓ Keine
 +	➕ New comment	➕ Neuer Kommentar
 +	📂  Browse…	📂  Durchsuchen…
+diff --git a/locales/es/wordcraft.tsv b/locales/es/wordcraft.tsv
+index 2d77129..0a10278 100644
+--- a/locales/es/wordcraft.tsv
++++ b/locales/es/wordcraft.tsv
+@@ -750,7 +750,7 @@
+ 	Even Banded Rows	Filas pares con bandas
+ 	Even Page	Página par
+ 	Every change is recorded as a tracked change.	Cada cambio se registra como cambio con seguimiento.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Todos los comandos están disponibles para scripts y agentes de IA: ejecuta `wordcraft-cli mcp` para un servidor MCP, o inicia la aplicación con `--control <puerto>` para el canal de control JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Todos los comandos están disponibles para scripts y agentes de IA: ejecuta `deskwerk-docs-cli mcp` para un servidor MCP, o inicia la aplicación con `--control <puerto>` para el canal de control JSON.
+ 	Every field needs a name.	Cada campo necesita un nombre.
+ 	Everyone	Todos
+ 	Exactly	Exactamente
+diff --git a/locales/et/wordcraft.tsv b/locales/et/wordcraft.tsv
+index 1b310d4..657f371 100644
+--- a/locales/et/wordcraft.tsv
++++ b/locales/et/wordcraft.tsv
+@@ -626,7 +626,7 @@
+ 	Even Banded Rows	Paaris vahelduvad read
+ 	Even Page	Paarisleht
+ 	Every change is recorded as a tracked change.	Iga muudatus salvestatakse jälitatud muudatusena.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Kõik käsud on saadaval skriptidele ja tehisintellekti agentidele. MCP-serveri jaoks käivita `wordcraft-cli mcp`. JSON-juhtkanali jaoks käivita rakendus valikuga `--control <port>`.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Kõik käsud on saadaval skriptidele ja tehisintellekti agentidele. MCP-serveri jaoks käivita `deskwerk-docs-cli mcp`. JSON-juhtkanali jaoks käivita rakendus valikuga `--control <port>`.
+ 	Every field needs a name.	Igal väljal peab olema nimi.
+ 	Everyone	Kõik
+ 	Exactly	Täpselt
+diff --git a/locales/fa/wordcraft.tsv b/locales/fa/wordcraft.tsv
+index 1dc7cc9..5c06d7e 100644
+--- a/locales/fa/wordcraft.tsv
++++ b/locales/fa/wordcraft.tsv
+@@ -758,7 +758,7 @@ numerals	Context	زمینه
+ 	Even Banded Rows	سطرهای نواری زوج
+ 	Even Page	صفحهٔ زوج
+ 	Every change is recorded as a tracked change.	هر تغییر به‌عنوان تغییر ردیابی‌شده ثبت می‌شود.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	هر فرمان برای اسکریپت‌ها و عامل‌های هوش مصنوعی در دسترس است: برای سرور MCP فرمان `wordcraft-cli mcp` را اجرا کنید، یا اپ را با `--control <port>` برای کانال کنترل JSON راه‌اندازی کنید.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	هر فرمان برای اسکریپت‌ها و عامل‌های هوش مصنوعی در دسترس است: برای سرور MCP فرمان `deskwerk-docs-cli mcp` را اجرا کنید، یا اپ را با `--control <port>` برای کانال کنترل JSON راه‌اندازی کنید.
+ 	Every field needs a name.	هر فیلد به یک نام نیاز دارد.
+ 	Everyone	همه
+ 	Exactly	دقیقاً
 diff --git a/locales/fr/wordcraft.tsv b/locales/fr/wordcraft.tsv
-index f117087..4fbf84f 100644
+index f117087..23b21c0 100644
 --- a/locales/fr/wordcraft.tsv
 +++ b/locales/fr/wordcraft.tsv
 @@ -56,7 +56,7 @@
@@ -609,6 +735,15 @@ index f117087..4fbf84f 100644
  	Couldn't open {path}: {error}	Impossible d’ouvrir {path} : {error}
  	Count by:	Incrémenter de :
  	Count words in text boxes and notes	Compter les mots dans les zones de texte et les notes
+@@ -779,7 +779,7 @@
+ 	Even Page	Page paire
+ 	Even pages only	Pages paires uniquement
+ 	Every change is recorded as a tracked change.	Chaque modification est enregistrée comme modification suivie.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Chaque commande est disponible pour les scripts et les agents IA : exécutez `wordcraft-cli mcp` pour un serveur MCP, ou démarrez l’application avec `--control <port>` pour le canal de contrôle JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Chaque commande est disponible pour les scripts et les agents IA : exécutez `deskwerk-docs-cli mcp` pour un serveur MCP, ou démarrez l’application avec `--control <port>` pour le canal de contrôle JSON.
+ 	Every field needs a name.	Chaque champ doit avoir un nom.
+ 	Everyone	Tout le monde
+ 	Exactly	Exactement
 @@ -1008,7 +1008,7 @@
  	Immersive	Immersif
  	Immersive Reader	Lecteur immersif
@@ -761,3 +896,328 @@ index f117087..4fbf84f 100644
  	Search:	Rechercher :
  	Dutch, Nederlands or nl	Néerlandais, Nederlands ou nl
  	No languages to show yet.	Aucune langue à afficher pour l’instant.
+diff --git a/locales/he/wordcraft.tsv b/locales/he/wordcraft.tsv
+index 5774382..5d2759d 100644
+--- a/locales/he/wordcraft.tsv
++++ b/locales/he/wordcraft.tsv
+@@ -773,7 +773,7 @@ numerals	Context	לפי ההקשר
+ 	Even Banded Rows	שורות מפוספסות זוגיות
+ 	Even Page	עמוד זוגי
+ 	Every change is recorded as a tracked change.	כל שינוי מתועד כשינוי במעקב.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	כל פקודה זמינה לסקריפטים ולסוכני AI: הריצו `wordcraft-cli mcp` לשרת MCP, או הפעילו את היישום עם `--control <port>` לערוץ הבקרה JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	כל פקודה זמינה לסקריפטים ולסוכני AI: הריצו `deskwerk-docs-cli mcp` לשרת MCP, או הפעילו את היישום עם `--control <port>` לערוץ הבקרה JSON.
+ 	Every field needs a name.	לכל שדה נדרש שם.
+ 	Everyone	כולם
+ 	Exactly	בדיוק
+diff --git a/locales/hr/wordcraft.tsv b/locales/hr/wordcraft.tsv
+index c09fe55..cfde75c 100644
+--- a/locales/hr/wordcraft.tsv
++++ b/locales/hr/wordcraft.tsv
+@@ -759,7 +759,7 @@
+ 	Even Banded Rows	Parni prugasti retci
+ 	Even Page	Parna stranica
+ 	Every change is recorded as a tracked change.	Svaka promjena bilježi se kao praćena promjena.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Svaka naredba dostupna je skriptama i AI agentima: pokrenite `wordcraft-cli mcp` za MCP poslužitelj ili pokrenite aplikaciju s `--control <port>` za JSON kontrolni kanal.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Svaka naredba dostupna je skriptama i AI agentima: pokrenite `deskwerk-docs-cli mcp` za MCP poslužitelj ili pokrenite aplikaciju s `--control <port>` za JSON kontrolni kanal.
+ 	Every field needs a name.	Svako polje treba naziv.
+ 	Everyone	Svi
+ 	Exactly	Točno
+diff --git a/locales/hu/wordcraft.tsv b/locales/hu/wordcraft.tsv
+index 521a915..1eb966a 100644
+--- a/locales/hu/wordcraft.tsv
++++ b/locales/hu/wordcraft.tsv
+@@ -770,7 +770,7 @@
+ 	Even Banded Rows	Páros sávos sorok
+ 	Even Page	Páros oldal
+ 	Every change is recorded as a tracked change.	Minden módosítás követett módosításként rögzül.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Minden parancs elérhető szkriptekből és MI-ágensekből is: MCP-szerverhez futtasd a `wordcraft-cli mcp` parancsot, a JSON-vezérlőcsatornához pedig indítsd az alkalmazást a `--control <port>` kapcsolóval.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Minden parancs elérhető szkriptekből és MI-ágensekből is: MCP-szerverhez futtasd a `deskwerk-docs-cli mcp` parancsot, a JSON-vezérlőcsatornához pedig indítsd az alkalmazást a `--control <port>` kapcsolóval.
+ 	Every field needs a name.	Minden mezőnek kell név.
+ 	Everyone	Mindenki
+ 	Exactly	Pontosan
+diff --git a/locales/id/wordcraft.tsv b/locales/id/wordcraft.tsv
+index ea16465..a674254 100644
+--- a/locales/id/wordcraft.tsv
++++ b/locales/id/wordcraft.tsv
+@@ -186,7 +186,7 @@
+ 	Enter page number:	Masukkan nomor halaman:
+ 	Envelopes	Amplop
+ 	Even Page	Halaman Genap
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Setiap perintah tersedia untuk skrip dan agen AI: jalankan `wordcraft-cli mcp` untuk server MCP, atau jalankan aplikasi dengan `--control <port>` untuk kanal kendali JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Setiap perintah tersedia untuk skrip dan agen AI: jalankan `deskwerk-docs-cli mcp` untuk server MCP, atau jalankan aplikasi dengan `--control <port>` untuk kanal kendali JSON.
+ 	Export Page as PNG	Ekspor Halaman sebagai PNG
+ 	Export a copy to share (PDF, Word document)	Ekspor salinan untuk dibagikan (PDF, dokumen Word)
+ 	Extend Selection	Perluas Seleksi
+diff --git a/locales/it/wordcraft.tsv b/locales/it/wordcraft.tsv
+index e5c6d7e..6c6fc9e 100644
+--- a/locales/it/wordcraft.tsv
++++ b/locales/it/wordcraft.tsv
+@@ -800,7 +800,7 @@
+ 	Even Banded Rows	Righe alternate pari
+ 	Even Page	Pagina pari
+ 	Every change is recorded as a tracked change.	Ogni modifica viene registrata come revisione.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Ogni comando è disponibile per script e agenti IA: esegui `wordcraft-cli mcp` per un server MCP, o avvia l'app con `--control <port>` per il canale di controllo JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Ogni comando è disponibile per script e agenti IA: esegui `deskwerk-docs-cli mcp` per un server MCP, o avvia l'app con `--control <port>` per il canale di controllo JSON.
+ 	Every field needs a name.	Ogni campo deve avere un nome.
+ 	Everyone	Tutti
+ 	Exactly	Esatta
+diff --git a/locales/ja/wordcraft.tsv b/locales/ja/wordcraft.tsv
+index f8c3de6..4afa466 100644
+--- a/locales/ja/wordcraft.tsv
++++ b/locales/ja/wordcraft.tsv
+@@ -664,7 +664,7 @@
+ 	Even Banded Rows	偶数の縞模様（行）
+ 	Even Page	偶数ページから開始
+ 	Every change is recorded as a tracked change.	すべての変更が変更履歴として記録されます。
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	すべてのコマンドはスクリプトと AI エージェントから利用できます。`wordcraft-cli mcp` で MCP サーバーを起動するか、`--control <port>` を付けてアプリを起動すると JSON 制御チャネルが使えます。
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	すべてのコマンドはスクリプトと AI エージェントから利用できます。`deskwerk-docs-cli mcp` で MCP サーバーを起動するか、`--control <port>` を付けてアプリを起動すると JSON 制御チャネルが使えます。
+ 	Every field needs a name.	すべてのフィールドに名前が必要です。
+ 	Everyone	すべてのユーザー
+ 	Exactly	固定値
+diff --git a/locales/ka/wordcraft.tsv b/locales/ka/wordcraft.tsv
+index daefd06..3faa1ec 100644
+--- a/locales/ka/wordcraft.tsv
++++ b/locales/ka/wordcraft.tsv
+@@ -922,7 +922,7 @@ numerals	Context	კონტექსტური
+ 	Even Page	ლუწი გვერდი
+ 	Even pages only	მხოლოდ ლუწი გვერდები
+ 	Every change is recorded as a tracked change.	ყოველი ცვლილება ჩაწერილ ცვლილებად აღირიცხება.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	ყველა ბრძანება ხელმისაწვდომია სკრიპტებისა და AI აგენტებისთვის: MCP სერვერისთვის გაუშვით `wordcraft-cli mcp`, ან JSON მართვის არხისთვის პროგრამა გახსენით `--control <port>`-ით.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	ყველა ბრძანება ხელმისაწვდომია სკრიპტებისა და AI აგენტებისთვის: MCP სერვერისთვის გაუშვით `deskwerk-docs-cli mcp`, ან JSON მართვის არხისთვის პროგრამა გახსენით `--control <port>`-ით.
+ 	Every field needs a name.	ყველა ველს სახელი სჭირდება.
+ 	Everyone	ყველა
+ 	Exactly	ზუსტად
+diff --git a/locales/ko/wordcraft.tsv b/locales/ko/wordcraft.tsv
+index d794281..966ef77 100644
+--- a/locales/ko/wordcraft.tsv
++++ b/locales/ko/wordcraft.tsv
+@@ -754,7 +754,7 @@
+ 	Even Banded Rows	짝수 줄무늬 행
+ 	Even Page	짝수 페이지
+ 	Every change is recorded as a tracked change.	모든 편집 내용이 변경 내용 추적으로 기록됩니다.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	모든 명령은 스크립트와 AI 에이전트에서 사용할 수 있습니다. MCP 서버를 실행하려면 `wordcraft-cli mcp`를 실행하거나, JSON 제어 채널을 사용하려면 앱을 `--control <port>`로 시작하세요.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	모든 명령은 스크립트와 AI 에이전트에서 사용할 수 있습니다. MCP 서버를 실행하려면 `deskwerk-docs-cli mcp`를 실행하거나, JSON 제어 채널을 사용하려면 앱을 `--control <port>`로 시작하세요.
+ 	Every field needs a name.	모든 필드에 이름이 있어야 합니다.
+ 	Everyone	모든 사용자
+ 	Exactly	정확히
+diff --git a/locales/lv/wordcraft.tsv b/locales/lv/wordcraft.tsv
+index 104343a..6925e37 100644
+--- a/locales/lv/wordcraft.tsv
++++ b/locales/lv/wordcraft.tsv
+@@ -840,7 +840,7 @@ numerals	Context	Kontekstuāli
+ 	Even Banded Rows	Pāra joslotas rindas
+ 	Even Page	Pāra lapa
+ 	Every change is recorded as a tracked change.	Katra izmaiņa tiek reģistrēta kā izsekota izmaiņa.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Katra komanda ir pieejama skriptiem un AI aģentiem: palaidiet `wordcraft-cli mcp`, lai iegūtu MCP serveri, vai sāciet lietotni ar `--control <port>` JSON vadības kanālam.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Katra komanda ir pieejama skriptiem un AI aģentiem: palaidiet `deskwerk-docs-cli mcp`, lai iegūtu MCP serveri, vai sāciet lietotni ar `--control <port>` JSON vadības kanālam.
+ 	Every field needs a name.	Katram laukam vajadzīgs nosaukums.
+ 	Everyone	Visi
+ 	Exactly	Tieši
+diff --git a/locales/nb/wordcraft.tsv b/locales/nb/wordcraft.tsv
+index 99453aa..6e371c7 100644
+--- a/locales/nb/wordcraft.tsv
++++ b/locales/nb/wordcraft.tsv
+@@ -773,7 +773,7 @@ numerals	Context	Etter kontekst
+ 	Even Banded Rows	Stripete partallsrader
+ 	Even Page	Partallsside
+ 	Every change is recorded as a tracked change.	Hver endring registreres som en sporet endring.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Alle kommandoer er tilgjengelige for skript og KI-agenter: kjør `wordcraft-cli mcp` for en MCP-server, eller start appen med `--control <port>` for JSON-kontrollkanalen.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Alle kommandoer er tilgjengelige for skript og KI-agenter: kjør `deskwerk-docs-cli mcp` for en MCP-server, eller start appen med `--control <port>` for JSON-kontrollkanalen.
+ 	Every field needs a name.	Hvert felt må ha et navn.
+ 	Everyone	Alle
+ 	Exactly	Nøyaktig
+diff --git a/locales/nl/wordcraft.tsv b/locales/nl/wordcraft.tsv
+index 9851330..fdb67b0 100644
+--- a/locales/nl/wordcraft.tsv
++++ b/locales/nl/wordcraft.tsv
+@@ -786,7 +786,7 @@
+ 	Even Page	Even pagina
+ 	Even pages only	Alleen even pagina's
+ 	Every change is recorded as a tracked change.	Elke wijziging wordt vastgelegd als een bijgehouden wijziging.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Elke opdracht is beschikbaar voor scripts en AI-agents: voer `wordcraft-cli mcp` uit voor een MCP-server, of start de app met `--control <port>` voor het JSON-besturingskanaal.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Elke opdracht is beschikbaar voor scripts en AI-agents: voer `deskwerk-docs-cli mcp` uit voor een MCP-server, of start de app met `--control <port>` voor het JSON-besturingskanaal.
+ 	Every field needs a name.	Elk veld heeft een naam nodig.
+ 	Everyone	Iedereen
+ 	Exactly	Precies
+diff --git a/locales/pl/wordcraft.tsv b/locales/pl/wordcraft.tsv
+index 273847e..b48f27e 100644
+--- a/locales/pl/wordcraft.tsv
++++ b/locales/pl/wordcraft.tsv
+@@ -816,7 +816,7 @@ numerals	Context	Kontekstowe
+ 	Even Banded Rows	Parzyste wiersze naprzemienne
+ 	Even Page	Strona parzysta
+ 	Every change is recorded as a tracked change.	Każda zmiana jest zapisywana jako śledzona zmiana.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Każde polecenie jest dostępne dla skryptów i agentów AI: uruchom `wordcraft-cli mcp`, aby włączyć serwer MCP, albo uruchom aplikację z opcją `--control <port>`, aby korzystać z kanału sterowania JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Każde polecenie jest dostępne dla skryptów i agentów AI: uruchom `deskwerk-docs-cli mcp`, aby włączyć serwer MCP, albo uruchom aplikację z opcją `--control <port>`, aby korzystać z kanału sterowania JSON.
+ 	Every field needs a name.	Każde pole musi mieć nazwę.
+ 	Everyone	Wszyscy
+ 	Exactly	Dokładnie
+diff --git a/locales/pt-br/wordcraft.tsv b/locales/pt-br/wordcraft.tsv
+index 3c9a60a..7f92931 100644
+--- a/locales/pt-br/wordcraft.tsv
++++ b/locales/pt-br/wordcraft.tsv
+@@ -659,7 +659,7 @@
+ 	Even Page	Página par
+ 	Even pages only	Somente páginas pares
+ 	Every change is recorded as a tracked change.	Cada alteração é registrada como alteração controlada.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Todo comando está disponível para scripts e agentes de IA: execute `wordcraft-cli mcp` para um servidor MCP, ou inicie o aplicativo com `--control <port>` para o canal de controle JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Todo comando está disponível para scripts e agentes de IA: execute `deskwerk-docs-cli mcp` para um servidor MCP, ou inicie o aplicativo com `--control <port>` para o canal de controle JSON.
+ 	Every field needs a name.	Todo campo precisa de um nome.
+ 	Everyone	Todos
+ 	Exactly	Exatamente
+diff --git a/locales/ro/wordcraft.tsv b/locales/ro/wordcraft.tsv
+index f905a58..b71f9f5 100644
+--- a/locales/ro/wordcraft.tsv
++++ b/locales/ro/wordcraft.tsv
+@@ -889,7 +889,7 @@
+ 	Even Page	Pagină pară
+ 	Even pages only	Doar paginile pare
+ 	Every change is recorded as a tracked change.	Fiecare modificare este înregistrată ca modificare urmărită.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Fiecare comandă este disponibilă pentru scripturi și agenți AI: rulează `wordcraft-cli mcp` pentru un server MCP sau pornește aplicația cu `--control <port>` pentru canalul de control JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Fiecare comandă este disponibilă pentru scripturi și agenți AI: rulează `deskwerk-docs-cli mcp` pentru un server MCP sau pornește aplicația cu `--control <port>` pentru canalul de control JSON.
+ 	Every field needs a name.	Fiecare câmp are nevoie de un nume.
+ 	Everyone	Toată lumea
+ 	Exactly	Exact
+diff --git a/locales/ru/wordcraft.tsv b/locales/ru/wordcraft.tsv
+index 98af638..05fb411 100644
+--- a/locales/ru/wordcraft.tsv
++++ b/locales/ru/wordcraft.tsv
+@@ -767,7 +767,7 @@
+ 	Even Banded Rows	Чётные чередующиеся строки
+ 	Even Page	Чётная страница
+ 	Every change is recorded as a tracked change.	Каждое изменение записывается как исправление.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Любая команда доступна скриптам и ИИ-агентам: запустите `wordcraft-cli mcp`, чтобы получить MCP-сервер, или запустите приложение с `--control <port>`, чтобы открыть управляющий канал JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Любая команда доступна скриптам и ИИ-агентам: запустите `deskwerk-docs-cli mcp`, чтобы получить MCP-сервер, или запустите приложение с `--control <port>`, чтобы открыть управляющий канал JSON.
+ 	Every field needs a name.	У каждого поля должно быть имя.
+ 	Everyone	Все
+ 	Exactly	Точно
+diff --git a/locales/sk/wordcraft.tsv b/locales/sk/wordcraft.tsv
+index eb04bcb..54e3d8f 100644
+--- a/locales/sk/wordcraft.tsv
++++ b/locales/sk/wordcraft.tsv
+@@ -897,7 +897,7 @@ numerals	Context	Podľa okolitého textu
+ 	Even Page	Párna strana
+ 	Even pages only	Iba párne strany
+ 	Every change is recorded as a tracked change.	Každá zmena sa zaznamená ako sledovaná zmena.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Každý príkaz je dostupný skriptom a agentom AI: spustite `wordcraft-cli mcp` pre server MCP alebo aplikáciu spustite s `--control <port>` pre riadiaci kanál JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Každý príkaz je dostupný skriptom a agentom AI: spustite `deskwerk-docs-cli mcp` pre server MCP alebo aplikáciu spustite s `--control <port>` pre riadiaci kanál JSON.
+ 	Every field needs a name.	Každé pole musí mať názov.
+ 	Everyone	Všetci
+ 	Exactly	Presne
+diff --git a/locales/sl/wordcraft.tsv b/locales/sl/wordcraft.tsv
+index 2627141..166e3ec 100644
+--- a/locales/sl/wordcraft.tsv
++++ b/locales/sl/wordcraft.tsv
+@@ -835,7 +835,7 @@
+ 	Even Banded Rows	Sode pasaste vrstice
+ 	Even Page	Soda stran
+ 	Every change is recorded as a tracked change.	Vsaka sprememba se zabeleži kot sledena sprememba.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Vsi ukazi so na voljo skriptam in agentom umetne inteligence: za strežnik MCP zaženite `wordcraft-cli mcp`, za nadzorni kanal JSON pa zaženite aplikacijo z `--control <port>`.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Vsi ukazi so na voljo skriptam in agentom umetne inteligence: za strežnik MCP zaženite `deskwerk-docs-cli mcp`, za nadzorni kanal JSON pa zaženite aplikacijo z `--control <port>`.
+ 	Every field needs a name.	Vsako polje potrebuje ime.
+ 	Everyone	Vsi
+ 	Exactly	Natančno
+diff --git a/locales/sr-latn/wordcraft.tsv b/locales/sr-latn/wordcraft.tsv
+index 1d057d0..f369d58 100644
+--- a/locales/sr-latn/wordcraft.tsv
++++ b/locales/sr-latn/wordcraft.tsv
+@@ -634,7 +634,7 @@
+ 	Even Banded Rows	Parni trakasti redovi
+ 	Even Page	Parna strana
+ 	Every change is recorded as a tracked change.	Svaka izmena se beleži kao praćena izmena.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Svaka naredba je dostupna skriptama i AI agentima: pokrenite `wordcraft-cli mcp` za MCP server, ili pokrenite aplikaciju sa `--control <port>` za JSON kontrolni kanal.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Svaka naredba je dostupna skriptama i AI agentima: pokrenite `deskwerk-docs-cli mcp` za MCP server, ili pokrenite aplikaciju sa `--control <port>` za JSON kontrolni kanal.
+ 	Every field needs a name.	Svako polje mora imati naziv.
+ 	Everyone	Svi
+ 	Exactly	Tačno
+diff --git a/locales/sr/wordcraft.tsv b/locales/sr/wordcraft.tsv
+index 16fe2ec..9574ff4 100644
+--- a/locales/sr/wordcraft.tsv
++++ b/locales/sr/wordcraft.tsv
+@@ -622,7 +622,7 @@
+ 	Even Banded Rows	Парни тракасти редови
+ 	Even Page	Парна страна
+ 	Every change is recorded as a tracked change.	Свака измена се бележи као праћена измена.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Свака наредба је доступна скриптама и AI агентима: покрените `wordcraft-cli mcp` за MCP сервер, или покрените апликацију са `--control <port>` за JSON контролни канал.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Свака наредба је доступна скриптама и AI агентима: покрените `deskwerk-docs-cli mcp` за MCP сервер, или покрените апликацију са `--control <port>` за JSON контролни канал.
+ 	Every field needs a name.	Свако поље мора имати назив.
+ 	Everyone	Сви
+ 	Exactly	Тачно
+diff --git a/locales/sv/wordcraft.tsv b/locales/sv/wordcraft.tsv
+index 4c90f79..6e191b6 100644
+--- a/locales/sv/wordcraft.tsv
++++ b/locales/sv/wordcraft.tsv
+@@ -819,7 +819,7 @@ spacing	Open	Öppen
+ 	Even Banded Rows	Jämna randade rader
+ 	Even Page	Jämn sida
+ 	Every change is recorded as a tracked change.	Varje ändring registreras som en spårad ändring.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Alla kommandon är tillgängliga för skript och AI-agenter: kör `wordcraft-cli mcp` för en MCP-server, eller starta appen med `--control <port>` för JSON-kontrollkanalen.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Alla kommandon är tillgängliga för skript och AI-agenter: kör `deskwerk-docs-cli mcp` för en MCP-server, eller starta appen med `--control <port>` för JSON-kontrollkanalen.
+ 	Every field needs a name.	Varje fält behöver ett namn.
+ 	Everyone	Alla
+ 	Exactly	Exakt
+diff --git a/locales/tr/wordcraft.tsv b/locales/tr/wordcraft.tsv
+index 1eed696..e2dd806 100644
+--- a/locales/tr/wordcraft.tsv
++++ b/locales/tr/wordcraft.tsv
+@@ -752,7 +752,7 @@
+ 	Even Banded Rows	Çift Şeritli Satırlar
+ 	Even Page	Çift Sayfa
+ 	Every change is recorded as a tracked change.	Her değişiklik izlenen değişiklik olarak kaydedilir.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Her komut betiklere ve AI ajanlarına açıktır: MCP sunucusu için `wordcraft-cli mcp` çalıştırın veya JSON denetim kanalı için uygulamayı `--control <port>` ile başlatın.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Her komut betiklere ve AI ajanlarına açıktır: MCP sunucusu için `deskwerk-docs-cli mcp` çalıştırın veya JSON denetim kanalı için uygulamayı `--control <port>` ile başlatın.
+ 	Every field needs a name.	Her alanın bir adı olmalıdır.
+ 	Everyone	Herkes
+ 	Exactly	Tam
+diff --git a/locales/uk/wordcraft.tsv b/locales/uk/wordcraft.tsv
+index 3accea8..d5ba1c8 100644
+--- a/locales/uk/wordcraft.tsv
++++ b/locales/uk/wordcraft.tsv
+@@ -651,7 +651,7 @@
+ 	Even Banded Rows	Парні смугасті рядки
+ 	Even Page	Парна сторінка
+ 	Every change is recorded as a tracked change.	Кожна зміна записується як відстежувана.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Кожна команда доступна сценаріям і агентам ШІ: запустіть `wordcraft-cli mcp` для сервера MCP або відкрийте програму з `--control <port>` для каналу керування JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Кожна команда доступна сценаріям і агентам ШІ: запустіть `deskwerk-docs-cli mcp` для сервера MCP або відкрийте програму з `--control <port>` для каналу керування JSON.
+ 	Every field needs a name.	Кожне поле потребує назви.
+ 	Everyone	Усі
+ 	Exactly	Точно
+diff --git a/locales/vi/wordcraft.tsv b/locales/vi/wordcraft.tsv
+index 97458b0..aa3826d 100644
+--- a/locales/vi/wordcraft.tsv
++++ b/locales/vi/wordcraft.tsv
+@@ -784,7 +784,7 @@
+ 	Even Page	Trang chẵn
+ 	Even pages only	Chỉ trang chẵn
+ 	Every change is recorded as a tracked change.	Mọi thay đổi đều được ghi lại dưới dạng thay đổi được theo dõi.
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Mọi lệnh đều khả dụng cho tập lệnh và tác tử AI: chạy `wordcraft-cli mcp` để khởi chạy máy chủ MCP, hoặc khởi động ứng dụng với `--control <port>` để mở kênh điều khiển JSON.
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	Mọi lệnh đều khả dụng cho tập lệnh và tác tử AI: chạy `deskwerk-docs-cli mcp` để khởi chạy máy chủ MCP, hoặc khởi động ứng dụng với `--control <port>` để mở kênh điều khiển JSON.
+ 	Every field needs a name.	Mỗi trường đều cần có tên.
+ 	Everyone	Mọi người
+ 	Exactly	Chính xác
+diff --git a/locales/zh-hans/wordcraft.tsv b/locales/zh-hans/wordcraft.tsv
+index 5577b34..f68b889 100644
+--- a/locales/zh-hans/wordcraft.tsv
++++ b/locales/zh-hans/wordcraft.tsv
+@@ -647,7 +647,7 @@
+ 	Even Banded Rows	偶数镶边行
+ 	Even Page	偶数页
+ 	Every change is recorded as a tracked change.	每处更改都会作为修订记录。
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	每个命令都可供脚本和 AI 智能体使用：运行 `wordcraft-cli mcp` 启动 MCP 服务器，或使用 `--control <port>` 启动应用以打开 JSON 控制通道。
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	每个命令都可供脚本和 AI 智能体使用：运行 `deskwerk-docs-cli mcp` 启动 MCP 服务器，或使用 `--control <port>` 启动应用以打开 JSON 控制通道。
+ 	Every field needs a name.	每个域都需要名称。
+ 	Everyone	每个人
+ 	Exactly	固定值
+diff --git a/locales/zh-hant/wordcraft.tsv b/locales/zh-hant/wordcraft.tsv
+index c1f3b69..014f73a 100644
+--- a/locales/zh-hant/wordcraft.tsv
++++ b/locales/zh-hant/wordcraft.tsv
+@@ -646,7 +646,7 @@
+ 	Even Banded Rows	偶數帶狀列
+ 	Even Page	偶數頁
+ 	Every change is recorded as a tracked change.	每項變更都會記錄為追蹤修訂。
+-	Every command is available to scripts and AI agents: run `wordcraft-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	每個命令都可供指令碼和 AI 代理程式使用：執行 `wordcraft-cli mcp` 啟動 MCP 伺服器，或以 `--control <port>` 啟動應用程式以開啟 JSON 控制通道。
++	Every command is available to scripts and AI agents: run `deskwerk-docs-cli mcp` for an MCP server, or start the app with `--control <port>` for the JSON control channel.	每個命令都可供指令碼和 AI 代理程式使用：執行 `deskwerk-docs-cli mcp` 啟動 MCP 伺服器，或以 `--control <port>` 啟動應用程式以開啟 JSON 控制通道。
+ 	Every field needs a name.	每個欄位都需要名稱。
+ 	Everyone	所有人
+ 	Exactly	固定

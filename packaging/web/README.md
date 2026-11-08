@@ -1,7 +1,7 @@
 # Hosting WordCraft for the web
 
-`wordcraft-web-<version>.zip` (from the GitHub release, or `packaging/web/package.sh`) holds a
-static site in `wordcraft-web-<version>/`:
+`deskwerk-docs-web-<version>.zip` (from the GitHub release, or `packaging/web/package.sh`) holds a
+static site in `deskwerk-docs-web-<version>/`:
 
 | File | What it is |
 |---|---|

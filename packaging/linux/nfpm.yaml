@@ -3,7 +3,7 @@
 # exports VERSION and NFPM_ARCH.
 #
 #   nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/release/
-name: wordcraft
+name: deskwerk-docs
 arch: ${NFPM_ARCH}
 platform: linux
 version: ${VERSION}
@@ -13,14 +13,14 @@ release: 1
 section: graphics
 priority: optional
 maintainer: ${WORDCRAFT_MAINTAINER}
-vendor: Deskwerk contributors
-homepage: https://github.com/dicendy/deskwerk-docs
+vendor: Deskwerk
+homepage: https://github.com/dicendy
 license: MIT OR Apache-2.0
 description: |-
   Open-source, native word processor that works the way Word users expect.
   The ribbon, styles, tables, track changes, references and mail merge; reads
   and writes .docx, opens .odt, .rtf, .html, .md and .txt, and exports PDF.
-  Includes wordcraft-cli, a headless converter and command runner.
+  Includes deskwerk-docs-cli, a headless converter and command runner.
 
 # The binaries link only glibc and libgcc_s directly. Windowing (X11/Wayland, xkbcommon) and the
 # GPU (Vulkan, EGL/GL) are loaded at runtime, so they are dependencies/recommendations here
@@ -63,26 +63,26 @@ overrides:
       - espeak-ng
 
 contents:
-  - src: ${STAGE}/usr/bin/wordcraft
-    dst: /usr/bin/wordcraft
+  - src: ${STAGE}/usr/bin/deskwerk-docs
+    dst: /usr/bin/deskwerk-docs
     file_info: { mode: 0755 }
-  - src: ${STAGE}/usr/bin/wordcraft-cli
-    dst: /usr/bin/wordcraft-cli
+  - src: ${STAGE}/usr/bin/deskwerk-docs-cli
+    dst: /usr/bin/deskwerk-docs-cli
     file_info: { mode: 0755 }
   # Named one by one rather than as a tree of /usr/share: a tree would also own shared directories
   # such as /usr/share/mime, which openSUSE's filesystem package owns with other modes, and RPM
   # refuses to install a package that conflicts with it.
-  - src: ${STAGE}/usr/share/applications/ai.storyteller.wordcraft.desktop
-    dst: /usr/share/applications/ai.storyteller.wordcraft.desktop
-  - src: ${STAGE}/usr/share/mime/packages/ai.storyteller.wordcraft.xml
-    dst: /usr/share/mime/packages/ai.storyteller.wordcraft.xml
-  - src: ${STAGE}/usr/share/metainfo/ai.storyteller.wordcraft.metainfo.xml
-    dst: /usr/share/metainfo/ai.storyteller.wordcraft.metainfo.xml
+  - src: ${STAGE}/usr/share/applications/eu.deskwerk.Docs.desktop
+    dst: /usr/share/applications/eu.deskwerk.Docs.desktop
+  - src: ${STAGE}/usr/share/mime/packages/eu.deskwerk.Docs.xml
+    dst: /usr/share/mime/packages/eu.deskwerk.Docs.xml
+  - src: ${STAGE}/usr/share/metainfo/eu.deskwerk.Docs.metainfo.xml
+    dst: /usr/share/metainfo/eu.deskwerk.Docs.metainfo.xml
   - src: ${STAGE}/usr/share/icons/hicolor/
     dst: /usr/share/icons/hicolor/
     type: tree
-  - src: ${STAGE}/usr/share/doc/wordcraft/
-    dst: /usr/share/doc/wordcraft/
+  - src: ${STAGE}/usr/share/doc/deskwerk-docs/
+    dst: /usr/share/doc/deskwerk-docs/
     type: tree
 
 scripts:

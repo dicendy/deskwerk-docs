@@ -8,8 +8,8 @@
 //! that crashed survives the next launch. Runs without preferences (`WORDCRAFT_NO_PREFS`) log to
 //! standard error only.
 //!
-//! Levels: `info` for WordCraft's own crates, `warn` for everything else (wgpu and naga are
-//! chatty). `RUST_LOG` replaces that with env_logger-style directives: `debug`,
+//! Levels: `info` for the app's own crates (`wordcraft*` and the `deskwerk_docs` binary), `warn`
+//! for everything else (wgpu and naga are chatty). `RUST_LOG` replaces that with env_logger-style directives: `debug`,
 //! `warn,wordcraft_docx=trace`, `wgpu_core=info`. A directive ending in `*` matches every target
 //! that starts with it (`wordcraft*=debug`).
 //!
@@ -38,7 +38,7 @@ pub const MAX_FILE_BYTES: u64 = 16 * 1024 * 1024;
 /// Records kept in memory until the log file is attached.
 pub const MAX_PENDING: usize = 512;
 /// The built-in filter when `RUST_LOG` is unset or empty.
-pub const DEFAULT_FILTER: &str = "warn,wordcraft*=info";
+pub const DEFAULT_FILTER: &str = "warn,wordcraft*=info,deskwerk_docs=info";
 
 /// Per-target level filter parsed from env_logger-style directives.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -340,7 +340,7 @@ pub fn install_panic_hook() {
             log::error!("{report}");
         } else {
             // `eprintln!` panics on a broken stderr pipe, and a panic inside the panic hook aborts.
-            let _ = std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("wordcraft: {report}\n"));
+            let _ = std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("deskwerk-docs: {report}\n"));
         }
     }));
 }

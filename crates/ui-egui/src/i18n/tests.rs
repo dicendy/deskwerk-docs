@@ -1182,12 +1182,12 @@ fn the_flatpak_manifest_pins_the_craft_i18n_rev() {
     let rev = std::fs::read_to_string(root.join("craft-i18n.rev")).unwrap();
     let rev = rev.trim();
     assert!(rev.len() == 40 && rev.bytes().all(|b| b.is_ascii_hexdigit()), "craft-i18n.rev holds one full SHA: {rev:?}");
-    let manifest = std::fs::read_to_string(root.join("packaging/linux/flatpak/ai.storyteller.wordcraft.yml")).unwrap();
+    let manifest = std::fs::read_to_string(root.join("packaging/linux/flatpak/eu.deskwerk.Docs.yml")).unwrap();
     let source = manifest.split("url: https://github.com/storytold/craft-i18n").nth(1).expect("a craft-i18n git source");
     let source = source.split("- type:").next().unwrap_or(source);
     let commit = source.lines().find_map(|l| l.trim().strip_prefix("commit:")).expect("the craft-i18n source pins a commit");
     assert_eq!(commit.trim().trim_matches(['\'', '"']), rev);
-    assert!(manifest.contains("CRAFT_I18N_DIR: /run/build/wordcraft/craft-i18n"), "the build embeds the catalogs");
+    assert!(manifest.contains("CRAFT_I18N_DIR: /run/build/deskwerk-docs/craft-i18n"), "the build embeds the catalogs");
 }
 
 /// A right-to-left test language whose catalog is `source`, selected as the current language.
