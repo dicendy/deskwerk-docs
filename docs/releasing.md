@@ -3,28 +3,23 @@
 1. Bump the version on `main`: `cargo xtask version set 0.2.0` (the one source of truth is
    `[workspace.package] version`; the app shows it in `--version` and About, with the commit from
    `WORDCRAFT_BUILD_SHA`).
-2. Merge `main` into `release` and push. `.github/workflows/release.yml` builds the files below.
-   This fork has no `release.yml` yet: copy it from upstream WordCraft (by the ArtCraft team) and
-   rename it before the first release.
+2. Tag the commit `v<version>` and push the tag. `.github/workflows/release.yml` builds the files
+   below with the scripts in `packaging/` and drafts a GitHub Release `Deskwerk Docs v<version>`
+   with `SHA256SUMS.txt`; review and publish it.
 
 | Platform | Artifacts | Signing |
 |---|---|---|
-| macOS | universal `Deskwerk Docs.app` in a `.dmg`, universal CLI zip | Developer ID + notarization (`APPLE_*` secrets) |
-| Windows | x64, x86 and arm64 `.msi` (one dual-scope package: per-user by default, needs no admin rights; "Everyone on this computer" installs per machine) + portable `.zip` | Azure Trusted Signing (`AZURE_*` secrets) |
-| Linux | x86_64 and aarch64 `.AppImage` (+ `.zsync` for AppImageUpdate), `.flatpak` bundle, `.deb`, `.rpm`, `.tar.gz`; Flathub manifest | checksums |
-| Linux riscv64 | `.tar.gz` (cross-compiled on `ubuntu-24.04`, glibc >= 2.39; CLI smoke-tested under QEMU) | checksums |
-| FreeBSD | x86_64 `.tar.gz` | checksums |
+| macOS | universal `Deskwerk Docs.app` in a `.dmg`, universal CLI zip | Developer ID + notarization (`APPLE_*` secrets); ad-hoc without them |
+| Windows | x64 `.msi` (one dual-scope package: per-user by default, needs no admin rights; "Everyone on this computer" installs per machine) + portable `.zip` | `WINDOWS_CERTIFICATE` `.pfx` or Azure Trusted Signing (`AZURE_*`); unsigned without them |
+| Linux | x86_64 `.AppImage` (+ `.zsync` for AppImageUpdate), `.deb`, `.rpm`, `.tar.gz` | checksums |
 | Web | `deskwerk-docs-web-<version>.zip` (static site: `index.html`, wasm, glue) | none |
 
-3. The run drafts a GitHub Release `Deskwerk Docs v<version>` with `SHA256SUMS.txt`; review and publish it.
-
-Signing secrets live in the repository's `release` environment (deployment branch: `release` only),
-synced from the release manager's machine. Missing secrets
-produce unsigned builds with a warning, so forks still build.
+Missing secrets produce unsigned builds with a warning. Secrets, test runs (`workflow_dispatch`
+with a `targets` choice) and what CI does not build: [`packaging/RELEASING.md`](../packaging/RELEASING.md).
 
 Local packaging: `packaging/macos/package.sh --arch universal`, `packaging/windows/package.ps1`,
-`packaging/linux/package.sh` (then `packaging/linux/flatpak-bundle.sh` for the Flatpak), `packaging/web/package.sh`.
+`packaging/linux/package.sh` (then `packaging/linux/flatpak-bundle.sh` for the Flatpak),
+`packaging/web/package.sh`, `packaging/freebsd/package.sh`.
 
-Dry run: `gh workflow run release.yml --ref <branch>` builds the unsigned jobs (version, Linux,
-Linux riscv64, Flatpak, FreeBSD, web) on any branch; the signing jobs are refused there by the `release`
-environment's branch rule, so no draft release is made.
+`contributors/contributors.json` is bundled as committed; upstream's release-time refresh (a
+`credits` job) is not part of this workflow.
