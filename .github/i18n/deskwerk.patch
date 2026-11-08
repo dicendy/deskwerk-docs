@@ -1,0 +1,763 @@
+diff --git a/locales/de/wordcraft.tsv b/locales/de/wordcraft.tsv
+index 61322bd..8903ef6 100644
+--- a/locales/de/wordcraft.tsv
++++ b/locales/de/wordcraft.tsv
+@@ -39,7 +39,7 @@
+ 	a, b, c, …	a, b, c, …
+ 	AaBbYyZz	AaBbYyZz
+ 	About	Info
+-	About WordCraft	Über WordCraft
++	About Deskwerk Docs	Über Deskwerk Docs
+ 	Above Chart	Über dem Diagramm
+ 	Above the item	Über dem Element
+ 	Accent	Akzent
+@@ -187,7 +187,7 @@
+ 	Automatically hyphenate document	Silbentrennung im Dokument automatisch durchführen
+ 	Automatically Update Document Styles	Formatvorlagen des Dokuments automatisch aktualisieren
+ 	Automatically update document styles	Formatvorlagen des Dokuments automatisch aktualisieren
+-	AutoSave documents you have saved in WordCraft	In WordCraft gespeicherte Dokumente automatisch speichern
++	AutoSave documents you have saved in Deskwerk Docs	In Deskwerk Docs gespeicherte Dokumente automatisch speichern
+ 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Automatisches Speichern fehlgeschlagen: {error}. Speichern Sie das Dokument, um automatisches Speichern wieder zu aktivieren.
+ 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	Automatisches Speichern ist im Browser nicht verfügbar: Es kann nicht in Ihre Dateien schreiben. „Speichern“ lädt eine Kopie herunter.
+ 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	Automatisches Speichern unterstützt nur .docx-, .odt- und .rtf-Dateien; {name} kann nicht die gesamte Formatierung bewahren. Speichern Sie als .docx, um automatisches Speichern zu aktivieren.
+@@ -242,7 +242,7 @@
+ 	Bracket	Klammer
+ 	Breaks	Umbrüche
+ 	Bring Forward	Nach vorne bringen
+-	Browse in WordCraft…	In WordCraft durchsuchen…
++	Browse in Deskwerk Docs…	In Deskwerk Docs durchsuchen…
+ 	Building Block Gallery Content Control	Bausteinkatalog-Inhaltssteuerelement
+ 	Built-In	Integriert
+ 	Built-in style	Integrierte Formatvorlage
+@@ -413,7 +413,7 @@
+ 	Correct TWo INitial CApitals	ZWei GRoßbuchstaben am WOrtanfang korrigieren
+ 	Corrections	Korrekturen
+ 	Couldn't download {name}: {error}	{name} konnte nicht heruntergeladen werden: {error}
+-	Couldn't make WordCraft the default: {error}	WordCraft konnte nicht als Standard festgelegt werden: {error}
++	Couldn't make Deskwerk Docs the default: {error}	Deskwerk Docs konnte nicht als Standard festgelegt werden: {error}
+ 	Couldn't open {path}: {error}	{path} konnte nicht geöffnet werden: {error}
+ 	Count by:	Zählintervall:
+ 	Count words in text boxes and notes	Wörter in Textfeldern und Notizen mitzählen
+@@ -831,7 +831,7 @@
+ 	Immersive	Immersiv
+ 	Immersive Reader	Immersiver Lesemodus
+ 	Immersive\nReader	Immersiver\nLesemodus
+-	In Default apps, choose WordCraft for the document types you want it to open.	Wählen Sie unter „Standard-Apps“ WordCraft für die Dokumenttypen, die es öffnen soll.
++	In Default apps, choose Deskwerk Docs for the document types you want it to open.	Wählen Sie unter „Standard-Apps“ Deskwerk Docs für die Dokumenttypen, die es öffnen soll.
+ 	In equations, typing a name after a backslash replaces it with its symbol.	In Formeln wird ein Name nach einem umgekehrten Schrägstrich durch sein Symbol ersetzt.
+ 	In Front of Text	Vor den Text
+ 	In Line with Text	Mit Text in Zeile
+@@ -930,7 +930,7 @@
+ 	Keep lines together	Zeilen nicht trennen
+ 	Keep me around	Bleib ruhig da
+ 	Keep Text Only	Nur Text übernehmen
+-	Keep the password somewhere safe: without it nobody, WordCraft included, can open the document. Leave both boxes empty to remove the password.	Bewahren Sie das Kennwort an einem sicheren Ort auf: Ohne es kann niemand das Dokument öffnen, auch WordCraft nicht. Lassen Sie beide Felder leer, um das Kennwort zu entfernen.
++	Keep the password somewhere safe: without it nobody, Deskwerk Docs included, can open the document. Leave both boxes empty to remove the password.	Bewahren Sie das Kennwort an einem sicheren Ort auf: Ohne es kann niemand das Dokument öffnen, auch Deskwerk Docs nicht. Lassen Sie beide Felder leer, um das Kennwort zu entfernen.
+ 	Keep with Next	Mit nächstem Absatz zusammenhalten
+ 	Keep with next	Mit nächstem Absatz zusammenhalten
+ 	Keeps the fonts and formatting of the copied text.	Behält die Schriftarten und Formatierung des kopierten Textes bei.
+@@ -1036,7 +1036,7 @@
+ 	Mail Merge	Seriendruck
+ 	Mailings	Sendungen
+ 	Main entry:	Haupteintrag:
+-	Make WordCraft the default for Word documents…	WordCraft als Standard für Word-Dokumente festlegen…
++	Make Deskwerk Docs the default for Word documents…	Deskwerk Docs als Standard für Word-Dokumente festlegen…
+ 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Vergrößert oder verkleinert Menüband, Menüs und Dialoge. „Automatisch“ folgt der Anzeigeskalierung Ihres Systems; 100% ist ein Bildschirmpixel pro Punkt. Die Dokumentansicht ist davon getrennt.
+ 	Manage Sources	Quellen verwalten
+ 	Manage Styles	Formatvorlagen verwalten
+@@ -1180,7 +1180,7 @@
+ 	No Shadow	Kein Schatten
+ 	No Soft Edges	Keine weichen Kanten
+ 	No sources yet.	Noch keine Quellen.
+-	No spelling dictionary for {language} is installed, so it isn't checked. WordCraft looks for the Hunspell dictionary {name} in the WORDCRAFT_DICTIONARIES folder and in the usual system locations.	Für {language} ist kein Rechtschreibwörterbuch installiert, daher wird die Sprache nicht geprüft. WordCraft sucht das Hunspell-Wörterbuch {name} im Ordner WORDCRAFT_DICTIONARIES und an den üblichen Systemorten.
++	No spelling dictionary for {language} is installed, so it isn't checked. Deskwerk Docs looks for the Hunspell dictionary {name} in the WORDCRAFT_DICTIONARIES folder and in the usual system locations.	Für {language} ist kein Rechtschreibwörterbuch installiert, daher wird die Sprache nicht geprüft. Deskwerk Docs sucht das Hunspell-Wörterbuch {name} im Ordner WORDCRAFT_DICTIONARIES und an den üblichen Systemorten.
+ 	No templates match your search.	Keine Vorlagen entsprechen Ihrer Suche.
+ 	No Transform	Keine Transformation
+ 	No words yet. Add to Dictionary on a misspelled word puts it here.	Noch keine Wörter. „Zum Wörterbuch hinzufügen“ bei einem falsch geschriebenen Wort legt es hier ab.
+@@ -1243,7 +1243,7 @@
+ 	Offset: Top Right	Versatz: Rechts oben
+ 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Alte Menütasten: Alt, {keys}. Weitertippen oder mit Esc abbrechen.
+ 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Ein: Die Einfügemarke gleitet beim Tippen oder mit den Pfeiltasten an ihre neue Stelle, und ihr Blinken blendet weich. Aus: Sie springt und blinkt hart an und aus.
+-	On: WordCraft opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Ein: WordCraft öffnet sich auf Datei › Start mit einem leeren Dokument, den Vorlagen und Ihren zuletzt verwendeten Dokumenten. Aus: Es öffnet ein leeres Dokument.
++	On: Deskwerk Docs opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Ein: Deskwerk Docs öffnet sich auf Datei › Start mit einem leeren Dokument, den Vorlagen und Ihren zuletzt verwendeten Dokumenten. Aus: Es öffnet ein leeres Dokument.
+ 	One	Eins
+ 	One label per recipient	Ein Etikett pro Empfänger
+ 	One line per item. Enter adds an item.	Ein Element pro Zeile. Die Eingabetaste fügt ein Element hinzu.
+@@ -1258,11 +1258,11 @@
+ 	Only the allowed styles can be applied.	Nur die zulässigen Formatvorlagen können angewendet werden.
+ 	Only web (http, https) and email (mailto) links can be followed	Nur Web- (http, https) und E-Mail-Links (mailto) können geöffnet werden
+ 	Open a document first	Zuerst ein Dokument öffnen
+-	Open a file with WordCraft's own browser when the system file dialog doesn't appear.	Öffnet eine Datei mit dem eigenen Browser von WordCraft, wenn das Dateidialogfeld des Systems nicht erscheint.
++	Open a file with Deskwerk Docs' own browser when the system file dialog doesn't appear.	Öffnet eine Datei mit dem eigenen Browser von Deskwerk Docs, wenn das Dateidialogfeld des Systems nicht erscheint.
+ 	OpenDocument Text (*.odt)	OpenDocument-Text (*.odt)
+ 	Opening print dialog…	Druckdialogfeld wird geöffnet…
+-	Opens .docx, .doc, .rtf and .odt files and Word templates with WordCraft from now on.	Öffnet .docx-, .doc-, .rtf- und .odt-Dateien sowie Word-Vorlagen ab jetzt mit WordCraft.
+-	Opens Settings › Default apps, where you choose WordCraft for .docx and the other document types.	Öffnet Einstellungen › Standard-Apps, wo Sie WordCraft für .docx und die anderen Dokumenttypen wählen.
++	Opens .docx, .doc, .rtf and .odt files and Word templates with Deskwerk Docs from now on.	Öffnet .docx-, .doc-, .rtf- und .odt-Dateien sowie Word-Vorlagen ab jetzt mit Deskwerk Docs.
++	Opens Settings › Default apps, where you choose Deskwerk Docs for .docx and the other document types.	Öffnet Einstellungen › Standard-Apps, wo Sie Deskwerk Docs für .docx und die anderen Dokumenttypen wählen.
+ 	Operator	Operator
+ 	Optional Hyphen	Bedingter Trennstrich
+ 	Or	Oder
+@@ -1506,7 +1506,7 @@
+ 	Replay	Wiedergeben
+ 	Research	Recherche
+ 	Researcher	Recherche-Assistent
+-	Researcher needs an online service; WordCraft keeps your documents offline.	Der Recherche-Assistent braucht einen Onlinedienst; WordCraft behält Ihre Dokumente offline.
++	Researcher needs an online service; Deskwerk Docs keeps your documents offline.	Der Recherche-Assistent braucht einen Onlinedienst; Deskwerk Docs behält Ihre Dokumente offline.
+ 	Reset All…	Alle zurücksetzen…
+ 	Reset Character Formatting	Zeichenformatierung zurücksetzen
+ 	Reset Crop	Zuschnitt zurücksetzen
+@@ -1709,7 +1709,7 @@
+ 	Show the community button in the title bar	Die Community-Schaltfläche in der Titelleiste anzeigen
+ 	Show the mini toolbar when text is selected	Minisymbolleiste bei Textauswahl anzeigen
+ 	Show the ribbon	Menüband anzeigen
+-	Show the Start screen when WordCraft starts	Startbildschirm beim Start von WordCraft anzeigen
++	Show the Start screen when Deskwerk Docs starts	Startbildschirm beim Start von Deskwerk Docs anzeigen
+ 	Show the tips you asked not to see again.	Zeigt die Tipps wieder an, die Sie ausgeblendet haben.
+ 	Show/Hide ¶	¶ ein-/ausblenden
+ 	Show/Hide ¶ ({key}) shows the spaces, tabs and breaks hiding in your text.	¶ ein-/ausblenden ({key}) zeigt die Leerzeichen, Tabstopps und Umbrüche, die sich in Ihrem Text verstecken.
+@@ -1902,7 +1902,7 @@
+ 	The printer, two-sided printing and pages per sheet are chosen in that dialog.	Drucker, beidseitiger Druck und Seiten pro Blatt werden in diesem Dialogfeld gewählt.
+ 	The recipient-list field that fills each part of an address block and greeting line.	Das Empfängerlistenfeld, das jeden Teil eines Adressblocks und einer Anrede füllt.
+ 	the Spike is empty	die Sammlung ist leer
+-	The system file dialog isn't available, so WordCraft shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Das Dateidialogfeld des Systems ist nicht verfügbar, daher zeigt WordCraft ein eigenes an. Für das Systemdialogfeld installieren Sie ein Dateiauswahl-Portal (etwa xdg-desktop-portal-gtk) oder zenity.
++	The system file dialog isn't available, so Deskwerk Docs shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	Das Dateidialogfeld des Systems ist nicht verfügbar, daher zeigt Deskwerk Docs ein eigenes an. Für das Systemdialogfeld installieren Sie ein Dateiauswahl-Portal (etwa xdg-desktop-portal-gtk) oder zenity.
+ 	The text at the insertion point is marked Do not check spelling or grammar.	Der Text an der Einfügemarke ist markiert: Rechtschreibung und Grammatik nicht prüfen.
+ 	The time right now	Die Uhrzeit im Moment
+ 	Theme Colors	Designfarben
+@@ -1919,7 +1919,7 @@
+ 	These merge fields aren't in the recipient list:	Diese Seriendruckfelder fehlen in der Empfängerliste:
+ 	These settings will be used for new documents.	Diese Einstellungen werden für neue Dokumente verwendet.
+ 	Thick	Stark
+-	this chart was made in another program: WordCraft shows it but can't edit it	dieses Diagramm wurde in einem anderen Programm erstellt: WordCraft zeigt es an, kann es aber nicht bearbeiten
++	this chart was made in another program: Deskwerk Docs shows it but can't edit it	dieses Diagramm wurde in einem anderen Programm erstellt: Deskwerk Docs zeigt es an, kann es aber nicht bearbeiten
+ 	This document	Dieses Dokument
+ 	This document has no bookmarks.	Dieses Dokument hat keine Textmarken.
+ 	This document only?	Nur dieses Dokument?
+@@ -1933,7 +1933,7 @@
+ 	This section	Dieser Abschnitt
+ 	this session has no Normal template (headless or without preferences)	diese Sitzung hat keine Vorlage „Normal“ (ohne Oberfläche oder ohne Einstellungen)
+ 	this session has no Normal template (headless or without preferences): use "scope": "document"	diese Sitzung hat keine Vorlage „Normal“ (ohne Oberfläche oder ohne Einstellungen): verwenden Sie "scope": "document"
+-	this SmartArt was made in another program: WordCraft shows it but can't edit it	diese SmartArt-Grafik wurde in einem anderen Programm erstellt: WordCraft zeigt sie an, kann sie aber nicht bearbeiten
++	this SmartArt was made in another program: Deskwerk Docs shows it but can't edit it	diese SmartArt-Grafik wurde in einem anderen Programm erstellt: Deskwerk Docs zeigt sie an, kann sie aber nicht bearbeiten
+ 	this text box is already linked: break the link first	dieses Textfeld ist bereits verknüpft: heben Sie zuerst die Verknüpfung auf
+ 	Three	Drei
+ 	Through	Durchgehend
+@@ -1943,7 +1943,7 @@
+ 	Title Bar	Titelleiste
+ 	Title from the document properties	Titel aus den Dokumenteigenschaften
+ 	Title:	Titel:
+-	To open Word documents with WordCraft by default: select one in Finder, choose File › Get Info, pick WordCraft under Open with, then click Change All.	Um Word-Dokumente standardmäßig mit WordCraft zu öffnen: Wählen Sie eines im Finder aus, wählen Sie Ablage › Informationen, wählen Sie WordCraft unter „Öffnen mit“ und klicken Sie auf „Alle ändern“.
++	To open Word documents with Deskwerk Docs by default: select one in Finder, choose File › Get Info, pick Deskwerk Docs under Open with, then click Change All.	Um Word-Dokumente standardmäßig mit Deskwerk Docs zu öffnen: Wählen Sie eines im Finder aus, wählen Sie Ablage › Informationen, wählen Sie Deskwerk Docs unter „Öffnen mit“ und klicken Sie auf „Alle ändern“.
+ 	To:	Bis:
+ 	Today	Heute
+ 	Toggle Check Box	Kontrollkästchen umschalten
+@@ -2073,8 +2073,8 @@
+ 	Word XML Document (*.xml)	Word-XML-Dokument (*.xml)
+ 	WordArt	WordArt
+ 	WordArt Styles	WordArt-Formatvorlagen
+-	WordCraft	WordCraft
+-	WordCraft is now the default app for Word documents.	WordCraft ist jetzt die Standard-App für Word-Dokumente.
++	Deskwerk Docs	Deskwerk Docs
++	Deskwerk Docs is now the default app for Word documents.	Deskwerk Docs ist jetzt die Standard-App für Word-Dokumente.
+ 	Words only	Nur Wörter
+ 	Wrap Text	Text umbrechen
+ 	Wrap Text Sides	Umbruchseiten
+@@ -2105,7 +2105,7 @@
+ 	{language} (no dictionary)	{language} (kein Wörterbuch)
+ 	{language} is now the document's default language.	{language} ist jetzt die Standardsprache des Dokuments.
+ 	{language}: no dictionary found	{language}: kein Wörterbuch gefunden
+-	{language}: WordCraft doesn't check spelling or grammar in this language yet.	{language}: WordCraft prüft Rechtschreibung und Grammatik in dieser Sprache noch nicht.
++	{language}: Deskwerk Docs doesn't check spelling or grammar in this language yet.	{language}: Deskwerk Docs prüft Rechtschreibung und Grammatik in dieser Sprache noch nicht.
+ 	{language}: {file}	{language}: {file}
+ 	{names} and {n} more	{names} und {n} weitere
+ 	{name}   {height} × {width} in	{name}   {height} × {width} Zoll
+@@ -2160,7 +2160,7 @@
+ 	Grammar built in	Grammatik integriert
+ 	Install spelling ({size})	Rechtschreibung installieren ({size})
+ 	Its dictionary couldn't be read: {reason}	Das Wörterbuch konnte nicht gelesen werden: {reason}
+-	Downloading is off. Clicking Add a language… or Install turns it on: WordCraft then downloads language packs and fonts from GitHub.	Das Herunterladen ist ausgeschaltet. Ein Klick auf „Sprache hinzufügen…“ oder „Installieren“ schaltet es ein: WordCraft lädt dann Sprachpakete und Schriftarten von GitHub herunter.
++	Downloading is off. Clicking Add a language… or Install turns it on: Deskwerk Docs then downloads language packs and fonts from GitHub.	Das Herunterladen ist ausgeschaltet. Ein Klick auf „Sprache hinzufügen…“ oder „Installieren“ schaltet es ein: Deskwerk Docs lädt dann Sprachpakete und Schriftarten von GitHub herunter.
+ 	Search:	Suchen:
+ 	Dutch, Nederlands or nl	Niederländisch, Nederlands oder nl
+ 	No languages to show yet.	Noch keine Sprachen anzuzeigen.
+@@ -2265,3 +2265,387 @@
+ 	Uruguay	Uruguay
+ 	Venezuela	Venezuela
+ 	South Africa	Südafrika
++
++# Rows from storytold/wordcraft#3962 (strings added since #574), not yet sorted in.
++	1×2 Empty Matrix	Leere 1×2-Matrix
++	1×3 Empty Matrix	Leere 1×3-Matrix
++	2×1 Empty Matrix	Leere 2×1-Matrix
++	2×2 Determinant	2×2-Determinante
++	2×2 Empty Matrix	Leere 2×2-Matrix
++	2×2 Identity Matrix	2×2-Einheitsmatrix
++	2×2 Identity Matrix (sparse)	2×2-Einheitsmatrix (dünn besetzt)
++	2×2 Matrix in Brackets	2×2-Matrix in eckigen Klammern
++	2×2 Matrix in Double Bars	2×2-Matrix in doppelten senkrechten Strichen
++	2×2 Matrix in Parentheses	2×2-Matrix in runden Klammern
++	2×3 Empty Matrix	Leere 2×3-Matrix
++	3×1 Empty Matrix	Leere 3×1-Matrix
++	3×2 Empty Matrix	Leere 3×2-Matrix
++	3×3 Empty Matrix	Leere 3×3-Matrix
++	3×3 Identity Matrix	3×3-Einheitsmatrix
++	3×3 Identity Matrix (sparse)	3×3-Einheitsmatrix (dünn besetzt)
++	A xor B	A xor B
++	AaBbCcDd	AaBbCcDd
++	Absolute value cases	Betrag als Fallunterscheidung
++	Accents	Akzente
++	Acute	Akut
++	All - Linear	Alle - Linear
++	All - Professional	Alle - Professionell
++	Angle Brackets	Spitze Klammern
++	Angle Brackets with Separator	Spitze Klammern mit Trennzeichen
++	Angle Brackets with Two Separators	Spitze Klammern mit zwei Trennzeichen
++	Annotation Reference	Kommentarzeichen
++	Annotation Subject	Kommentarthema
++	Annotation Text	Kommentartext
++	APA	APA
++	ASAP	SOFORT
++	B4 (JIS)   10.12" × 14.33"	B4 (JIS)   10,12" × 14,33"
++	B5 (JIS)   7.17" × 10.12"	B5 (JIS)   7,17" × 10,12"
++	Baseline Dots	Punkte auf der Grundlinie
++	Basic Math	Grundlegende Mathematik
++	Bayes' rule	Satz von Bayes
++	Binomial Coefficient	Binomialkoeffizient
++	Binomial Coefficient (angle)	Binomialkoeffizient (spitz)
++	Binomial Coefficient with Angle Brackets	Binomialkoeffizient mit spitzen Klammern
++	Binomial expansion of (x+a)ⁿ	Binomische Entwicklung von (x+a)ⁿ
++	Body text in a short paragraph to show spacing.	Fließtext in einem kurzen Absatz, um die Abstände zu zeigen.
++	Book Title	Buchtitel
++	Boxed Formula	Umrahmte Formel
++	Boxed Formula (example)	Umrahmte Formel (Beispiel)
++	Boxed Formulas	Umrahmte Formeln
++	Braces	Geschweifte Klammern
++	Braces with Separator	Geschweifte Klammern mit Trennzeichen
++	Brackets	Klammern
++	Brackets with Separators	Klammern mit Trennzeichen
++	Breve	Brevis
++	Capitalize the first word of a sentence	Erstes Wort eines Satzes großschreiben
++	Cases (Three Conditions)	Fallunterscheidung (drei Bedingungen)
++	Cases (Two Conditions)	Fallunterscheidung (zwei Bedingungen)
++	Cases and Stacks	Fallunterscheidungen und Stapel
++	Category	Kategorie
++	Ceiling	Aufrundung
++	Centered as Group	Als Gruppe zentriert
++	Change in y over change in x	Änderung von y durch Änderung von x
++	Change to Level 1	Auf Ebene 1 ändern
++	Change to Level 2	Auf Ebene 2 ändern
++	Change to Level 3	Auf Ebene 3 ändern
++	Change to Level 4	Auf Ebene 4 ändern
++	Change to Level 5	Auf Ebene 5 ändern
++	Change to Level 6	Auf Ebene 6 ändern
++	Change to Level 7	Auf Ebene 7 ändern
++	Change to Level 8	Auf Ebene 8 ändern
++	Change to Level 9	Auf Ebene 9 ändern
++	Check	Hatschek
++	Chicago	Chicago
++	Circle area from its radius	Kreisfläche aus dem Radius
++	Circled Dot	Eingekreister Punkt
++	Circled Plus	Eingekreistes Plus
++	Circled Times	Eingekreistes Mal
++	Colon Equal	Doppelpunkt-Gleich
++	Common Accent Objects	Häufige Akzentobjekte
++	Common Brackets	Häufige Klammern
++	Common Fractions	Häufige Brüche
++	Common Functions	Häufige Funktionen
++	Common Large Operators	Häufige große Operatoren
++	Common Operator Structures	Häufige Operatorstrukturen
++	Common Operators	Häufige Operatoren
++	Common Radicals	Häufige Wurzeln
++	Common Subscripts and Superscripts	Häufige Tief- und Hochstellungen
++	CONFIDENTIAL	VERTRAULICH
++	Contour Integral	Kurvenintegral
++	Contour Integral with Limits	Kurvenintegral mit Grenzen
++	Contour Integral with Stacked Limits	Kurvenintegral mit gestapelten Grenzen
++	Contour Integrals	Kurvenintegrale
++	Convert between built-up and linear form	Zwischen zweidimensionaler und linearer Form umwandeln
++	Coproduct	Koprodukt
++	Coproduct with Limits	Koprodukt mit Grenzen
++	Coproduct with Lower Limit	Koprodukt mit unterer Grenze
++	Coproduct with Subscript-Superscript Limits	Koprodukt mit tief- und hochgestellten Grenzen
++	Cosecant Function	Kosekansfunktion
++	Cosine 2x	Kosinus 2x
++	Cosine Function	Kosinusfunktion
++	Cotangent Function	Kotangensfunktion
++	Cube Root	Kubikwurzel
++	Current - Linear	Aktuelle - Linear
++	Current - Professional	Aktuelle - Professionell
++	Default Paragraph Font	Absatz-Standardschriftart
++	Delta Equal To	Delta-Gleich
++	Delta over arrow	Delta über Pfeil
++	Derivative as a limit	Ableitung als Grenzwert
++	Diagonal Dots	Diagonale Punkte
++	Differential	Differenzial
++	Differential theta	Differenzial Theta
++	Differential x	Differenzial x
++	Differential y	Differenzial y
++	Differentials	Differenziale
++	DO NOT COPY	NICHT KOPIEREN
++	Double Bar	Doppelter Überstrich
++	Double Dot	Zwei Punkte
++	Double Integral	Doppelintegral
++	Double Integral with Limits	Doppelintegral mit Grenzen
++	Double Integral with Stacked Limits	Doppelintegral mit gestapelten Grenzen
++	Double Left Arrow with Text Above	Doppelpfeil nach links mit Text oben
++	Double Left Arrow with Text Below	Doppelpfeil nach links mit Text unten
++	Double Left Right Arrow with Text Above	Doppelpfeil nach links und rechts mit Text oben
++	Double Left Right Arrow with Text Below	Doppelpfeil nach links und rechts mit Text unten
++	Double Right Arrow with Text Above	Doppelpfeil nach rechts mit Text oben
++	Double Right Arrow with Text Below	Doppelpfeil nach rechts mit Text unten
++	Double Square Brackets	Doppelte eckige Klammern
++	Double summation	Doppelsumme
++	Double Vertical Bars	Doppelte senkrechte Striche
++	DRAFT	ENTWURF
++	Empty Matrices	Leere Matrizen
++	Endnote Reference	Endnotenzeichen
++	Endnote Text	Endnotentext
++	Enter bookmark name:	Textmarkennamen eingeben:
++	Envelope #10   4.12" × 9.50"	Umschlag #10   4,12" × 9,50"
++	Envelope Address	Umschlagadresse
++	Envelope DL   4.33" × 8.66"	Umschlag DL   4,33" × 8,66"
++	Envelope Return	Umschlagabsender
++	Equal by Definition	Definitionsgemäß gleich
++	Equal Equal	Gleich-Gleich
++	Euler's identity	Eulersche Identität
++	Executive   7.25" × 10.50"	Executive   7,25" × 10,50"
++	Exponential	Exponentialfunktion
++	Exponential series	Exponentialreihe
++	Extra space	Überzähliges Leerzeichen
++	Find “{text}” in the document	„{text}“ im Dokument suchen
++	Floor	Abrundung
++	Footnote Reference	Fußnotenzeichen
++	Footnote Text	Fußnotentext
++	For which item:	Für welches Element:
++	GB/T 7714	GB/T 7714
++	GOST (name sort)	GOST (nach Namen sortiert)
++	GOST (title sort)	GOST (nach Titel sortiert)
++	Grave	Gravis
++	Greek Letters	Griechische Buchstaben
++	Grid Table 1 Light	Gitternetztabelle 1 hell
++	Grid Table 4 – Blue	Gitternetztabelle 4 – Blau
++	Grid Table 4 – Green	Gitternetztabelle 4 – Grün
++	Grid Table 4 – Orange	Gitternetztabelle 4 – Orange
++	Grid Table 4 – Purple	Gitternetztabelle 4 – Lila
++	Grouping Character Above	Gruppierungszeichen oben
++	Grouping Character Below	Gruppierungszeichen unten
++	Harvard (Anglia)	Harvard (Anglia)
++	Hat	Dach
++	Heading	Überschrift
++	Heading text	Überschriftentext
++	Hyperbolic Cosecant Function	Hyperbolische Kosekansfunktion
++	Hyperbolic Cosine Function	Hyperbolische Kosinusfunktion
++	Hyperbolic Cotangent Function	Hyperbolische Kotangensfunktion
++	Hyperbolic Functions	Hyperbelfunktionen
++	Hyperbolic Secant Function	Hyperbolische Sekansfunktion
++	Hyperbolic Sine Function	Hyperbolische Sinusfunktion
++	Hyperbolic Tangent Function	Hyperbolische Tangensfunktion
++	Hyperlink	Hyperlink
++	Hypotenuse	Hypotenuse
++	Identity Matrices	Einheitsmatrizen
++	IEEE	IEEE
++	Index Heading	Indexüberschrift
++	Index {n}	Index {n}
++	Integral of e^(−x²)	Integral von e^(−x²)
++	Integral with Limits	Integral mit Grenzen
++	Integral with Stacked Limits	Integral mit gestapelten Grenzen
++	Integrals	Integrale
++	Intense Quote	Intensives Zitat
++	Intense Reference	Intensiver Verweis
++	Intersection with Limits	Schnittmenge mit Grenzen
++	Intersection with Lower Limit	Schnittmenge mit unterer Grenze
++	Intersection with Subscript-Superscript Limits	Schnittmenge mit tief- und hochgestellten Grenzen
++	Inverse Cosecant Function	Arkuskosekansfunktion
++	Inverse Cosine Function	Arkuskosinusfunktion
++	Inverse Cotangent Function	Arkuskotangensfunktion
++	Inverse Functions	Umkehrfunktionen
++	Inverse Hyperbolic Cosecant Function	Inverse hyperbolische Kosekansfunktion
++	Inverse Hyperbolic Cosine Function	Inverse hyperbolische Kosinusfunktion
++	Inverse Hyperbolic Cotangent Function	Inverse hyperbolische Kotangensfunktion
++	Inverse Hyperbolic Functions	Inverse Hyperbelfunktionen
++	Inverse Hyperbolic Secant Function	Inverse hyperbolische Sekansfunktion
++	Inverse Hyperbolic Sine Function	Inverse hyperbolische Sinusfunktion
++	Inverse Hyperbolic Tangent Function	Inverse hyperbolische Tangensfunktion
++	Inverse Secant Function	Arkussekansfunktion
++	Inverse Sine Function	Arkussinusfunktion
++	Inverse Tangent Function	Arkustangensfunktion
++	ISO 690 (author-date)	ISO 690 (Autor-Jahr)
++	ISO 690 (numerical)	ISO 690 (numerisch)
++	Justification of a display equation	Ausrichtung einer abgesetzten Formel
++	Left Arrow with Text Above	Pfeil nach links mit Text oben
++	Left Arrow with Text Below	Pfeil nach links mit Text unten
++	Left Bracket Twice	Zweimal linke eckige Klammer
++	Left Right Arrow Above	Pfeil nach links und rechts oben
++	Left Right Arrow with Text Above	Pfeil nach links und rechts mit Text oben
++	Left Right Arrow with Text Below	Pfeil nach links und rechts mit Text unten
++	Left Subscript-Superscript	Links tief- und hochgestellt
++	Leftwards Arrow Above	Pfeil nach links oben
++	Leftwards Harpoon Above	Harpune nach links oben
++	Legal   8.50" × 14.00"	Legal   8,50" × 14,00"
++	Letter   8.50" × 11.00"	Letter   8,50" × 11,00"
++	Letter-Like Symbols	Buchstabenähnliche Symbole
++	Level 1	Ebene 1
++	Level 2	Ebene 2
++	Level 3	Ebene 3
++	Level 4	Ebene 4
++	Level 5	Ebene 5
++	Level 6	Ebene 6
++	Level 7	Ebene 7
++	Level 8	Ebene 8
++	Level 9	Ebene 9
++	Limit	Grenzwert
++	Limit and	Grenzwert und
++	Limit Example	Grenzwert-Beispiel
++	Line Number	Zeilennummer
++	Linear Fraction	Linearer Bruch
++	List Paragraph	Listenabsatz
++	List Table 3 – Blue	Listentabelle 3 – Blau
++	List Table 3 – Green	Listentabelle 3 – Grün
++	List Table 3 – Orange	Listentabelle 3 – Orange
++	List Table 3 – Purple	Listentabelle 3 – Lila
++	Log	Log
++	Logarithm	Logarithmus
++	Logarithm with Base	Logarithmus zur Basis
++	Logical AND	Logisches UND
++	Logical AND with Limits	Logisches UND mit Grenzen
++	Logical OR	Logisches ODER
++	Logical OR with Limits	Logisches ODER mit Grenzen
++	Matrices with Brackets	Matrizen mit Klammern
++	Maximum Example	Maximum-Beispiel
++	Measured By	Gemessen durch
++	Midline Dots	Punkte auf der Mittellinie
++	Minus Equal	Minus-Gleich
++	MLA	MLA
++	Natural Logarithm	Natürlicher Logarithmus
++	Negated Relations	Negierte Relationen
++	No items to show.	Keine Elemente vorhanden.
++	Normal Indent	Standardeinzug
++	Normal probability density	Dichte der Normalverteilung
++	Normal Table	Normale Tabelle
++	Number the equation; the number sits at the right margin (or type # then the number)	Formel nummerieren; die Nummer steht am rechten Rand (oder # und dann die Nummer eingeben)
++	n×n Identity Matrix	n×n-Einheitsmatrix
++	n×n Matrix	n×n-Matrix
++	One half	Ein Halb
++	Operator Structures	Operatorstrukturen
++	Operators	Operatoren
++	Other Large Operators	Weitere große Operatoren
++	Outward Brackets	Nach außen gerichtete Klammern
++	Overbar	Überstrich
++	Overbars and Underbars	Über- und Unterstriche
++	Overbrace	Geschweifte Klammer oben
++	Parentheses	Runde Klammern
++	Parentheses with Separator	Runde Klammern mit Trennzeichen
++	Partial Differential	Partielles Differenzial
++	Pi Over 2	Pi halbe
++	Plain Table 1	Einfache Tabelle 1
++	Plus Equal	Plus-Gleich
++	Power series of (1+x)ⁿ	Potenzreihe von (1+x)ⁿ
++	Product	Produkt
++	Product of A	Produkt von A
++	Product with Limits	Produkt mit Grenzen
++	Product with Lower Limit	Produkt mit unterer Grenze
++	Product with Subscript-Superscript Limits	Produkt mit tief- und hochgestellten Grenzen
++	Products and Coproducts	Produkte und Koprodukte
++	Quadratic Root	Lösungsformel für quadratische Gleichungen
++	Quote	Zitat
++	Radical with Degree	Wurzel mit Grad
++	Radicals	Wurzeln
++	Reference type:	Verweistyp:
++	Remove the space before the punctuation	Leerzeichen vor dem Satzzeichen entfernen
++	Right Arrow with Text Above	Pfeil nach rechts mit Text oben
++	Right Arrow with Text Below	Pfeil nach rechts mit Text unten
++	Right Bracket Twice	Zweimal rechte eckige Klammer
++	Rightwards Arrow Above	Pfeil nach rechts oben
++	Rightwards Harpoon Above	Harpune nach rechts oben
++	Roots of ax²+bx+c	Nullstellen von ax²+bx+c
++	SAMPLE	MUSTER
++	Secant Function	Sekansfunktion
++	Show the equation in the line of text	Formel in der Textzeile anzeigen
++	Show the equation on a line of its own	Formel in einer eigenen Zeile anzeigen
++	Sides of a right triangle	Seiten eines rechtwinkligen Dreiecks
++	Sine and cosine series of f(x)	Sinus- und Kosinusreihe von f(x)
++	Sine Function	Sinusfunktion
++	Sine theta	Sinus Theta
++	Single Brackets	Einfache Klammern
++	Single Left Angle	Einzelne linke spitze Klammer
++	Single Left Bar	Einzelner linker senkrechter Strich
++	Single Left Brace	Einzelne linke geschweifte Klammer
++	Single Left Bracket	Einzelne linke eckige Klammer
++	Single Left Parenthesis	Einzelne linke runde Klammer
++	Single Right Brace	Einzelne rechte geschweifte Klammer
++	Single Right Bracket	Einzelne rechte eckige Klammer
++	Single Right Parenthesis	Einzelne rechte runde Klammer
++	SIST02	SIST02
++	Skewed Fraction	Schräger Bruch
++	Small change	Kleine Änderung
++	Sparse Matrices	Dünn besetzte Matrizen
++	Square Root	Quadratwurzel
++	Square Root with Degree	Quadratwurzel mit Grad
++	Square Union	Eckige Vereinigung
++	Stack Object	Stapelobjekt
++	Stack Object (Three)	Stapelobjekt (drei)
++	Stacked Fraction	Gestapelter Bruch
++	Stacked, no bar	Gestapelt, ohne Bruchstrich
++	Statement   5.50" × 8.50"	Statement   5,50" × 8,50"
++	Subscript-Superscript	Tief- und hochgestellt
++	Subscripts and Superscripts	Tief- und Hochstellungen
++	Subtitle	Untertitel
++	Sum of cosines	Summe von Kosinuswerten
++	Sum or difference of sines	Summe oder Differenz von Sinuswerten
++	Summation	Summe
++	Summation from 0 to n	Summe von 0 bis n
++	Summation over binomials	Summe über Binomialkoeffizienten
++	Summation with Limits	Summe mit Grenzen
++	Summation with Lower Limit	Summe mit unterer Grenze
++	Summation with Subscript Limit	Summe mit tiefgestellter Grenze
++	Summation with Subscript-Superscript Limits	Summe mit tief- und hochgestellten Grenzen
++	Summations	Summen
++	Surface Integral	Oberflächenintegral
++	Surface Integral with Limits	Oberflächenintegral mit Grenzen
++	Surface Integral with Stacked Limits	Oberflächenintegral mit gestapelten Grenzen
++	Table Grid	Tabellenraster
++	Table of Figures	Abbildungsverzeichnis
++	Tabloid   11.00" × 17.00"	Tabloid   11,00" × 17,00"
++	Tangent formula	Tangensformel
++	Tangent Function	Tangensfunktion
++	Text over Colon Equal	Text über Doppelpunkt-Gleich
++	Text over Equal	Text über Gleich
++	The spelling and grammar check is complete.	Die Rechtschreib- und Grammatikprüfung ist abgeschlossen.
++	Tilde	Tilde
++	TOA Heading	Rechtsgrundlagenverzeichnis-Überschrift
++	TOC Heading	Inhaltsverzeichnisüberschrift
++	Track\nChanges	Änderungen\nnachverfolgen
++	Track\nChanges ✓	Änderungen\nnachverfolgen ✓
++	Trigonometric Functions	Trigonometrische Funktionen
++	Triple Dot	Drei Punkte
++	Triple Integral	Dreifachintegral
++	Triple Integral with Limits	Dreifachintegral mit Grenzen
++	Triple Integral with Stacked Limits	Dreifachintegral mit gestapelten Grenzen
++	Turabian	Turabian
++	Type a page number, or +2 / -1.	Geben Sie eine Seitenzahl ein oder +2 / -1.
++	Type equations in LaTeX	Formeln in LaTeX eingeben
++	Type equations in the linear format (UnicodeMath)	Formeln im linearen Format (UnicodeMath) eingeben
++	Type normal (non-math) text in the equation	Normalen (nicht mathematischen) Text in die Formel eingeben
++	Underbar	Unterstrich
++	Underbrace	Geschweifte Klammer unten
++	Union of intersections	Vereinigung von Schnittmengen
++	Union with Limits	Vereinigung mit Grenzen
++	Union with Lower Limit	Vereinigung mit unterer Grenze
++	Union with Plus	Vereinigung mit Plus
++	Union with Subscript-Superscript Limits	Vereinigung mit tief- und hochgestellten Grenzen
++	Unions and Intersections	Vereinigungen und Schnittmengen
++	Up Diagonal Dots	Diagonale Punkte nach oben
++	URGENT	DRINGEND
++	Use "a" before a consonant sound	„a“ vor einem Konsonantenlaut verwenden
++	Use "an" before a vowel sound	„an“ vor einem Vokallaut verwenden
++	Vector A	Vektor A
++	Vector AB	Vektor AB
++	Vertical Bars	Senkrechte Striche
++	Vertical Dots	Vertikale Punkte
++	Volume Integral	Volumenintegral
++	Volume Integral with Limits	Volumenintegral mit Grenzen
++	Volume Integral with Stacked Limits	Volumenintegral mit gestapelten Grenzen
++	Wait for the print job to finish submitting before closing.	Warten Sie vor dem Schließen, bis der Druckauftrag vollständig übermittelt wurde.
++	Wildcards (regex)	Platzhalter (regulärer Ausdruck)
++	x bar	x quer
++	Yields	Ergibt
++	{name} options	Optionen für {name}
++	✓ None	✓ Keine
++	➕ New comment	➕ Neuer Kommentar
++	📂  Browse…	📂  Durchsuchen…
+diff --git a/locales/fr/wordcraft.tsv b/locales/fr/wordcraft.tsv
+index f117087..4fbf84f 100644
+--- a/locales/fr/wordcraft.tsv
++++ b/locales/fr/wordcraft.tsv
+@@ -56,7 +56,7 @@
+ 	a, b, c, …	a, b, c, …
+ 	AaBbCcDd	AaBbCcDd
+ 	AaBbYyZz	AaBbYyZz
+-	About WordCraft	À propos de WordCraft
++	About Deskwerk Docs	À propos de Deskwerk Docs
+ 	Above Chart	Au-dessus du graphique
+ 	Above the item	Au-dessus de l’élément
+ 	Absolute value cases	Valeur absolue par cas
+@@ -220,7 +220,7 @@
+ 	Automatically Update Document Styles	Mettre à jour automatiquement les styles du document
+ 	Automatically update document styles	Mettre à jour automatiquement les styles du document
+ 	AutoSave	Enregistrement automatique
+-	AutoSave documents you have saved in WordCraft	Enregistrement automatique des documents que vous avez enregistrés dans WordCraft
++	AutoSave documents you have saved in Deskwerk Docs	Enregistrement automatique des documents que vous avez enregistrés dans Deskwerk Docs
+ 	AutoSave failed: {error}. Save the document to turn AutoSave back on.	Échec de l’enregistrement automatique : {error}. Enregistrez le document pour réactiver l’enregistrement automatique.
+ 	AutoSave isn't available in the browser: it can't write to your files. Save downloads a copy.	L’enregistrement automatique n’est pas disponible dans le navigateur : il ne peut pas écrire dans vos fichiers. La commande Enregistrer télécharge une copie.
+ 	AutoSave only keeps .docx, .odt and .rtf files; {name} can't keep all formatting. Save as .docx to turn on AutoSave.	L’enregistrement automatique ne prend en charge que les fichiers .docx, .odt et .rtf ; {name} ne peut pas conserver toute la mise en forme. Enregistrez au format .docx pour activer l’enregistrement automatique.
+@@ -293,7 +293,7 @@
+ 	Breaks	Sauts
+ 	Breve	Brève
+ 	Bring Forward	Avancer d’un niveau
+-	Browse in WordCraft…	Parcourir dans WordCraft…
++	Browse in Deskwerk Docs…	Parcourir dans Deskwerk Docs…
+ 	Building Block Gallery Content Control	Contrôle de contenu Galerie de blocs de construction
+ 	Built-In	Intégrées
+ 	Built-in style	Style intégré
+@@ -508,7 +508,7 @@
+ 	Cosine Function	Cosinus
+ 	Cotangent Function	Cotangente
+ 	Couldn't download {name}: {error}	Impossible de télécharger {name} : {error}
+-	Couldn't make WordCraft the default: {error}	Impossible de faire de WordCraft l’application par défaut : {error}
++	Couldn't make Deskwerk Docs the default: {error}	Impossible de faire de Deskwerk Docs l’application par défaut : {error}
+ 	Couldn't open {path}: {error}	Impossible d’ouvrir {path} : {error}
+ 	Count by:	Incrémenter de :
+ 	Count words in text boxes and notes	Compter les mots dans les zones de texte et les notes
+@@ -1008,7 +1008,7 @@
+ 	Immersive	Immersif
+ 	Immersive Reader	Lecteur immersif
+ 	Immersive\nReader	Lecteur\nimmersif
+-	In Default apps, choose WordCraft for the document types you want it to open.	Dans Applications par défaut, choisissez WordCraft pour les types de documents qu’il doit ouvrir.
++	In Default apps, choose Deskwerk Docs for the document types you want it to open.	Dans Applications par défaut, choisissez Deskwerk Docs pour les types de documents qu’il doit ouvrir.
+ 	In equations, typing a name after a backslash replaces it with its symbol.	Dans les équations, un nom saisi après une barre oblique inverse est remplacé par son symbole.
+ 	In Front of Text	Devant le texte
+ 	In Line with Text	Dans le texte
+@@ -1135,7 +1135,7 @@
+ 	Keep lines together	Lignes solidaires
+ 	Keep me around	Reste dans le coin
+ 	Keep Text Only	Conserver le texte uniquement
+-	Keep the password somewhere safe: without it nobody, WordCraft included, can open the document. Leave both boxes empty to remove the password.	Conservez le mot de passe en lieu sûr : sans lui, personne, WordCraft inclus, ne peut ouvrir le document. Laissez les deux zones vides pour supprimer le mot de passe.
++	Keep the password somewhere safe: without it nobody, Deskwerk Docs included, can open the document. Leave both boxes empty to remove the password.	Conservez le mot de passe en lieu sûr : sans lui, personne, Deskwerk Docs inclus, ne peut ouvrir le document. Laissez les deux zones vides pour supprimer le mot de passe.
+ 	Keep with Next	Paragraphes solidaires
+ 	Keep with next	Paragraphes solidaires
+ 	Keeps the fonts and formatting of the copied text.	Conserve les polices et la mise en forme du texte copié.
+@@ -1270,7 +1270,7 @@ template	Letter	Lettre
+ 	Mail Merge	Publipostage
+ 	Mailings	Publipostage
+ 	Main entry:	Entrée principale :
+-	Make WordCraft the default for Word documents…	Faire de WordCraft l’application par défaut pour les documents Word…
++	Make Deskwerk Docs the default for Word documents…	Faire de Deskwerk Docs l’application par défaut pour les documents Word…
+ 	Makes the ribbon, menus and dialogs larger or smaller. Auto follows your system's display scaling; 100% is one screen pixel per point. Document zoom is separate.	Agrandit ou réduit le ruban, les menus et les boîtes de dialogue. Auto suit la mise à l’échelle d’affichage de votre système ; 100% correspond à un pixel d’écran par point. Le zoom du document est distinct.
+ 	Manage Sources	Gérer les sources
+ 	Manage Styles	Gérer les styles
+@@ -1419,7 +1419,7 @@ template	Letter	Lettre
+ 	No Soft Edges	Sans bords adoucis
+ 	No sources yet.	Aucune source pour le moment.
+ 	No Spacing	Sans interligne
+-	No spelling dictionary for {language} is installed, so it isn't checked. WordCraft looks for the Hunspell dictionary {name} in the WORDCRAFT_DICTIONARIES folder and in the usual system locations.	Aucun dictionnaire orthographique pour {language} n'est installé, la langue n'est donc pas vérifiée. WordCraft cherche le dictionnaire Hunspell {name} dans le dossier WORDCRAFT_DICTIONARIES et aux emplacements système habituels.
++	No spelling dictionary for {language} is installed, so it isn't checked. Deskwerk Docs looks for the Hunspell dictionary {name} in the WORDCRAFT_DICTIONARIES folder and in the usual system locations.	Aucun dictionnaire orthographique pour {language} n'est installé, la langue n'est donc pas vérifiée. Deskwerk Docs cherche le dictionnaire Hunspell {name} dans le dossier WORDCRAFT_DICTIONARIES et aux emplacements système habituels.
+ 	No templates match your search.	Aucun modèle ne correspond à votre recherche.
+ 	No Transform	Aucune transformation
+ 	No words yet. Add to Dictionary on a misspelled word puts it here.	Aucun mot pour l’instant. Utilisez Ajouter au dictionnaire sur un mot mal orthographié pour l’ajouter ici.
+@@ -1490,7 +1490,7 @@ template	Letter	Lettre
+ 	Offset: Top Right	Décalage : en haut à droite
+ 	Old menu keys: Alt, {keys}. Keep typing, or press Esc to cancel.	Anciennes touches de menu : Alt, {keys}. Continuez la saisie ou appuyez sur Échap pour annuler.
+ 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	Activé : le curseur glisse jusqu’à sa nouvelle position lorsque vous tapez ou utilisez les touches fléchées, et son clignotement s’estompe en douceur. Désactivé : il saute et clignote de façon nette.
+-	On: WordCraft opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Activé : WordCraft s'ouvre sur Fichier › Accueil, avec un document vierge, les modèles et vos documents récents. Désactivé : il ouvre un document vierge.
++	On: Deskwerk Docs opens on File › Home, with a blank document, the templates and your recent documents. Off: it opens a blank document.	Activé : Deskwerk Docs s'ouvre sur Fichier › Accueil, avec un document vierge, les modèles et vos documents récents. Désactivé : il ouvre un document vierge.
+ 	One	Un
+ 	One half	Un demi
+ 	One label per recipient	Une étiquette par destinataire
+@@ -1506,11 +1506,11 @@ template	Letter	Lettre
+ 	Only the allowed styles can be applied.	Seuls les styles autorisés peuvent être appliqués.
+ 	Only web (http, https) and email (mailto) links can be followed	Seuls les liens Web (http, https) et les liens de messagerie (mailto) peuvent être suivis
+ 	Open a document first	Ouvrez d'abord un document
+-	Open a file with WordCraft's own browser when the system file dialog doesn't appear.	Ouvrir un fichier avec le navigateur de fichiers intégré à WordCraft lorsque la boîte de dialogue de fichiers du système n’apparaît pas.
++	Open a file with Deskwerk Docs' own browser when the system file dialog doesn't appear.	Ouvrir un fichier avec le navigateur de fichiers intégré à Deskwerk Docs lorsque la boîte de dialogue de fichiers du système n’apparaît pas.
+ 	OpenDocument Text (*.odt)	Texte OpenDocument (*.odt)
+ 	Opening print dialog…	Ouverture de la boîte de dialogue d’impression…
+-	Opens .docx, .doc, .rtf and .odt files and Word templates with WordCraft from now on.	Ouvre désormais les fichiers .docx, .doc, .rtf et .odt ainsi que les modèles Word avec WordCraft.
+-	Opens Settings › Default apps, where you choose WordCraft for .docx and the other document types.	Ouvre Paramètres › Applications par défaut, où vous choisissez WordCraft pour .docx et les autres types de documents.
++	Opens .docx, .doc, .rtf and .odt files and Word templates with Deskwerk Docs from now on.	Ouvre désormais les fichiers .docx, .doc, .rtf et .odt ainsi que les modèles Word avec Deskwerk Docs.
++	Opens Settings › Default apps, where you choose Deskwerk Docs for .docx and the other document types.	Ouvre Paramètres › Applications par défaut, où vous choisissez Deskwerk Docs pour .docx et les autres types de documents.
+ 	Operator	Opérateur
+ 	Operator Structures	Structures d’opérateurs
+ 	Operators	Opérateurs
+@@ -1777,7 +1777,7 @@ template	Letter	Lettre
+ 	Replay	Rejouer
+ 	Research	Recherche
+ 	Researcher	Chercheur
+-	Researcher needs an online service; WordCraft keeps your documents offline.	Chercheur nécessite un service en ligne ; WordCraft garde vos documents hors ligne.
++	Researcher needs an online service; Deskwerk Docs keeps your documents offline.	Chercheur nécessite un service en ligne ; Deskwerk Docs garde vos documents hors ligne.
+ 	Reset All…	Tout réinitialiser…
+ 	Reset Character Formatting	Réinitialiser la mise en forme des caractères
+ 	Reset Crop	Réinitialiser le rognage
+@@ -1990,7 +1990,7 @@ template	Letter	Lettre
+ 	Show the equation on a line of its own	Afficher l’équation sur sa propre ligne
+ 	Show the mini toolbar when text is selected	Afficher la mini barre d’outils lors de la sélection de texte
+ 	Show the ribbon	Afficher le ruban
+-	Show the Start screen when WordCraft starts	Afficher l'écran d'accueil au démarrage de WordCraft
++	Show the Start screen when Deskwerk Docs starts	Afficher l'écran d'accueil au démarrage de Deskwerk Docs
+ 	Show the tips you asked not to see again.	Affiche de nouveau les conseils que vous avez masqués.
+ 	Show/Hide ¶	Afficher/Masquer ¶
+ 	Show/Hide ¶ ({key}) shows the spaces, tabs and breaks hiding in your text.	Afficher/Masquer ¶ ({key}) révèle les espaces, tabulations et sauts cachés dans votre texte.
+@@ -2230,7 +2230,7 @@ template	Letter	Lettre
+ 	The recipient-list field that fills each part of an address block and greeting line.	Le champ de la liste des destinataires qui remplit chaque partie d’un bloc d’adresse et d’une ligne de salutation.
+ 	The spelling and grammar check is complete.	La vérification de l’orthographe et de la grammaire est terminée.
+ 	the Spike is empty	le pique-notes est vide
+-	The system file dialog isn't available, so WordCraft shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	La boîte de dialogue de fichiers du système n’est pas disponible, WordCraft affiche donc la sienne. Pour utiliser celle du système, installez un portail de sélection de fichiers (comme xdg-desktop-portal-gtk) ou zenity.
++	The system file dialog isn't available, so Deskwerk Docs shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity.	La boîte de dialogue de fichiers du système n’est pas disponible, Deskwerk Docs affiche donc la sienne. Pour utiliser celle du système, installez un portail de sélection de fichiers (comme xdg-desktop-portal-gtk) ou zenity.
+ 	The text at the insertion point is marked Do not check spelling or grammar.	Le texte au point d’insertion est marqué : Ne pas vérifier l’orthographe ni la grammaire.
+ 	The time right now	L’heure actuelle
+ 	Theme Colors	Couleurs du thème
+@@ -2247,7 +2247,7 @@ template	Letter	Lettre
+ 	These merge fields aren't in the recipient list:	Ces champs de fusion ne figurent pas dans la liste des destinataires :
+ 	These settings will be used for new documents.	Ces paramètres seront utilisés pour les nouveaux documents.
+ 	Thick	Épaisse
+-	this chart was made in another program: WordCraft shows it but can't edit it	ce graphique a été créé dans un autre programme : WordCraft l’affiche mais ne peut pas le modifier
++	this chart was made in another program: Deskwerk Docs shows it but can't edit it	ce graphique a été créé dans un autre programme : Deskwerk Docs l’affiche mais ne peut pas le modifier
+ 	This document	Ce document
+ 	This document only?	Ce document uniquement ?
+ 	This field has no options.	Ce champ n’a pas d’options.
+@@ -2260,7 +2260,7 @@ template	Letter	Lettre
+ 	This section	Cette section
+ 	this session has no Normal template (headless or without preferences)	cette session n’a pas de modèle Normal (sans interface ou sans préférences)
+ 	this session has no Normal template (headless or without preferences): use "scope": "document"	cette session n’a pas de modèle Normal (sans interface ou sans préférences) : utilisez "scope": "document"
+-	this SmartArt was made in another program: WordCraft shows it but can't edit it	ce SmartArt a été créé dans un autre programme : WordCraft l’affiche mais ne peut pas le modifier
++	this SmartArt was made in another program: Deskwerk Docs shows it but can't edit it	ce SmartArt a été créé dans un autre programme : Deskwerk Docs l’affiche mais ne peut pas le modifier
+ 	this text box is already linked: break the link first	cette zone de texte est déjà liée : rompez d’abord le lien
+ 	Three	Trois
+ 	Through	Au travers
+@@ -2272,7 +2272,7 @@ preview	Title	Titre
+ 	Title Bar	Barre de titre
+ 	Title from the document properties	Titre indiqué dans les propriétés du document
+ 	Title:	Titre :
+-	To open Word documents with WordCraft by default: select one in Finder, choose File › Get Info, pick WordCraft under Open with, then click Change All.	Pour ouvrir les documents Word avec WordCraft par défaut : sélectionnez-en un dans le Finder, choisissez Fichier › Lire les informations, choisissez WordCraft sous « Ouvrir avec », puis cliquez sur « Tout modifier ».
++	To open Word documents with Deskwerk Docs by default: select one in Finder, choose File › Get Info, pick Deskwerk Docs under Open with, then click Change All.	Pour ouvrir les documents Word avec Deskwerk Docs par défaut : sélectionnez-en un dans le Finder, choisissez Fichier › Lire les informations, choisissez Deskwerk Docs sous « Ouvrir avec », puis cliquez sur « Tout modifier ».
+ 	To:	À :
+ 	TOA Heading	En-tête de table des autorités
+ 	TOC Heading	En-tête de table des matières
+@@ -2439,8 +2439,8 @@ preview	Title	Titre
+ 	Word XML Document (*.xml)	Document XML Word (*.xml)
+ 	WordArt	WordArt
+ 	WordArt Styles	Styles WordArt
+-	WordCraft	WordCraft
+-	WordCraft is now the default app for Word documents.	WordCraft est désormais l’application par défaut pour les documents Word.
++	Deskwerk Docs	Deskwerk Docs
++	Deskwerk Docs is now the default app for Word documents.	Deskwerk Docs est désormais l’application par défaut pour les documents Word.
+ 	Words only	Mots uniquement
+ 	Wrap Text	Habillage du texte
+ 	Wrap Text Sides	Côtés de l’habillage
+@@ -2473,7 +2473,7 @@ preview	Title	Titre
+ 	{language} (no dictionary)	{language} (pas de dictionnaire)
+ 	{language} is now the document's default language.	{language} est désormais la langue par défaut du document.
+ 	{language}: no dictionary found	{language} : aucun dictionnaire trouvé
+-	{language}: WordCraft doesn't check spelling or grammar in this language yet.	{language} : WordCraft ne vérifie pas encore l’orthographe ni la grammaire dans cette langue.
++	{language}: Deskwerk Docs doesn't check spelling or grammar in this language yet.	{language} : Deskwerk Docs ne vérifie pas encore l’orthographe ni la grammaire dans cette langue.
+ 	{language}: {file}	{language} : {file}
+ 	{names} and {n} more	{names} et {n} autres
+ 	{name}   {height} × {width} in	{name}   {height} × {width} po
+@@ -2534,7 +2534,7 @@ preview	Title	Titre
+ 	Get the list of languages again	Récupérer à nouveau la liste des langues
+ 	Installed	Installé
+ 	Install	Installer
+-	The spelling and hyphenation data WordCraft uses, and their licences.	Les données d’orthographe et de césure utilisées par WordCraft, et leurs licences.
++	The spelling and hyphenation data Deskwerk Docs uses, and their licences.	Les données d’orthographe et de césure utilisées par Deskwerk Docs, et leurs licences.
+ 	{language}: {file} (unreadable: {reason})	{language} : {file} (illisible : {reason})
+ 	Spanish (Latin America)	Espagnol (Amérique latine)
+ 	Spanish (Uruguay)	Espagnol (Uruguay)
+@@ -2599,7 +2599,7 @@ preview	Title	Titre
+ 	Grammar built in	Grammaire intégrée
+ 	Install spelling ({size})	Installer l’orthographe ({size})
+ 	Its dictionary couldn't be read: {reason}	Son dictionnaire n’a pas pu être lu : {reason}
+-	Downloading is off. Clicking Add a language… or Install turns it on: WordCraft then downloads language packs and fonts from GitHub.	Le téléchargement est désactivé. Cliquer sur « Ajouter une langue… » ou « Installer » l’active : WordCraft télécharge alors des packs de langue et des polices depuis GitHub.
++	Downloading is off. Clicking Add a language… or Install turns it on: Deskwerk Docs then downloads language packs and fonts from GitHub.	Le téléchargement est désactivé. Cliquer sur « Ajouter une langue… » ou « Installer » l’active : Deskwerk Docs télécharge alors des packs de langue et des polices depuis GitHub.
+ 	Search:	Rechercher :
+ 	Dutch, Nederlands or nl	Néerlandais, Nederlands ou nl
+ 	No languages to show yet.	Aucune langue à afficher pour l’instant.

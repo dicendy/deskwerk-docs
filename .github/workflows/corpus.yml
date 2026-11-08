@@ -64,6 +64,10 @@ jobs:
           path: craft-i18n
           persist-credentials: false
 
+      - name: Deskwerk translation patch
+        if: steps.i18n.outputs.rev != ''
+        run: git -C craft-i18n apply --whitespace=nowarn "$GITHUB_WORKSPACE/.github/i18n/deskwerk.patch"
+
       - name: Build environment
         run: |
           echo "CRAFT_FONTS_DIR=$GITHUB_WORKSPACE/craft-fonts" >> "$GITHUB_ENV"
