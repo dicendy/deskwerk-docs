@@ -1,7 +1,7 @@
 {
-  "id": "wordcraft",
-  "name": "WordCraft",
-  "upgradeCode": "075497F9-E861-45D0-9C7F-A74F8C34E6BA",
+  "id": "deskwerk-docs",
+  "name": "Docs",
+  "upgradeCode": "78337589-0956-416B-B1C6-FA48562A3C8C",
   "sources": [
     "wordcraft.wxs"
   ],
@@ -12,277 +12,277 @@
     "Util"
   ],
   "payloads": [
-    "wordcraft-cli.exe",
-    "wordcraft.exe"
+    "deskwerk-docs-cli.exe",
+    "deskwerk-docs.exe"
   ],
   "registry": [
     [
       "-1",
-      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\wordcraft.exe",
+      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\deskwerk-docs.exe",
       "",
       "[#WordcraftExe]"
     ],
     [
       "-1",
       "Software\\RegisteredApplications",
-      "WordCraft",
-      "Software\\WordCraft\\Capabilities"
+      "Deskwerk Docs",
+      "Software\\DeskwerkDocs\\Capabilities"
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities",
+      "Software\\DeskwerkDocs\\Capabilities",
       "ApplicationName",
-      "WordCraft"
+      "Deskwerk Docs"
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities",
+      "Software\\DeskwerkDocs\\Capabilities",
       "ApplicationDescription",
       "Write and design documents; open and save Word files."
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities",
+      "Software\\DeskwerkDocs\\Capabilities",
       "ApplicationIcon",
       "\"[#WordcraftExe]\",0"
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe",
       "FriendlyAppName",
-      "WordCraft"
+      "Deskwerk Docs"
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\shell\\open\\command",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.Document\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.Document\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.docx\\OpenWithProgids",
-      "WordCraft.Document",
+      "DeskwerkDocs.Document",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".docx",
       ""
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities\\FileAssociations",
+      "Software\\DeskwerkDocs\\Capabilities\\FileAssociations",
       ".docx",
-      "WordCraft.Document"
+      "DeskwerkDocs.Document"
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.DocumentMacroEnabled\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.DocumentMacroEnabled\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.docm\\OpenWithProgids",
-      "WordCraft.DocumentMacroEnabled",
+      "DeskwerkDocs.DocumentMacroEnabled",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".docm",
       ""
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities\\FileAssociations",
+      "Software\\DeskwerkDocs\\Capabilities\\FileAssociations",
       ".docm",
-      "WordCraft.DocumentMacroEnabled"
+      "DeskwerkDocs.DocumentMacroEnabled"
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.Template\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.Template\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.dotx\\OpenWithProgids",
-      "WordCraft.Template",
+      "DeskwerkDocs.Template",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".dotx",
       ""
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities\\FileAssociations",
+      "Software\\DeskwerkDocs\\Capabilities\\FileAssociations",
       ".dotx",
-      "WordCraft.Template"
+      "DeskwerkDocs.Template"
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.TemplateMacroEnabled\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.TemplateMacroEnabled\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.dotm\\OpenWithProgids",
-      "WordCraft.TemplateMacroEnabled",
+      "DeskwerkDocs.TemplateMacroEnabled",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".dotm",
       ""
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities\\FileAssociations",
+      "Software\\DeskwerkDocs\\Capabilities\\FileAssociations",
       ".dotm",
-      "WordCraft.TemplateMacroEnabled"
+      "DeskwerkDocs.TemplateMacroEnabled"
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.LegacyDocument\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.LegacyDocument\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.doc\\OpenWithProgids",
-      "WordCraft.LegacyDocument",
+      "DeskwerkDocs.LegacyDocument",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".doc",
       ""
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities\\FileAssociations",
+      "Software\\DeskwerkDocs\\Capabilities\\FileAssociations",
       ".doc",
-      "WordCraft.LegacyDocument"
+      "DeskwerkDocs.LegacyDocument"
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.LegacyTemplate\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.LegacyTemplate\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.dot\\OpenWithProgids",
-      "WordCraft.LegacyTemplate",
+      "DeskwerkDocs.LegacyTemplate",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".dot",
       ""
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities\\FileAssociations",
+      "Software\\DeskwerkDocs\\Capabilities\\FileAssociations",
       ".dot",
-      "WordCraft.LegacyTemplate"
+      "DeskwerkDocs.LegacyTemplate"
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.RichText\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.RichText\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.rtf\\OpenWithProgids",
-      "WordCraft.RichText",
+      "DeskwerkDocs.RichText",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".rtf",
       ""
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities\\FileAssociations",
+      "Software\\DeskwerkDocs\\Capabilities\\FileAssociations",
       ".rtf",
-      "WordCraft.RichText"
+      "DeskwerkDocs.RichText"
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.OpenDocumentText\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.OpenDocumentText\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.odt\\OpenWithProgids",
-      "WordCraft.OpenDocumentText",
+      "DeskwerkDocs.OpenDocumentText",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".odt",
       ""
     ],
     [
       "-1",
-      "Software\\WordCraft\\Capabilities\\FileAssociations",
+      "Software\\DeskwerkDocs\\Capabilities\\FileAssociations",
       ".odt",
-      "WordCraft.OpenDocumentText"
+      "DeskwerkDocs.OpenDocumentText"
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.Markdown\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.Markdown\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.md\\OpenWithProgids",
-      "WordCraft.Markdown",
+      "DeskwerkDocs.Markdown",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".md",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\WordCraft.PlainText\\shell\\open\\command",
+      "Software\\Classes\\DeskwerkDocs.PlainText\\shell\\open\\command",
       "",
       "\"[#WordcraftExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\.txt\\OpenWithProgids",
-      "WordCraft.PlainText",
+      "DeskwerkDocs.PlainText",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\wordcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".txt",
       ""
     ]

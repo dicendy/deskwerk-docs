@@ -59,7 +59,7 @@ pub struct Session {
     pub file_name: Option<String>,
     pub dirty: bool,
     /// Where the custom dictionary is kept on disk, if the host wired one up. Only the desktop
-    /// app does: headless sessions (MCP, `wordcraft-cli run`), tests and the web build leave
+    /// app does: headless sessions (MCP, `deskwerk-docs-cli run`), tests and the web build leave
     /// `None`, so an agent's words stay in memory and never change the person's dictionary.
     /// Add to Dictionary and File › Options › Proofing save through it (#40).
     pub user_dict_path: Option<std::path::PathBuf>,

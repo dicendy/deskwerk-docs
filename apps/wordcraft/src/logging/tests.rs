@@ -18,6 +18,8 @@ fn the_default_filter_shows_wordcraft_info_and_other_crates_warnings() {
     let f = Filter::parse(DEFAULT_FILTER);
     assert_eq!(f.level_for("wordcraft"), LevelFilter::Info);
     assert_eq!(f.level_for("wordcraft::control_server"), LevelFilter::Info);
+    assert_eq!(f.level_for("deskwerk_docs"), LevelFilter::Info);
+    assert_eq!(f.level_for("deskwerk_docs::control_server"), LevelFilter::Info);
     assert_eq!(f.level_for("wordcraft_docx::package"), LevelFilter::Info);
     assert_eq!(f.level_for("wordcraft_ui_egui"), LevelFilter::Info);
     assert_eq!(f.level_for("wgpu_core::device"), LevelFilter::Warn);

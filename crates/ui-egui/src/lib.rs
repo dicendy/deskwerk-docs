@@ -5,11 +5,17 @@
 //! the menus, ribbon, shortcuts, control channel and MCP all reach the same behaviour.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
-/// WordCraft as craft-update knows it, with its 128 px icon and accent colour: the update
-/// prompt shows both, and an AppImage's menu entry gets the icon.
+/// Deskwerk Docs as craft-update knows it, with its 128 px icon and accent colour: the update
+/// prompt shows both, and an AppImage's menu entry gets the icon. Releases come only from
+/// this fork's repository (`https://api.github.com/repos/dicendy/deskwerk-docs/releases`),
+/// never from upstream WordCraft's; asset names start with `deskwerk-docs-`.
 #[cfg(not(target_arch = "wasm32"))]
 pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
-    icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/ai.storyteller.wordcraft.png")),
+    id: "deskwerk-docs",
+    name: "Deskwerk Docs",
+    repo: "dicendy/deskwerk-docs",
+    developer: "Deskwerk",
+    icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/eu.deskwerk.Docs.png")),
     accent: Some([0x3f, 0x5f, 0xe0]),
     ..craft_update::suite::WORDCRAFT
 };

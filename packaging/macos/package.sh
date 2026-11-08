@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Build, sign and (optionally) notarize the macOS release artifacts:
 #
-#   $DIST/wordcraft-<version>-macos-<arch>.dmg          WordCraft.app on a drag-to-Applications DMG
-#   $DIST/wordcraft-cli-<version>-macos-<arch>.zip      the headless CLI
+#   $DIST/deskwerk-docs-<version>-macos-<arch>.dmg          Deskwerk Docs.app on a drag-to-Applications DMG
+#   $DIST/deskwerk-docs-cli-<version>-macos-<arch>.zip      the headless CLI
 #
 # Usage: packaging/macos/package.sh [--arch universal|aarch64|x86_64] [--skip-build]
 #
@@ -39,9 +39,9 @@ export MACOSX_DEPLOYMENT_TARGET=11.0
 IDENTITY="${MACOS_SIGN_IDENTITY:--}"
 SHORT_VERSION="${VERSION%%-*}"
 WORK="$CARGO_TARGET_DIR/macos-package"
-APP="$WORK/WordCraft.app"
-DMG="$DIST/wordcraft-$VERSION-macos-$ARCH.dmg"
-CLI_ZIP="$DIST/wordcraft-cli-$VERSION-macos-$ARCH.zip"
+APP="$WORK/Deskwerk Docs.app"
+DMG="$DIST/deskwerk-docs-$VERSION-macos-$ARCH.dmg"
+CLI_ZIP="$DIST/deskwerk-docs-cli-$VERSION-macos-$ARCH.zip"
 
 NOTARIZE=0
 if [[ "$IDENTITY" = "-" ]]; then
@@ -52,7 +52,7 @@ else
   warn "macOS: APPLE_ID / APPLE_PASSWORD / APPLE_TEAM_ID incomplete; signed but not notarized"
 fi
 
-echo "==> WordCraft $VERSION for macOS ($ARCH), identity: $IDENTITY, notarize: $NOTARIZE"
+echo "==> Deskwerk Docs $VERSION for macOS ($ARCH), identity: $IDENTITY, notarize: $NOTARIZE"
 
 # ---- build -------------------------------------------------------------------------------------
 if [[ "$SKIP_BUILD" = 0 ]]; then
@@ -63,7 +63,7 @@ fi
 
 rm -rf "$WORK"
 mkdir -p "$WORK/bin"
-for bin in wordcraft wordcraft-cli; do
+for bin in deskwerk-docs deskwerk-docs-cli; do
   inputs=()
   for t in "${TARGETS[@]}"; do inputs+=("$CARGO_TARGET_DIR/$t/release/$bin"); done
   lipo -create -output "$WORK/bin/$bin" "${inputs[@]}"
@@ -112,12 +112,12 @@ notarize() {
   fi
 }
 
-# ---- WordCraft.app ----------------------------------------------------------------------------
+# ---- Deskwerk Docs.app ----------------------------------------------------------------------------
 echo "==> assembling $APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # Executable and icon carry the display name (CFBundleExecutable / CFBundleIconFile).
-cp "$WORK/bin/wordcraft" "$APP/Contents/MacOS/WordCraft"
-cp "$ROOT/assets/app-icon/wordcraft.icns" "$APP/Contents/Resources/WordCraft.icns"
+cp "$WORK/bin/deskwerk-docs" "$APP/Contents/MacOS/Deskwerk Docs"
+cp "$ROOT/assets/app-icon/wordcraft.icns" "$APP/Contents/Resources/Deskwerk Docs.icns"
 # Licences of the embedded craft-fonts fonts (only when built with CRAFT_FONTS_DIR).
 copy_docs "$APP/Contents/Resources"
 sed -e "s/@VERSION@/$VERSION/g" -e "s/@SHORT_VERSION@/$SHORT_VERSION/g" \
@@ -132,13 +132,13 @@ printf 'APPL????' >"$APP/Contents/PkgInfo"
 xattr -cr "$APP"
 # Sign inside-out: nested code first, then the bundle itself (no --deep on the final signature).
 # Today the only nested code is the main executable; frameworks/helpers would be signed here too.
-sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP/Contents/MacOS/WordCraft"
+sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP/Contents/MacOS/Deskwerk Docs"
 sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP"
 codesign --verify --strict --deep --verbose=2 "$APP"
 
 if [[ "$NOTARIZE" = 1 ]]; then
-  ditto -c -k --keepParent "$APP" "$WORK/WordCraft-notarize.zip"
-  notarize "$WORK/WordCraft-notarize.zip"
+  ditto -c -k --keepParent "$APP" "$WORK/deskwerk-docs-notarize.zip"
+  notarize "$WORK/deskwerk-docs-notarize.zip"
   stapler_retry staple "$APP"
   stapler_retry validate "$APP"
   spctl --assess --type execute -vvv "$APP"
@@ -148,7 +148,7 @@ fi
 echo "==> building $DMG"
 STAGE="$WORK/dmg"
 mkdir -p "$STAGE"
-ditto "$APP" "$STAGE/WordCraft.app"
+ditto "$APP" "$STAGE/Deskwerk Docs.app"
 ln -s /Applications "$STAGE/Applications"
 # Finder window layout: background, icon size and positions (packaging/macos/dmg/README.md).
 mkdir -p "$STAGE/.background"
@@ -178,7 +178,7 @@ hdiutil_retry() {
 # (Finder location -1,-1), so the signed app failed `codesign --verify --deep --strict` inside the
 # mounted DMG and after copying it out (#525). The volume name has no version: .DS_Store finds the
 # background through an alias that includes it.
-hdiutil_retry create -srcfolder "$STAGE" -volname "WordCraft" -fs HFS+ -format UDZO \
+hdiutil_retry create -srcfolder "$STAGE" -volname "Deskwerk Docs" -fs HFS+ -format UDZO \
   -imagekey zlib-level=9 -ov "$DMG"
 sign "$DMG"
 codesign --verify --strict --verbose=2 "$DMG"
@@ -190,21 +190,21 @@ verify_dmg_app() {
   local dmg="$1" mount="$WORK/dmg-check" copy="$WORK/dmg-check-copy" rc=0
   mkdir -p "$mount" "$copy"
   hdiutil_retry attach -readonly -nobrowse -noautoopen -mountpoint "$mount" "$dmg" >/dev/null
-  echo "==> strict signature check of WordCraft.app inside $(basename "$dmg")"
-  codesign --verify --deep --strict --verbose=2 "$mount/WordCraft.app" || rc=1
+  echo "==> strict signature check of Deskwerk Docs.app inside $(basename "$dmg")"
+  codesign --verify --deep --strict --verbose=2 "$mount/Deskwerk Docs.app" || rc=1
   if [[ "$rc" = 0 ]]; then
-    ditto "$mount/WordCraft.app" "$copy/WordCraft.app" || rc=1
+    ditto "$mount/Deskwerk Docs.app" "$copy/Deskwerk Docs.app" || rc=1
   fi
   if [[ "$rc" = 0 ]]; then
     echo "==> strict signature check of a ditto copy of it"
-    codesign --verify --deep --strict --verbose=2 "$copy/WordCraft.app" || rc=1
+    codesign --verify --deep --strict --verbose=2 "$copy/Deskwerk Docs.app" || rc=1
   fi
   if [[ "$rc" = 0 ]] && [[ "$NOTARIZE" = 1 ]]; then
-    spctl --assess --type execute -vvv "$copy/WordCraft.app" || rc=1
+    spctl --assess --type execute -vvv "$copy/Deskwerk Docs.app" || rc=1
   fi
   if [[ "$rc" != 0 ]]; then
-    echo "error: WordCraft.app in $(basename "$dmg") fails strict verification; extended attributes:" >&2
-    xattr -lr "$mount/WordCraft.app" >&2 || true
+    echo "error: Deskwerk Docs.app in $(basename "$dmg") fails strict verification; extended attributes:" >&2
+    xattr -lr "$mount/Deskwerk Docs.app" >&2 || true
   fi
   hdiutil_retry detach "$mount" >/dev/null || hdiutil detach "$mount" -force >/dev/null || rc=1
   rm -rf "$copy"
@@ -220,17 +220,17 @@ fi
 
 # ---- CLI ---------------------------------------------------------------------------------------
 echo "==> building $CLI_ZIP"
-CLI_DIR="$WORK/wordcraft-cli-$VERSION-macos-$ARCH"
+CLI_DIR="$WORK/deskwerk-docs-cli-$VERSION-macos-$ARCH"
 mkdir -p "$CLI_DIR"
-cp "$WORK/bin/wordcraft-cli" "$CLI_DIR/"
+cp "$WORK/bin/deskwerk-docs-cli" "$CLI_DIR/"
 copy_docs "$CLI_DIR"
-sign --options runtime "$CLI_DIR/wordcraft-cli"
-codesign --verify --strict --verbose=2 "$CLI_DIR/wordcraft-cli"
+sign --options runtime "$CLI_DIR/deskwerk-docs-cli"
+codesign --verify --strict --verbose=2 "$CLI_DIR/deskwerk-docs-cli"
 rm -f "$CLI_ZIP"
 ditto -c -k --norsrc --noextattr --keepParent "$CLI_DIR" "$CLI_ZIP"
 # A bare Mach-O can't carry a stapled ticket; Gatekeeper looks the notarization up online.
 if [[ "$NOTARIZE" = 1 ]]; then notarize "$CLI_ZIP"; fi
 
-"$WORK/bin/wordcraft-cli" --version
+"$WORK/bin/deskwerk-docs-cli" --version
 echo "==> done"
 ls -lh "$DMG" "$CLI_ZIP"

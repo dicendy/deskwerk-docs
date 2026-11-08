@@ -11,9 +11,9 @@
   <key>CFBundleName</key>
   <string>Deskwerk Docs</string>
   <key>CFBundleExecutable</key>
-  <string>WordCraft</string>
+  <string>Deskwerk Docs</string>
   <key>CFBundleIdentifier</key>
-  <string>ai.storyteller.wordcraft</string>
+  <string>eu.deskwerk.Docs</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>
@@ -24,12 +24,12 @@
   <string>@SHORT_VERSION@</string>
   <key>CFBundleVersion</key>
   <string>@SHORT_VERSION@</string>
-  <key>WordCraftVersion</key>
+  <key>DeskwerkDocsVersion</key>
   <string>@VERSION@</string>
-  <key>WordCraftBuildCommit</key>
+  <key>DeskwerkDocsBuildCommit</key>
   <string>@BUILD_SHA@</string>
   <key>CFBundleIconFile</key>
-  <string>WordCraft</string>
+  <string>Deskwerk Docs</string>
   <key>LSApplicationCategoryType</key>
   <string>public.app-category.productivity</string>
   <!-- Must match MACOSX_DEPLOYMENT_TARGET in package.sh. Big Sur is the first release on
@@ -45,7 +45,7 @@
   <key>NSHumanReadableCopyright</key>
   <string>Copyright © the Deskwerk Docs contributors and the WordCraft contributors. MIT OR Apache-2.0.</string>
 
-  <!-- Documents WordCraft opens (system type declarations). -->
+  <!-- Documents Deskwerk Docs opens (system type declarations). -->
   <key>CFBundleDocumentTypes</key>
   <array>
     <dict>

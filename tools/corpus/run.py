@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Round-trip a corpus of real-world Word files through wordcraft-cli and report how it went.
+"""Round-trip a corpus of real-world Word files through deskwerk-docs-cli and report how it went.
 
-    python3 tools/corpus/run.py --bin target/release/wordcraft-cli --corpus DIR --out DIR
+    python3 tools/corpus/run.py --bin target/release/deskwerk-docs-cli --corpus DIR --out DIR
                                 [--timeout 30] [--jobs N] [--soffice] [--deadline EPOCH] [--limit N]
 
 DIR (from fetch.sh) holds the files and manifest.tsv. For every file, each step in its own process
 with a timeout:
 
-  open     wordcraft-cli text <file>               open + plain text (apps/wordcraft-cli/src/main.rs `text`)
-  save     wordcraft-cli convert <file> <rt.docx>  open + save as .docx (`convert`, file.save)
-  reopen   wordcraft-cli text <rt.docx>            the saved file opens again, and its text
+  open     deskwerk-docs-cli text <file>               open + plain text (apps/wordcraft-cli/src/main.rs `text`)
+  save     deskwerk-docs-cli convert <file> <rt.docx>  open + save as .docx (`convert`, file.save)
+  reopen   deskwerk-docs-cli text <rt.docx>            the saved file opens again, and its text
 
 Then, in Python only: the saved file is a valid zip whose XML parts all parse; the body text and
 a few structure counts (paragraphs, tables, pictures, fields, tracked changes, ...) of
@@ -44,7 +44,7 @@ import time
 import zipfile
 import xml.etree.ElementTree as ET
 
-TOOL = "wordcraft-cli"
+TOOL = "deskwerk-docs-cli"
 EXT = ".docx"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 W_NAMESPACES = ("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "http://purl.oclc.org/ooxml/wordprocessingml/main")

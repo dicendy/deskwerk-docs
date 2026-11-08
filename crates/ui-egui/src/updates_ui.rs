@@ -62,9 +62,8 @@ impl WordApp {
         rt.updater = Updater::new(&crate::UPDATE_APP, env!("CARGO_PKG_VERSION")).with_source(refused_check());
     }
 
-    /// Turns the update check off for the rest of this process: the inherited update feed is
-    /// upstream WordCraft's, and Deskwerk Docs has none of its own yet. Help ▸ Check for Updates
-    /// says why.
+    /// Turns the update check off for the rest of this process; Help ▸ Check for Updates says why.
+    /// The desktop app no longer calls it: its check asks only dicendy/deskwerk-docs releases.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn disable_upstream_updates(&mut self) {
         let rt = &mut self.updates_rt;

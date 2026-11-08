@@ -1,6 +1,6 @@
 //! WordCraft desktop app.
 //!
-//! Usage: `wordcraft [--control <port>] [--sample] [files…]`; `--help` prints `USAGE`.
+//! Usage: `deskwerk-docs [--control <port>] [--sample] [files…]`; `--help` prints `USAGE`.
 //!
 //! `--control <port>` (or `WORDCRAFT_CONTROL_PORT`) starts a localhost JSON-lines control server:
 //! `{"id":1,"key":"…","method":"engine.execute","params":{"command":"text.insert","params":{"text":"Hi"}}}`.
@@ -361,15 +361,15 @@ fn app_icon() -> Option<egui::IconData> {
     #[cfg(target_os = "macos")]
     let png: &[u8] = include_bytes!("../../../assets/app-icon/wordcraft-macos-512.png");
     #[cfg(not(target_os = "macos"))]
-    let png: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.wordcraft.png");
+    let png: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/eu.deskwerk.Docs.png");
     eframe::icon_data::from_png_bytes(png).map_err(|e| log::warn!("app icon: {e}")).ok()
 }
 
 const USAGE: &str = "\
-wordcraft — the Deskwerk Docs desktop app
+deskwerk-docs — the Deskwerk Docs desktop app
 
 USAGE:
-  wordcraft [--sample] [--control PORT] [FILE…]
+  deskwerk-docs [--sample] [--control PORT] [FILE…]
 
 OPTIONS:
   --sample            open the sample document
@@ -394,7 +394,8 @@ fn text_args() -> (Vec<String>, Vec<std::path::PathBuf>) {
             Err(a) if args.last().is_some_and(|p| p == "--control") => {
                 // Unlike `eprintln!`, never panics.
                 let (n, lossy) = (i + 1, a.to_string_lossy());
-                let _ = std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("wordcraft: argument {n} is not valid Unicode: {lossy}\n"));
+                let _ =
+                    std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("deskwerk-docs: argument {n} is not valid Unicode: {lossy}\n"));
                 std::process::exit(2);
             }
             Err(a) => files.push(a.into()),
@@ -490,7 +491,7 @@ fn main() -> eframe::Result {
             }
             "--sample" => sample = true,
             "--version" => {
-                println!("wordcraft {} ({})", env!("CARGO_PKG_VERSION"), build_sha());
+                println!("deskwerk-docs {} ({})", env!("CARGO_PKG_VERSION"), build_sha());
                 return Ok(());
             }
             // Before the window opens (#968). Unlike `print!`, a closed stdout can't panic.
@@ -504,7 +505,8 @@ fn main() -> eframe::Result {
     // After the loop, so `--version` later on the line still wins. Unlike `eprintln!`, never panics.
     if let Some(port) = bad_control {
         let got = port.map(|p| format!(", got {p:?}")).unwrap_or_default();
-        let _ = std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("wordcraft: --control needs a port number from 1 to 65535{got}\n"));
+        let _ =
+            std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("deskwerk-docs: --control needs a port number from 1 to 65535{got}\n"));
         std::process::exit(2);
     }
     // The log file lives in the settings directory, next to the preferences; opened after the
@@ -524,7 +526,7 @@ fn main() -> eframe::Result {
     let mut options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title("Deskwerk Docs")
-            .with_app_id("ai.storyteller.wordcraft")
+            .with_app_id("eu.deskwerk.Docs")
             .with_inner_size([1440.0, 920.0])
             .with_min_inner_size([760.0, 480.0])
             .with_drag_and_drop(true)
@@ -582,14 +584,12 @@ fn main() -> eframe::Result {
             let mut session = Session::new(doc);
             session.system_region = region;
             let mut app = WordApp::new(session, services(file_dialog, &cc.egui_ctx));
-            app.set_startup_update_check(true);
             load_prefs(&mut app);
-            // After the preferences, so the reason it gives is in the interface language.
+            // No check at start: Help › Check for Updates asks this fork's releases
+            // (dicendy/deskwerk-docs) only when the person chooses it. After the preferences, so
+            // the reason a refused check gives is in the interface language.
             if updates_unsafe {
                 app.disable_self_update();
-            } else {
-                // The inherited update feed is upstream WordCraft's; Deskwerk Docs has none yet.
-                app.disable_upstream_updates();
             }
             load_user_dictionary(&mut app);
             // Language packs from the suite's font store; an Install click is the person's own.
