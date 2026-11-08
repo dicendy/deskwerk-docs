@@ -307,9 +307,8 @@ impl Reader<'_> {
 
     fn level(&self, l: &El, i: usize) -> Level {
         let mut lv = default_level(i);
-        if let Some(s) = l.child_val("w:start").and_then(u32_of) {
-            lv.start = s;
-        }
+        // A level that leaves out `w:start` counts from zero (ECMA-376 17.9.25), as Word shows it.
+        lv.start = l.child_val("w:start").and_then(u32_of).unwrap_or(0);
         if let Some(f) = l.child_val("w:numFmt") {
             lv.format = NumFormat::from_ooxml(f);
         }
