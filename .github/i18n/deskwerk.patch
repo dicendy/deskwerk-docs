@@ -77,7 +77,7 @@ index 9dd63a9..941b56e 100644
  	Everyone	Alle
  	Exactly	Nøjagtigt
 diff --git a/locales/de/wordcraft.tsv b/locales/de/wordcraft.tsv
-index 61322bd..941633e 100644
+index 61322bd..f1cf354 100644
 --- a/locales/de/wordcraft.tsv
 +++ b/locales/de/wordcraft.tsv
 @@ -39,7 +39,7 @@
@@ -268,7 +268,7 @@ index 61322bd..941633e 100644
  	Search:	Suchen:
  	Dutch, Nederlands or nl	Niederländisch, Nederlands oder nl
  	No languages to show yet.	Noch keine Sprachen anzuzeigen.
-@@ -2265,3 +2265,387 @@
+@@ -2265,3 +2265,398 @@
  	Uruguay	Uruguay
  	Venezuela	Venezuela
  	South Africa	Südafrika
@@ -656,6 +656,17 @@ index 61322bd..941633e 100644
 +	✓ None	✓ Keine
 +	➕ New comment	➕ Neuer Kommentar
 +	📂  Browse…	📂  Durchsuchen…
++
++# Deskwerk Docs rows (strings Deskwerk added or reworded).
++	A free, open-source word processor written in Rust.\nBased on WordCraft by the ArtCraft team; not affiliated with them.	Ein kostenloses, quelloffenes Textverarbeitungsprogramm, in Rust geschrieben.\nBasiert auf WordCraft des ArtCraft-Teams; nicht mit ihm verbunden.
++	Based on WordCraft, (c) 2026 ArtCraft Team and the WordCraft contributors.	Basiert auf WordCraft, (c) 2026 ArtCraft Team und die Mitwirkenden an WordCraft.
++	Couldn't save {name}, so it is still open and nothing was lost: {error}	{name} konnte nicht gespeichert werden. Das Dokument ist weiterhin geöffnet und nichts ist verloren gegangen: {error}
++	Couldn't save {name}: {error}	{name} konnte nicht gespeichert werden: {error}
++	Deskwerk Docs has no update feed yet: download new versions from its project page.	Deskwerk Docs hat noch keinen Update-Kanal: Laden Sie neue Versionen von der Projektseite herunter.
++	MIT OR Apache-2.0. Copyright (c) 2026 Deskwerk contributors.	MIT OR Apache-2.0. Copyright (c) 2026 die Mitwirkenden an Deskwerk.
++	Source code: github.com/dicendy/deskwerk-docs	Quellcode: github.com/dicendy/deskwerk-docs
++	The spelling and hyphenation data Deskwerk Docs uses, and their licences.	Die Rechtschreib- und Silbentrennungsdaten, die Deskwerk Docs verwendet, und ihre Lizenzen.
++	Updates are off in this window: Deskwerk Docs was started with another program's AppImage settings. Start Deskwerk Docs from its own menu entry to update it.	Updates sind in diesem Fenster ausgeschaltet: Deskwerk Docs wurde mit den AppImage-Einstellungen eines anderen Programms gestartet. Starten Sie Deskwerk Docs über seinen eigenen Menüeintrag, um es zu aktualisieren.
 diff --git a/locales/es/wordcraft.tsv b/locales/es/wordcraft.tsv
 index 2d77129..0a10278 100644
 --- a/locales/es/wordcraft.tsv
@@ -696,7 +707,7 @@ index 1dc7cc9..5c06d7e 100644
  	Everyone	همه
  	Exactly	دقیقاً
 diff --git a/locales/fr/wordcraft.tsv b/locales/fr/wordcraft.tsv
-index f117087..23b21c0 100644
+index f117087..750eca9 100644
 --- a/locales/fr/wordcraft.tsv
 +++ b/locales/fr/wordcraft.tsv
 @@ -56,7 +56,7 @@
@@ -896,6 +907,19 @@ index f117087..23b21c0 100644
  	Search:	Rechercher :
  	Dutch, Nederlands or nl	Néerlandais, Nederlands ou nl
  	No languages to show yet.	Aucune langue à afficher pour l’instant.
+@@ -2703,3 +2703,12 @@ preview	Title	Titre
+ 	Uruguay	Uruguay
+ 	Venezuela	Venezuela
+ 	South Africa	Afrique du Sud
++
++# Deskwerk Docs rows (strings Deskwerk added or reworded).
++	A free, open-source word processor written in Rust.\nBased on WordCraft by the ArtCraft team; not affiliated with them.	Un traitement de texte gratuit et open source, écrit en Rust.\nBasé sur WordCraft de l’équipe ArtCraft ; sans lien avec elle.
++	Based on WordCraft, (c) 2026 ArtCraft Team and the WordCraft contributors.	Basé sur WordCraft, (c) 2026 ArtCraft Team et les contributeurs de WordCraft.
++	Couldn't save {name}: {error}	Impossible d'enregistrer {name} : {error}
++	Deskwerk Docs has no update feed yet: download new versions from its project page.	Deskwerk Docs n’a pas encore de flux de mises à jour : téléchargez les nouvelles versions depuis sa page de projet.
++	MIT OR Apache-2.0. Copyright (c) 2026 Deskwerk contributors.	MIT OR Apache-2.0. Copyright (c) 2026 les contributeurs de Deskwerk.
++	Source code: github.com/dicendy/deskwerk-docs	Code source : github.com/dicendy/deskwerk-docs
++	Updates are off in this window: Deskwerk Docs was started with another program's AppImage settings. Start Deskwerk Docs from its own menu entry to update it.	Les mises à jour sont désactivées dans cette fenêtre : Deskwerk Docs a été lancé avec les paramètres AppImage d’un autre programme. Lancez Deskwerk Docs depuis sa propre entrée de menu pour le mettre à jour.
 diff --git a/locales/he/wordcraft.tsv b/locales/he/wordcraft.tsv
 index 5774382..5d2759d 100644
 --- a/locales/he/wordcraft.tsv
