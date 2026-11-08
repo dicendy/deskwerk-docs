@@ -279,9 +279,9 @@ impl Reader<'_> {
             let (mut start_overrides, mut level_overrides) = (Vec::new(), Vec::new());
             for o in n.children("w:lvlOverride").take(9) {
                 let lvl = o.attr("w:ilvl").and_then(u32_of).unwrap_or(0).min(8) as u8;
+                // Only `w:startOverride` restarts the count: a level definition's own `w:start`
+                // without one goes on from the abstract list's count, as Word numbers it.
                 if let Some(s) = o.child_val("w:startOverride").and_then(u32_of) {
-                    start_overrides.push((lvl, s));
-                } else if let Some(s) = o.child("w:lvl").and_then(|l| l.child_val("w:start")).and_then(u32_of) {
                     start_overrides.push((lvl, s));
                 }
                 // A whole level definition replaces the abstract list's for this list.

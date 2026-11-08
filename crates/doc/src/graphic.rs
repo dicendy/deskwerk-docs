@@ -45,7 +45,8 @@ pub struct Graphic {
 pub struct Embedded {
     /// The object's markup as a standalone XML element with its namespace declarations (DOCX:
     /// the `a:graphic` of a chart, SmartArt diagram or native ink, an ink `mc:AlternateContent`,
-    /// the `w:object` of an OLE object, or the `w:pict` of a signature line).
+    /// the `w:object` of an OLE object, the `w:pict` of a signature line, or the `a:graphic` of a
+    /// locked canvas or of a picture whose image is linked or missing).
     pub xml: String,
     /// The relationships it uses, by the ids in `xml` (or in its parts, for a SmartArt drawing).
     pub refs: Vec<EmbeddedRef>,

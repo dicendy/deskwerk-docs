@@ -1082,7 +1082,7 @@ fn unbalanced_fields_and_markers() {
     assert_eq!(
         p[1].objects,
         vec![InlineObject::Field {
-            instr: "IF X = \"y\"".into(),
+            instr: "IF { MERGEFIELD x } = \"y\"".into(),
             result: String::new(),
             locked: false,
             dirty: false,

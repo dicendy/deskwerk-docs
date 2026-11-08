@@ -19,7 +19,7 @@ Text and structure inside mc:AlternateContent count once, from the branch an app
 (w:fldSimple or w:fldChar; a HYPERLINK field counts as a hyperlink).
 Each step ends ok, err (non-zero exit), panic (Rust panic, exit 101), crash (killed by a signal)
 or timeout. A file whose steps all pass gets the verdict real_loss when LibreOffice's text drops
-or a structure count drops, text_changed when only the app's or the XML's text differs, else ok.
+or a structure count drops (VML pictures saved as DrawingML aside), text_changed when only the app's or the XML's text differs, else ok.
 The saved file keeps the original's name (in a folder per file), so FILENAME fields read the
 same. Saved files with a verdict other than ok are copied to --failed-dir up to --failed-mb.
 Writes corpus-report.json and corpus-report.md to --out and appends the summary to
@@ -481,8 +481,17 @@ def verdict(rec: dict) -> str:
 
 
 def structure_lost(rec: dict) -> list[str]:
-    """Structure counts (outside mc:Fallback) that dropped on the round trip, empty paragraphs aside."""
-    return sorted(label for label, (a, b) in (rec.get("count_changes") or {}).items() if b < a and label not in NOT_LOSS)
+    """Structure counts (outside mc:Fallback) that dropped on the round trip, empty paragraphs aside.
+    VML pictures written back as DrawingML are converted, not lost: a drop in vml_pictures that the
+    gain in drawings matches or exceeds doesn't count."""
+    changes = rec.get("count_changes") or {}
+    lost = [label for label, (a, b) in changes.items() if b < a and label not in NOT_LOSS]
+    if "vml_pictures" in lost:
+        vml_a, vml_b = changes["vml_pictures"]
+        dr_a, dr_b = changes.get("drawings", (0, 0))
+        if dr_b - dr_a >= vml_a - vml_b:
+            lost.remove("vml_pictures")
+    return sorted(lost)
 
 
 def badness(rec: dict) -> tuple:

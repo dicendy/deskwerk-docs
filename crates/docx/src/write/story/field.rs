@@ -136,8 +136,10 @@ impl Writer<'_> {
                 w.close("w:fldChar");
             }
         });
-        let instr_text = format!(" {} ", instr.trim());
-        run(w, &|w| w.leaf(if del { "w:delInstrText" } else { "w:instrText" }, &[("xml:space", "preserve")], &instr_text));
+        // A citation manager's code (`ADDIN ZOTERO_ITEM CSL_CITATION {"title":"{DNA} …"}`) is
+        // data whose braces are its own, never nested fields.
+        let addin = instr.trim_start().get(..5).is_some_and(|k| k.eq_ignore_ascii_case("ADDIN"));
+        instr_runs(w, &format!(" {} ", instr.trim()), del, props, if addin { MAX_NESTED_CODE } else { 0 });
         run(w, &|w| w.empty("w:fldChar", &[("w:fldCharType", "separate")]));
     }
 }
@@ -148,4 +150,57 @@ pub(super) fn field_run(w: &mut W, props: &CharProps, f: &dyn Fn(&mut W)) {
     rpr(w, props);
     f(w);
     w.close("w:r");
+}
+
+/// How deep nested fields in a field's code are written as fields; deeper ones stay code text.
+const MAX_NESTED_CODE: usize = 8;
+
+/// `code`, a field's code, as instruction runs (`w:delInstrText` when deleted). Each `{ CODE }`
+/// in it — a nested field's code, as the reader keeps it (`IF { MERGEFIELD City } = "Oslo" …`) —
+/// goes back as a nested field: a begin, its own code and an end. A brace that opens no field
+/// code (`{` not followed by a space and then a field name or `=`, as in a URL's `{id}`, or never
+/// closed) stays text.
+fn instr_runs(w: &mut W, code: &str, del: bool, props: &CharProps, depth: usize) {
+    let tag = if del { "w:delInstrText" } else { "w:instrText" };
+    let text = |w: &mut W, t: &str| {
+        if !t.is_empty() {
+            field_run(w, props, &|w| w.leaf(tag, &[("xml:space", "preserve")], t));
+        }
+    };
+    let (mut from, mut at) = (0, 0);
+    while let Some(open) = code.get(at..).and_then(|s| s.find('{')).map(|i| i + at) {
+        at = open + 1;
+        let opens_code = code
+            .get(at..)
+            .is_some_and(|r| r.starts_with(char::is_whitespace) && r.trim_start().starts_with(|c: char| c.is_ascii_alphabetic() || c == '='));
+        if depth >= MAX_NESTED_CODE || !opens_code {
+            continue;
+        }
+        let Some(close) = code_end(code, open) else { continue };
+        let inner = code.get(at..close).unwrap_or("");
+        text(w, code.get(from..open).unwrap_or(""));
+        field_run(w, props, &|w| w.empty("w:fldChar", &[("w:fldCharType", "begin")]));
+        instr_runs(w, inner, del, props, depth + 1);
+        field_run(w, props, &|w| w.empty("w:fldChar", &[("w:fldCharType", "end")]));
+        (from, at) = (close + 1, close + 1);
+    }
+    text(w, code.get(from..).unwrap_or(""));
+}
+
+/// The byte offset of the `}` closing the `{` at `open` in `code`, nested braces counted.
+fn code_end(code: &str, open: usize) -> Option<usize> {
+    let mut depth = 0usize;
+    for (i, c) in code.get(open..)?.char_indices() {
+        match c {
+            '{' => depth += 1,
+            '}' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    return Some(open + i);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
 }

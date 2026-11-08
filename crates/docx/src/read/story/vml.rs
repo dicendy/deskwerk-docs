@@ -142,7 +142,7 @@ impl Reader<'_> {
         // The shapetype the shape is drawn from (its `type`, ECMA-376 Part 4 VML), when written in
         // the same picture: what the shape leaves out, it takes from there.
         let type_id = shape.attr("type").map(|t| t.trim().trim_start_matches('#'));
-        let shapetype = type_id.and_then(|id| pict.els().find(|e| e.name == "v:shapetype" && e.attr("id") == Some(id)));
+        let shapetype = type_id.and_then(|id| vml_shapetype(pict, id, 0));
         let attr = |name: &str| shape.attr(name).or_else(|| shapetype.and_then(|t| t.attr(name)));
         let on = |name: &str| {
             attr(name).is_none_or(|v| {
@@ -457,6 +457,18 @@ const VML_TEXT_WARPS: [&str; 40] = [
     "textCanUp",
     "textCanDown",
 ];
+
+/// The `v:shapetype` with id `id` in `pict`: beside the shapes, as Word writes it, or inside one
+/// of its groups, as other producers do (nested no deeper than a group may be read).
+fn vml_shapetype<'a>(pict: &'a El, id: &str, depth: usize) -> Option<&'a El> {
+    if let Some(t) = pict.els().find(|e| e.name == "v:shapetype" && e.attr("id") == Some(id)) {
+        return Some(t);
+    }
+    if depth >= MAX_VML_GROUP_DEPTH {
+        return None;
+    }
+    pict.els().filter(|e| e.name == "v:group").find_map(|g| vml_shapetype(g, id, depth + 1))
+}
 
 /// A VML shape's preset type (`o:spt`): its own, its shapetype's, or the number in Word's
 /// shapetype id `_x0000_tNN` (`type_id`), Word writing each shapetype only at its first use.
