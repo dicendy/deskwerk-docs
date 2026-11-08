@@ -4877,8 +4877,35 @@ fn host_save_as_a_copy_format_is_not_save_as() {
 fn a_host_save_that_fails_leaves_the_document_unsaved() {
     let (mut a, _) = host_app(true);
     host_open(&mut a, "report.docx");
-    assert!(a.execute("file.save", json!({})).is_err());
+    let err = a.execute("file.save", json!({})).unwrap_err();
+    assert!(err.starts_with("Couldn't save report.docx"), "the page saves, nothing downloads: {err}");
     assert!(a.session.dirty);
+}
+
+/// A page that stores the file on a server (`?src=`): its `host_save` sends it and finishes
+/// later with a save ticket. Until the server answers the save isn't confirmed; a refusal
+/// leaves the document unsaved and says why, as a save, not a download.
+#[test]
+fn a_host_save_the_server_refuses_later_leaves_the_document_unsaved() {
+    for (outcome, dirty) in [(async_saves::SaveOutcome::Saved, false), (async_saves::SaveOutcome::Failed("changed on the server".into()), true)] {
+        let (mut a, _) = host_app(false);
+        let saves = async_saves::AsyncSaves::default();
+        let last = std::rc::Rc::new(std::cell::Cell::new(0));
+        let (hook, seen) = (saves.clone(), last.clone());
+        a.services.host_save = Some(Box::new(move |_, _, _| {
+            seen.set(hook.start());
+            Ok(())
+        }));
+        a.services.async_saves = Some(saves.clone());
+        host_open(&mut a, "report.docx");
+        let r = a.execute("file.save", json!({})).unwrap();
+        assert_eq!(r["pendingSave"], last.get(), "{r}");
+        saves.finish(last.get(), outcome.clone());
+        a.settle_async_saves();
+        assert_eq!(a.session.dirty, dirty, "{outcome:?}");
+        let status = a.status_msg.as_ref().map(|(m, _)| m.clone()).unwrap_or_default();
+        assert_eq!(status.starts_with("Couldn't save report.docx: changed on the server"), dirty, "{outcome:?}: {status:?}");
+    }
 }
 
 /// Macro-enabled documents and templates keep everything (#172), so once saved in this

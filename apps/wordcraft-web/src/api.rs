@@ -8,7 +8,7 @@
 //! when the app reaches it, as it does for a desktop client that timed out.
 
 use std::rc::Rc;
-use std::sync::mpsc::{Receiver, TryRecvError, channel};
+use std::sync::mpsc::{Receiver, Sender, TryRecvError, channel};
 
 use craft_web_api::methods::Methods;
 use craft_web_api::page::{PageApi, Request};
@@ -24,8 +24,10 @@ const POLL_MS: i32 = 16;
 
 /// Put `window.wordcraft` on the page and return the queue the app drains each frame (hand it to
 /// `WordApp::with_control`). An existing `window.wordcraft` keeps the functions it already has.
-pub fn install(ctx: egui::Context) -> Receiver<ControlRequest> {
+/// `queue` sends to that same queue (the remote document's `deskwerk:save`).
+pub fn install(ctx: egui::Context) -> (Sender<ControlRequest>, Receiver<ControlRequest>) {
     let (queue, requests) = channel::<ControlRequest>();
+    let sender = queue.clone();
     let request: Request = Rc::new(move |method, params| {
         let (control, reply) = ControlRequest::new(method, params);
         if queue.send(control).is_err() {
@@ -37,7 +39,7 @@ pub fn install(ctx: egui::Context) -> Receiver<ControlRequest> {
     if let Err(e) = Rc::new(PageApi::new(APP, Methods::default(), request)).install() {
         log::warn!("couldn't install window.{APP}: {e:?}");
     }
-    requests
+    (sender, requests)
 }
 
 /// The app's reply, polled about once a frame.
@@ -51,7 +53,7 @@ async fn wait(reply: Receiver<Value>) -> Value {
     }
 }
 
-async fn sleep(ms: i32) {
+pub(crate) async fn sleep(ms: i32) {
     let promise = js_sys::Promise::new(&mut |resolve, _| {
         if let Some(window) = web_sys::window() {
             let _ = window.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, ms);

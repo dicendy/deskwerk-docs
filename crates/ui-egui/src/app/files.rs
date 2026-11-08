@@ -129,7 +129,7 @@ impl WordApp {
             if let Some(i) = self.saves_in_flight.iter().position(|s| s.ticket == ticket) {
                 let save = self.saves_in_flight.swap_remove(i);
                 match &outcome {
-                    async_saves::SaveOutcome::Saved => log::info!("saved {} through the save picker", save.name),
+                    async_saves::SaveOutcome::Saved => log::info!("saved {}", save.name),
                     async_saves::SaveOutcome::Cancelled | async_saves::SaveOutcome::Failed(_) => {
                         if save.marked_saved && save.document == current {
                             self.session.dirty = true;
@@ -140,8 +140,9 @@ impl WordApp {
                     }
                 }
                 if let async_saves::SaveOutcome::Failed(error) = &outcome {
-                    let msg = i18n::fmt(tl!("Couldn't download {name}: {error}"), &[("name", &save.name), ("error", error)]);
-                    log::error!("the save picker couldn't save {}: {error}", save.name);
+                    // The save picker, or a page that stores the file (`host_save`), finished it.
+                    let msg = i18n::fmt(tl!("Couldn't save {name}: {error}"), &[("name", &save.name), ("error", error)]);
+                    log::error!("couldn't save {}: {error}", save.name);
                     self.status(msg);
                 }
             }
@@ -182,6 +183,13 @@ impl WordApp {
                 }
             }
         }
+    }
+
+    /// Why a web save or export never reached its place: a page that stores the file
+    /// ([`Services::host_save`]) saves it; only the browser downloads.
+    pub(super) fn delivery_failed(&self, name: &str, error: &str) -> String {
+        let text = if self.services.host_save.is_some() { tl!("Couldn't save {name}: {error}") } else { tl!("Couldn't download {name}: {error}") };
+        i18n::fmt(text, &[("name", name), ("error", error)])
     }
 
     /// Whether a save before New/Open/Close counts: it happened, and kept everything.

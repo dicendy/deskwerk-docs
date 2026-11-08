@@ -33,7 +33,11 @@ pub fn start() {
         // own stays the normal app with downloads. `data-host="page"` on the canvas opts a page
         // in instead: it runs WordCraft in its own document and talks over DOM `CustomEvent`s
         // on the canvas (`host`). The host guards leaving the page, so this one doesn't.
-        let bridge = crate::host::Bridge::detect(&canvas);
+        // `?src=`: a server's document, loaded from it and saved back to it (`remote`). It
+        // wins over the host modes; the page itself guards leaving with unsaved changes.
+        let remote = crate::remote::Remote::from_query();
+        let app_remote = remote.clone();
+        let bridge = if remote.is_some() { None } else { crate::host::Bridge::detect(&canvas) };
         let app_bridge = bridge.clone();
         let dirty = Rc::new(Cell::new(false));
         let saves = AsyncSaves::default();
@@ -66,8 +70,9 @@ pub fn start() {
                     // The browser's locale picks the new document's paper, the units and the
                     // decimal separator (#838).
                     let region = wordcraft_ui_egui::i18n::system_region();
-                    // In host mode the parent sends the document to edit; no sample meanwhile.
-                    let sample = app_bridge.is_none() && query().contains("sample");
+                    // In host mode the parent sends the document to edit, and a remote document
+                    // is on its way; no sample meanwhile.
+                    let sample = app_bridge.is_none() && app_remote.is_none() && query().contains("sample");
                     let doc = if sample { wordcraft_engine::sample::sample_document() } else { wordcraft_engine::blank_document(&region) };
                     let mut session = Session::new(doc);
                     session.system_region = region;
@@ -76,7 +81,11 @@ pub fn start() {
                     if let Some(bridge) = &app_bridge {
                         bridge.connect(&mut services, inbox.clone(), cc.egui_ctx.clone());
                     }
-                    let control = crate::api::install(cc.egui_ctx.clone());
+                    let (control_queue, control) = crate::api::install(cc.egui_ctx.clone());
+                    if let Some(remote) = &app_remote {
+                        remote.connect(&mut services, saves.clone(), cc.egui_ctx.clone(), control_queue);
+                        remote.load(inbox.clone(), cc.egui_ctx.clone(), messages.clone());
+                    }
                     let mut app = WordApp::new(session, services).with_control(control);
                     // Pasted pictures wait apart from dropped files: the app inserts one only when the page is the edit target (#1349).
                     app.services.pasted = Some(pasted);
@@ -92,7 +101,7 @@ pub fn start() {
                     }
                     let mut prefs = crate::prefs::PrefsSync::new(stored);
                     // No document to show: start on File › Home, as the desktop app does (#766).
-                    if !sample {
+                    if !sample && app_remote.is_none() {
                         app.start_screen();
                     }
                     // The host's name for the user signs this visit's work, but isn't stored as the
@@ -109,6 +118,11 @@ pub fn start() {
             )
             .await;
         // Ready only once the runner is up: starting can still fail after the app is made.
+        if let Some(remote) = &remote
+            && result.is_ok()
+        {
+            remote.post_ready();
+        }
         if let Some(bridge) = &bridge {
             match &result {
                 Ok(()) => bridge.post_ready(),
@@ -437,7 +451,7 @@ fn guard_unload(dirty: Rc<Cell<bool>>, saves: AsyncSaves) -> Result<(), String> 
 }
 
 /// Trigger a browser save dialog or download of `bytes` named after the last component of `path`.
-fn download(saves: &AsyncSaves, ctx: &egui::Context, path: &str, bytes: &[u8]) -> Result<(), String> {
+pub(crate) fn download(saves: &AsyncSaves, ctx: &egui::Context, path: &str, bytes: &[u8]) -> Result<(), String> {
     let name = std::path::Path::new(path).file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| "document".into());
     let window = web_sys::window().ok_or("no window")?;
 
@@ -652,7 +666,7 @@ fn print_pdf(bytes: &[u8]) -> Result<(), String> {
     Ok(())
 }
 
-fn mime_for(name: &str) -> &'static str {
+pub(crate) fn mime_for(name: &str) -> &'static str {
     match name.rsplit('.').next().map(str::to_ascii_lowercase).as_deref() {
         Some("png") => "image/png",
         Some("jpg" | "jpeg") => "image/jpeg",
