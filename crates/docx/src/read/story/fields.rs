@@ -20,12 +20,17 @@ fn enclosure(f: &FieldState) -> Option<wordcraft_doc::eq::Enclosure> {
 }
 
 /// Fields kept as ranges: those whose result another program writes, with formatting and often
-/// several paragraphs (TOCs, citation managers' `ADDIN` fields, and Word's bibliography, a list
-/// of sources the engine updates as a range too).
+/// several paragraphs (TOCs, citation managers' `ADDIN` fields).
 fn is_range_instr(instr: &str) -> bool {
-    crate::read::is_toc(instr)
-        || instr.trim_start().get(..5).is_some_and(|k| k.eq_ignore_ascii_case("ADDIN"))
-        || instr.split_whitespace().next().is_some_and(|k| k.eq_ignore_ascii_case("BIBLIOGRAPHY"))
+    crate::read::is_toc(instr) || instr.trim_start().get(..5).is_some_and(|k| k.eq_ignore_ascii_case("ADDIN"))
+}
+
+/// Fields that become ranges once their result runs on into another paragraph rather than
+/// spilling: Word's bibliography, a list of sources a paragraph each, which the engine updates
+/// as a range too. One whose result stays in its paragraph (the engine's own, empty) stays a
+/// field.
+fn spans_as_range(instr: &str) -> bool {
+    instr.split_whitespace().next().is_some_and(|k| k.eq_ignore_ascii_case("BIBLIOGRAPHY"))
 }
 
 impl Reader<'_> {
@@ -177,6 +182,17 @@ impl Reader<'_> {
     pub(super) fn spill_fields(&mut self, sc: &mut StoryCtx, pb: &mut PB) {
         for f in sc.fields.iter_mut() {
             if f.spilled || f.range {
+                continue;
+            }
+            if f.phase == Phase::Result && spans_as_range(&f.instr) {
+                f.range = true;
+                pb.push_obj(InlineObject::FieldStart { instr: f.instr.trim().to_string(), locked: f.locked, dirty: f.dirty }, &f.props);
+                for (it, p) in f.buf.drain(..) {
+                    match it {
+                        Item::Text(t) => pb.push_text(&t, &p),
+                        Item::Obj(o) => pb.push_obj(*o, &p),
+                    }
+                }
                 continue;
             }
             f.spilled = true;

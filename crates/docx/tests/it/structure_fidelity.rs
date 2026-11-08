@@ -415,6 +415,12 @@ fn a_bibliography_of_several_paragraphs_is_a_range() {
         assert_eq!(fields(ps[1]), [">"]);
         assert!(ps[0].plain_text().contains("Source one") && ps[1].plain_text().contains("Source two"));
     }
+    // One that ends in its paragraph (the engine writes its list's field empty, after a heading)
+    // stays a field.
+    let body = format!("<w:p>{}{}{}{}{}</w:p>", run("References"), fld("begin"), instr(" BIBLIOGRAPHY "), fld("separate"), fld("end"));
+    let d = wordcraft_docx::read(&body_package(&body, &[])).unwrap();
+    let p = d.body.iter().find_map(|b| b.as_para()).unwrap();
+    assert_eq!(fields(p), ["BIBLIOGRAPHY="]);
 }
 
 #[test]
