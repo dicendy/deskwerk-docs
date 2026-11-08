@@ -61,14 +61,31 @@ impl WordApp {
         rt.startup_check = false;
         rt.updater = Updater::new(&crate::UPDATE_APP, env!("CARGO_PKG_VERSION")).with_source(refused_check());
     }
+
+    /// Turns the update check off for the rest of this process: the inherited update feed is
+    /// upstream WordCraft's, and Deskwerk Docs has none of its own yet. Help ▸ Check for Updates
+    /// says why.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn disable_upstream_updates(&mut self) {
+        let rt = &mut self.updates_rt;
+        rt.startup_check = false;
+        rt.updater = Updater::new(&crate::UPDATE_APP, env!("CARGO_PKG_VERSION")).with_source(no_update_feed());
+    }
 }
 
 /// A check for updates that never finds one and gives the reason as its error, which Help ▸ Check
 /// for Updates shows.
 #[cfg(not(target_arch = "wasm32"))]
 fn refused_check() -> craft_update::updater::CheckSource {
-    let why = tl!("Updates are off in this window: WordCraft was started with another program's AppImage settings. Start WordCraft from its own menu entry to update it.")
+    let why = tl!("Updates are off in this window: Deskwerk Docs was started with another program's AppImage settings. Start Deskwerk Docs from its own menu entry to update it.")
         .to_string();
+    std::sync::Arc::new(move || Err(why.clone()))
+}
+
+/// A check for updates that never finds one: Deskwerk Docs has no update feed yet.
+#[cfg(not(target_arch = "wasm32"))]
+fn no_update_feed() -> craft_update::updater::CheckSource {
+    let why = tl!("Deskwerk Docs has no update feed yet: download new versions from its project page.").to_string();
     std::sync::Arc::new(move || Err(why.clone()))
 }
 

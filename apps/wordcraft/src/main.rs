@@ -366,7 +366,7 @@ fn app_icon() -> Option<egui::IconData> {
 }
 
 const USAGE: &str = "\
-wordcraft — the WordCraft desktop app
+wordcraft — the Deskwerk Docs desktop app
 
 USAGE:
   wordcraft [--sample] [--control PORT] [FILE…]
@@ -523,7 +523,7 @@ fn main() -> eframe::Result {
     }
     let mut options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_title("WordCraft")
+            .with_title("Deskwerk Docs")
             .with_app_id("ai.storyteller.wordcraft")
             .with_inner_size([1440.0, 920.0])
             .with_min_inner_size([760.0, 480.0])
@@ -571,7 +571,7 @@ fn main() -> eframe::Result {
     #[cfg(target_os = "macos")]
     let apple_events = &apple_events;
     eframe::run_native(
-        "WordCraft",
+        "Deskwerk Docs",
         options,
         Box::new(move |cc| {
             // The system region picks the new document's paper, the units and the decimal
@@ -587,6 +587,9 @@ fn main() -> eframe::Result {
             // After the preferences, so the reason it gives is in the interface language.
             if updates_unsafe {
                 app.disable_self_update();
+            } else {
+                // The inherited update feed is upstream WordCraft's; Deskwerk Docs has none yet.
+                app.disable_upstream_updates();
             }
             load_user_dictionary(&mut app);
             // Language packs from the suite's font store; an Install click is the person's own.
