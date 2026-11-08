@@ -20,13 +20,12 @@ fn enclosure(f: &FieldState) -> Option<wordcraft_doc::eq::Enclosure> {
 }
 
 /// Fields kept as ranges: those whose result another program writes, with formatting and often
-/// several paragraphs (TOCs, citation managers' `ADDIN` fields, and the generated lists the
-/// engine updates as ranges: a bibliography, an index, a table of authorities).
+/// several paragraphs (TOCs, citation managers' `ADDIN` fields, and Word's bibliography, a list
+/// of sources the engine updates as a range too).
 fn is_range_instr(instr: &str) -> bool {
-    let kind = instr.split_whitespace().next().unwrap_or("");
     crate::read::is_toc(instr)
         || instr.trim_start().get(..5).is_some_and(|k| k.eq_ignore_ascii_case("ADDIN"))
-        || ["BIBLIOGRAPHY", "INDEX", "TOA"].iter().any(|k| kind.eq_ignore_ascii_case(k))
+        || instr.split_whitespace().next().is_some_and(|k| k.eq_ignore_ascii_case("BIBLIOGRAPHY"))
 }
 
 impl Reader<'_> {
