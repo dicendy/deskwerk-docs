@@ -405,7 +405,6 @@ mod browser {
         init.set_method(method);
         init.set_mode(web_sys::RequestMode::Cors);
         init.set_credentials(web_sys::RequestCredentials::Omit);
-        init.set_cache(web_sys::RequestCache::NoStore);
         let headers = web_sys::Headers::new().map_err(no_answer)?;
         if let Some(token) = token {
             headers.set("Authorization", &format!("Bearer {token}")).map_err(no_answer)?;
