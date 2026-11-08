@@ -1,6 +1,7 @@
 {
   "id": "deskwerk-docs",
   "name": "Docs",
+  "installDirKey": "Software\\DeskwerkDocs",
   "upgradeCode": "78337589-0956-416B-B1C6-FA48562A3C8C",
   "sources": [
     "wordcraft.wxs"
