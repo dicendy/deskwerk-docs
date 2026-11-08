@@ -73,33 +73,13 @@ impl Reader<'_> {
             float.effect = float.effect.map(|e| e.max(0.0));
             return Some(InlineObject::Graphic { w, h, alt, float, graphic });
         }
-        // A textbox may contain a picture; its descendant blip is not the outer payload.
-        let direct_shape = gd.child("wps:wsp").filter(|shape| {
-            // Picture fills still use the image fallback; the shape model has no image fill.
-            shape.child("wps:spPr").and_then(|props| props.child("a:blipFill")).is_none()
-        });
-        let mut obj = if let Some(c) = gd.child("wpc:wpc") {
-            self.read_canvas(sc, c, rels, w, h, float)
-        } else if let Some(g) = gd.child("wpg:wgp") {
-            self.read_group(sc, g, rels, w, h, float)?
-        } else if direct_shape.is_none() && gd.find("a:blip").is_some() {
-            self.read_pic(gd, rels, w, h, alt.clone(), float)?
-        } else {
-            let wsp = direct_shape.or_else(|| gd.find("wps:wsp"))?;
-            let mut obj = self.read_wsp(sc, wsp, rels, w, h, float);
-            // A freeform: whether it's ink WordCraft wrote.
-            if let InlineObject::Shape { freeform: Some(f), extra, .. } = &mut obj
-                && let Some(name) = c.child("wp:docPr").and_then(|p| p.attr("name"))
-                && let Some(tool) = crate::read::freeform::ink_tool(name)
-            {
-                let f = Arc::make_mut(f);
-                f.ink = Some(tool);
-                f.order = crate::read::freeform::ink_order(name);
-                // Ink's round ends belong to its tool, not the optional shape outline. Keep
-                // its canonical model unchanged when reading the round cap the writer adds.
-                extra.cap = Default::default();
-            }
-            obj
+        // A locked canvas (`lc:lockedCanvas`), a picture whose image is linked or missing, or a
+        // payload the model has no reader for: kept whole and shown as the missing-picture box,
+        // so saving writes it back rather than dropping it.
+        let read = if uri.ends_with("/lockedCanvas") { None } else { self.read_payload(sc, c, rels, (w, h), &alt, float.clone()) };
+        let mut obj = match read {
+            Some(obj) => obj,
+            None => self.keep_graphic(c, rels, (w, h), alt.clone(), float)?,
         };
         if !alt.is_empty() {
             obj.set_alt_text(&alt);
@@ -121,6 +101,57 @@ impl Reader<'_> {
             }
         }
         Some(obj)
+    }
+
+    /// A drawing's payload as the model holds it: a canvas, group, picture or shape. `None` when
+    /// it has none the model can show.
+    fn read_payload(&mut self, sc: &mut StoryCtx, c: &El, rels: &Rels, (w, h): (f32, f32), alt: &str, float: Float) -> Option<InlineObject> {
+        let gd = c.child("a:graphic").and_then(|g| g.child("a:graphicData"))?;
+        // A textbox may contain a picture; its descendant blip is not the outer payload.
+        let direct_shape = gd.child("wps:wsp").filter(|shape| {
+            // Picture fills still use the image fallback; the shape model has no image fill.
+            shape.child("wps:spPr").and_then(|props| props.child("a:blipFill")).is_none()
+        });
+        if let Some(canvas) = gd.child("wpc:wpc") {
+            return Some(self.read_canvas(sc, canvas, rels, w, h, float));
+        }
+        if let Some(g) = gd.child("wpg:wgp") {
+            return self.read_group(sc, g, rels, w, h, float);
+        }
+        if direct_shape.is_none() && gd.find("a:blip").is_some() {
+            return self.read_pic(gd, rels, w, h, alt.to_string(), float);
+        }
+        let wsp = direct_shape.or_else(|| gd.find("wps:wsp"))?;
+        let mut obj = self.read_wsp(sc, wsp, rels, w, h, float);
+        // A freeform: whether it's ink WordCraft wrote.
+        if let InlineObject::Shape { freeform: Some(f), extra, .. } = &mut obj
+            && let Some(name) = c.child("wp:docPr").and_then(|p| p.attr("name"))
+            && let Some(tool) = crate::read::freeform::ink_tool(name)
+        {
+            let f = Arc::make_mut(f);
+            f.ink = Some(tool);
+            f.order = crate::read::freeform::ink_order(name);
+            // Ink's round ends belong to its tool, not the optional shape outline. Keep
+            // its canonical model unchanged when reading the round cap the writer adds.
+            extra.cap = Default::default();
+        }
+        Some(obj)
+    }
+
+    /// A drawing's `a:graphic` kept whole, as an object shown by the missing-picture box: a locked
+    /// canvas, a picture whose image is linked (`r:link`) or missing, or a payload the model can't
+    /// read. A picture's relationship to a missing image is left out of what is kept, and a Strict
+    /// document's graphic URIs become the transitional ones the writer's namespaces go with.
+    /// `None` when it can't be kept (see `keep_embedded`).
+    fn keep_graphic(&mut self, c: &El, rels: &Rels, (w, h): (f32, f32), alt: String, mut float: Float) -> Option<InlineObject> {
+        let mut graphic = c.child("a:graphic")?.clone();
+        drop_broken_blip_rels(self.pkg, &mut graphic, rels, 0);
+        transitional_graphic_uris(&mut graphic, 0);
+        let picture = graphic.child("a:graphicData").and_then(|gd| gd.child("pic:pic"));
+        // Saving writes the object's turn into the picture's frame, so it is read from there.
+        float.set_spin(xfrm_spin(picture.and_then(|p| p.child("pic:spPr"))));
+        let kept = self.keep_embedded(&graphic, rels, &[])?;
+        Some(InlineObject::Image { media: String::new(), w, h, alt, float, crop: [0.0; 4], fx: Default::default(), ole: Some(kept) })
     }
 
     /// The hyperlink Word keeps on a drawing itself: its `wp:docPr`'s `a:hlinkClick` (ECMA-376
@@ -804,5 +835,41 @@ fn group_xfrm(sppr: Option<&El>) -> Xfrm {
         ext: pos(pair("a:ext", "cx", "cy", max)).unwrap_or((0.0, 0.0)),
         ch_off: pair("a:chOff", "x", "y", max),
         ch_ext: pos(pair("a:chExt", "cx", "cy", max)),
+    }
+}
+
+/// Leave out of `e` (a kept `a:graphic`) each picture relationship (`a:blip`'s `r:embed`,
+/// `r:link`) naming a relationship `rels` lacks or a part `pkg` lacks: the picture is kept
+/// without its image rather than dropped.
+fn drop_broken_blip_rels(pkg: &crate::package::Package, e: &mut El, rels: &Rels, depth: usize) {
+    if depth > crate::xml::MAX_DEPTH {
+        return;
+    }
+    if e.name == "a:blip" {
+        e.attrs.retain(|(k, v)| !k.starts_with("r:") || rels.by_id(v).is_some_and(|r| r.external || pkg.get(&r.target).is_some()));
+    }
+    for n in &mut e.kids {
+        if let Node::El(c) = n {
+            drop_broken_blip_rels(pkg, c, rels, depth + 1);
+        }
+    }
+}
+
+/// Strict DrawingML graphic URIs (`http://purl.oclc.org/ooxml/drawingml/lockedCanvas`…) in `e`
+/// as their transitional names, which the namespaces kept markup is written with go with.
+fn transitional_graphic_uris(e: &mut El, depth: usize) {
+    if depth > crate::xml::MAX_DEPTH {
+        return;
+    }
+    if e.name == "a:graphicData"
+        && let Some((_, v)) = e.attrs.iter_mut().find(|(k, _)| k == "uri")
+        && let Some(rest) = v.strip_prefix("http://purl.oclc.org/ooxml/drawingml/")
+    {
+        *v = format!("http://schemas.openxmlformats.org/drawingml/2006/{rest}");
+    }
+    for n in &mut e.kids {
+        if let Node::El(c) = n {
+            transitional_graphic_uris(c, depth + 1);
+        }
     }
 }

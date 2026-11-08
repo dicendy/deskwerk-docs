@@ -36,6 +36,8 @@ pub const NAMESPACES: &[(&str, &str)] = &[
     ("wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"),
     ("dgm", "http://schemas.openxmlformats.org/drawingml/2006/diagram"),
     ("dsp", "http://schemas.microsoft.com/office/drawing/2008/diagram"),
+    // A locked canvas (`lc:lockedCanvas`), Word 2003's drawing canvas: kept whole.
+    ("lc", "http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas"),
     ("m", "http://schemas.openxmlformats.org/officeDocument/2006/math"),
     ("v", "urn:schemas-microsoft-com:vml"),
     ("o", "urn:schemas-microsoft-com:office:office"),
@@ -79,6 +81,7 @@ const STRICT: &[(&str, &str)] = &[
     ("wp", "http://purl.oclc.org/ooxml/drawingml/wordprocessingDrawing"),
     ("a", "http://purl.oclc.org/ooxml/drawingml/main"),
     ("pic", "http://purl.oclc.org/ooxml/drawingml/picture"),
+    ("lc", "http://purl.oclc.org/ooxml/drawingml/lockedCanvas"),
     ("m", "http://purl.oclc.org/ooxml/officeDocument/math"),
 ];
 

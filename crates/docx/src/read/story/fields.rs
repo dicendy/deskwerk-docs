@@ -20,9 +20,17 @@ fn enclosure(f: &FieldState) -> Option<wordcraft_doc::eq::Enclosure> {
 }
 
 /// Fields kept as ranges: those whose result another program writes, with formatting and often
-/// several paragraphs (TOCs and citation managers' `ADDIN` fields).
+/// several paragraphs (TOCs, citation managers' `ADDIN` fields).
 fn is_range_instr(instr: &str) -> bool {
     crate::read::is_toc(instr) || instr.trim_start().get(..5).is_some_and(|k| k.eq_ignore_ascii_case("ADDIN"))
+}
+
+/// Fields that become ranges once their result runs on into another paragraph rather than
+/// spilling: Word's bibliography, a list of sources a paragraph each, which the engine updates
+/// as a range too. One whose result stays in its paragraph (the engine's own, empty) stays a
+/// field.
+fn spans_as_range(instr: &str) -> bool {
+    instr.split_whitespace().next().is_some_and(|k| k.eq_ignore_ascii_case("BIBLIOGRAPHY"))
 }
 
 impl Reader<'_> {
@@ -112,8 +120,12 @@ impl Reader<'_> {
         // A tracked insertion or deletion inside the result (one the field itself isn't wrapped
         // in) keeps the field a range too: a cached text result has one revision at most, so
         // each piece stays an ordinary run with its own `w:ins` / `w:del` (#1037).
+        // So does a field in the result (`IF … "{ MERGEFIELD Name }"`): it stays a field of its own.
         let tracked_inside = f.buf.iter().any(|(_, p)| (p.ins, p.del) != (f.props.ins, f.props.del));
-        if !nested_in_instr && (tracked_inside || f.buf.iter().any(|(it, _)| matches!(it, Item::Obj(o) if o.frame().is_some()))) {
+        let kept_inside = f.buf.iter().any(|(it, _)| {
+            matches!(it, Item::Obj(o) if o.frame().is_some() || matches!(**o, InlineObject::Field { .. } | InlineObject::FieldStart { .. }))
+        });
+        if !nested_in_instr && (tracked_inside || kept_inside) {
             self.emit_obj(sc, pb, InlineObject::FieldStart { instr: f.instr.trim().to_string(), locked: f.locked, dirty: f.dirty }, &f.props);
             for (it, p) in f.buf {
                 match it {
@@ -147,14 +159,21 @@ impl Reader<'_> {
             })
             .unwrap_or(&f.props)
             .clone();
-        let obj = InlineObject::Field { instr, result, locked: f.locked, dirty: f.dirty, code: false, form: f.form };
+        // A field in another's code is part of that code, as `{ CODE }` (`IF { MERGEFIELD City } =
+        // "Oslo" …`), which the writer turns back into a nested field. One without a code of its
+        // own adds its result, as it did before.
         if let Some(parent) = sc.fields.last_mut()
             && !parent.spilled
             && parent.phase == Phase::Instr
         {
-            parent.instr.push_str(obj.plain_text());
+            if instr.is_empty() {
+                parent.instr.push_str(&result);
+            } else {
+                parent.instr.push_str(&format!("{{ {instr} }}"));
+            }
             return;
         }
+        let obj = InlineObject::Field { instr, result, locked: f.locked, dirty: f.dirty, code: false, form: f.form };
         self.emit_obj(sc, pb, obj, &props);
     }
 
@@ -163,6 +182,17 @@ impl Reader<'_> {
     pub(super) fn spill_fields(&mut self, sc: &mut StoryCtx, pb: &mut PB) {
         for f in sc.fields.iter_mut() {
             if f.spilled || f.range {
+                continue;
+            }
+            if f.phase == Phase::Result && spans_as_range(&f.instr) {
+                f.range = true;
+                pb.push_obj(InlineObject::FieldStart { instr: f.instr.trim().to_string(), locked: f.locked, dirty: f.dirty }, &f.props);
+                for (it, p) in f.buf.drain(..) {
+                    match it {
+                        Item::Text(t) => pb.push_text(&t, &p),
+                        Item::Obj(o) => pb.push_obj(*o, &p),
+                    }
+                }
                 continue;
             }
             f.spilled = true;

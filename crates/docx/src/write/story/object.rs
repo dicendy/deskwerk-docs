@@ -257,6 +257,11 @@ impl Writer<'_> {
 
     fn write_image(&mut self, w: &mut W, o: &InlineObject, props: &CharProps, rels: &mut PartRels, _depth: usize) {
         let InlineObject::Image { media, w: iw, h: ih, alt, float, ole, .. } = o else { return };
+        // A drawing kept whole from a file: its graphic, in a frame of the object's size and place.
+        if let Some(src) = ole.as_deref().filter(|e| e.xml.starts_with("<a:graphic ")) {
+            self.write_kept_graphic(w, o, src, props, rels);
+            return;
+        }
         // An OLE object read from a file: the object itself, at its current size.
         if let Some(src) = ole.as_deref().filter(|e| !e.is_odf_object())
             && let Some(obj) = self.embedded_xml(src, rels, Some((*iw, *ih, float, alt.as_str())))
@@ -286,6 +291,23 @@ impl Writer<'_> {
         w.close("a:graphic");
         w.close(if float.wrap == Wrap::Inline { "wp:inline" } else { "wp:anchor" });
         w.close("w:drawing");
+        w.close("w:r");
+        self.rev_close(w, props);
+    }
+
+    /// A drawing the reader kept whole (a locked canvas, or a picture whose image is linked or
+    /// missing): its `a:graphic`, with a picture's frame set to the object's size and turn, in a
+    /// drawing of the object's current size and place. Left out when its parts are gone.
+    fn write_kept_graphic(&mut self, w: &mut W, o: &InlineObject, src: &wordcraft_doc::graphic::Embedded, props: &CharProps, rels: &mut PartRels) {
+        let InlineObject::Image { w: iw, h: ih, alt, float, .. } = o else { return };
+        let Some(graphic) = self.embedded_tree(src, rels, Some((*iw, *ih, float, alt.as_str()))) else { return };
+        self.rev_open(w, props);
+        w.open("w:r", &[]);
+        self.rpr(w, props);
+        let docpr = self.next_docpr();
+        let link = Self::drawing_link(props, rels);
+        let name = format!("Picture {docpr}");
+        self.graphic_frame(w, DrawingInfo { float, size: (*iw, *ih), docpr: &docpr, name: &name, alt, link: link.as_deref() }, &graphic);
         w.close("w:r");
         self.rev_close(w, props);
     }

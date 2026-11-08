@@ -492,6 +492,8 @@ impl super::Writer<'_> {
                 set_attr(e, "alt", alt);
             }
             "wp:extent" => set_size_attrs(e, w, h),
+            // Only a picture's own frame follows the object: a locked canvas's members keep theirs.
+            "a:graphicData" if e.attr("uri") != Some("http://schemas.openxmlformats.org/drawingml/2006/picture") => return,
             // A turned object needs an effect extent (filled in below) right after its extent.
             "wp:inline" | "wp:anchor" if !e.els().any(|c| c.name == "wp:effectExtent") && float.spin().deg != 0.0 => {
                 if let Some(at) = e.kids.iter().position(|k| matches!(k, xml::Node::El(c) if c.name == "wp:extent")) {
