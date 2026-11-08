@@ -14,8 +14,15 @@ with a timeout:
 Then, in Python only: the saved file is a valid zip whose XML parts all parse; the body text and
 a few structure counts (paragraphs, tables, pictures, fields, tracked changes, ...) of
 word/document.xml before and after; and with --soffice, LibreOffice's text of both files.
+Text and structure inside mc:AlternateContent count once, from the branch an app picks
+(mc:Choice; the mc:Fallback copy is skipped), and a field counts once however it is written
+(w:fldSimple or w:fldChar; a HYPERLINK field counts as a hyperlink).
 Each step ends ok, err (non-zero exit), panic (Rust panic, exit 101), crash (killed by a signal)
-or timeout. Writes corpus-report.json and corpus-report.md to --out and appends the summary to
+or timeout. A file whose steps all pass gets the verdict real_loss when LibreOffice's text drops
+or a structure count drops, text_changed when only the app's or the XML's text differs, else ok.
+The saved file keeps the original's name (in a folder per file), so FILENAME fields read the
+same. Saved files with a verdict other than ok are copied to --failed-dir up to --failed-mb.
+Writes corpus-report.json and corpus-report.md to --out and appends the summary to
 $GITHUB_STEP_SUMMARY when set. Standard library only.
 """
 
@@ -40,17 +47,20 @@ import xml.etree.ElementTree as ET
 TOOL = "wordcraft-cli"
 EXT = ".docx"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+W_NAMESPACES = ("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "http://purl.oclc.org/ooxml/wordprocessingml/main")
+M_NAMESPACES = ("http://schemas.openxmlformats.org/officeDocument/2006/math", "http://purl.oclc.org/ooxml/officeDocument/math")
+MC_FALLBACK = "{http://schemas.openxmlformats.org/markup-compatibility/2006}Fallback"
+VML_SHAPETYPE = "{urn:schemas-microsoft-com:vml}shapetype"
 OFFICE_DOC = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
 STRICT_OFFICE_DOC = "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument"
-# Structure counted in the main part: local name -> label.
+# Structure counted in the main part: WordprocessingML local name -> label. Fields (w:fldSimple
+# and complex fields from w:fldChar begin) and VML pictures (w:pict holding more than a
+# v:shapetype) are counted on their own in docx_body.
 FEATURES = {
     "p": "paragraphs",
     "tbl": "tables",
     "drawing": "drawings",
-    "pict": "vml_pictures",
     "hyperlink": "hyperlinks",
-    "fldSimple": "simple_fields",
-    "fldChar": "complex_field_chars",
     "ins": "tracked_insertions",
     "del": "tracked_deletions",
     "commentRangeStart": "comment_ranges",
@@ -59,8 +69,10 @@ FEATURES = {
     "sectPr": "sections",
     "bookmarkStart": "bookmarks",
     "sdt": "content_controls",
-    "oMath": "equations",
 }
+LABELS = [*FEATURES.values(), "vml_pictures", "fields", "equations"]
+# Labels whose count can drop without content going (empty paragraphs).
+NOT_LOSS = {"paragraphs"}
 MAX_XML_BYTES = 200 * 1024 * 1024  # unpacked part size above which the part is not parsed
 STAGE_RANK = {"open": 0, "save": 1, "reopen": 2, "package": 3}
 
@@ -210,9 +222,25 @@ def check_package(path: str) -> dict:
     return out
 
 
+def split_tag(tag: str) -> tuple[str, str]:
+    """(namespace, local name) of an ElementTree tag."""
+    if tag.startswith("{"):
+        ns, _, local = tag[1:].partition("}")
+        return ns, local
+    return "", tag
+
+
+def field_label(instr: str) -> str:
+    """A field's label by its instruction: HYPERLINK fields are hyperlinks (a writer may turn one
+    into w:hyperlink and back)."""
+    word = instr.strip().split(None, 1)
+    return "hyperlinks" if word and word[0].upper() == "HYPERLINK" else "fields"
+
+
 def docx_body(path: str) -> dict | None:
     """Text and structure counts of the main part, read with the standard library. None when the
-    file is not a readable package (encrypted, binary .doc, broken zip)."""
+    file is not a readable package (encrypted, binary .doc, broken zip). mc:Fallback content (the
+    copy of mc:Choice for older apps) is skipped, so nothing counts twice."""
     try:
         with zipfile.ZipFile(path) as z:
             part = main_part(z)
@@ -222,29 +250,66 @@ def docx_body(path: str) -> dict | None:
             if info.file_size > MAX_XML_BYTES:
                 return None
             with z.open(part) as f:
-                counts = collections.Counter()
-                paras: list[str] = []
-                cur: list[str] = []
-                for event, el in ET.iterparse(f, events=("start", "end")):
-                    tag = el.tag
-                    local = tag.rsplit("}", 1)[-1]
-                    if event == "start":
-                        if local in FEATURES and (local != "fldChar" or el.get(W + "fldCharType") == "begin"):
-                            counts[FEATURES[local]] += 1
-                        continue
-                    if tag == W + "t":
-                        cur.append(el.text or "")
-                    elif tag == W + "tab":
-                        cur.append("\t")
-                    elif tag in (W + "br", W + "cr"):
-                        cur.append("\n")
-                    elif tag == W + "p":
-                        paras.append("".join(cur))
-                        cur = []
-                        el.clear()
-                return {"text": "\n".join(paras), "counts": dict(counts)}
+                return _body_of(f)
     except (zipfile.BadZipFile, KeyError, OSError, ET.ParseError, RuntimeError, NotImplementedError, EOFError):
         return None
+
+
+def _body_of(f) -> dict:
+    counts = collections.Counter()
+    paras: list[str] = []
+    cur: list[str] = []
+    fallback = 0  # depth inside mc:Fallback
+    fields: list[list] = []  # open complex fields: [instruction so far, counted yet]
+
+    def count_field(fld: list) -> None:
+        if not fld[1]:
+            counts[field_label(fld[0])] += 1
+            fld[1] = True
+
+    for event, el in ET.iterparse(f, events=("start", "end")):
+        tag = el.tag
+        if tag == MC_FALLBACK:
+            fallback += 1 if event == "start" else -1
+            continue
+        if fallback:
+            continue
+        ns, local = split_tag(tag)
+        if ns not in W_NAMESPACES:
+            if event == "start" and local == "oMath" and ns in M_NAMESPACES:
+                counts["equations"] += 1
+            continue
+        if event == "start":
+            if local in FEATURES:
+                counts[FEATURES[local]] += 1
+            elif local == "fldSimple":
+                counts[field_label(el.get(f"{{{ns}}}instr") or "")] += 1
+            elif local == "fldChar":
+                kind = el.get(f"{{{ns}}}fldCharType")
+                if kind == "begin":
+                    fields.append(["", False])
+                elif fields and kind in ("separate", "end"):
+                    count_field(fields[-1])
+                    if kind == "end":
+                        fields.pop()
+            continue
+        if local == "t":
+            cur.append(el.text or "")
+        elif local == "instrText" and fields:
+            fields[-1][0] += el.text or ""
+        elif local == "tab":
+            cur.append("\t")
+        elif local in ("br", "cr"):
+            cur.append("\n")
+        elif local == "pict" and any(k.tag != VML_SHAPETYPE for k in el):
+            counts["vml_pictures"] += 1
+        elif local == "p":
+            paras.append("".join(cur))
+            cur = []
+            el.clear()
+    for fld in fields:
+        count_field(fld)
+    return {"text": "\n".join(paras), "counts": dict(counts)}
 
 
 # ---------------------------------------------------------------- text comparison
@@ -296,7 +361,10 @@ def soffice_text(soffice: str, path: str, timeout: float) -> tuple[str | None, s
 def process(entry: dict, args, workdir: str, env: dict) -> dict:
     src = os.path.join(args.corpus, entry["file"])
     rec = {"file": entry["file"], "source": entry["source"], "url": entry["url"], "bytes": int(entry["bytes"])}
-    rt = os.path.join(workdir, f"{entry['n']:05d}{EXT}")
+    # The saved file keeps the original's name (FILENAME fields show it), in a folder of its own.
+    rt_dir = os.path.join(workdir, f"{entry['n']:05d}")
+    os.makedirs(rt_dir, exist_ok=True)
+    rt = os.path.join(rt_dir, rt_name(entry["file"]))
     paths = [src, rt, args.corpus, workdir]
 
     def step(name: str, argv: list[str]) -> dict:
@@ -339,7 +407,7 @@ def process(entry: dict, args, workdir: str, env: dict) -> dict:
     if body_a and body_b:
         rec["sim_xml_text"] = similarity(body_a["text"], body_b["text"])
         lost = {}
-        for label in FEATURES.values():
+        for label in LABELS:
             a, b = body_a["counts"].get(label, 0), body_b["counts"].get(label, 0)
             if a != b:
                 lost[label] = [a, b]
@@ -353,13 +421,48 @@ def process(entry: dict, args, workdir: str, env: dict) -> dict:
         rec["sim_lo_text"] = similarity(lo_a, lo_b)
         if ea or eb:
             rec["lo_error"] = f"original: {ea or 'ok'}, round-trip: {eb or 'ok'}"
-    if not args.keep:
-        try:
-            os.remove(rt)
-        except OSError:
-            pass
     rec["verdict"] = verdict(rec)
+    if rec["verdict"] != "ok" and saved:
+        kept = keep_failed(rt, f"{entry['n']:05d}-{os.path.basename(rt)}", args)
+        if kept:
+            rec["rt_kept"] = kept
+    if not args.keep:
+        shutil.rmtree(rt_dir, ignore_errors=True)
     return rec
+
+
+def rt_name(file: str) -> str:
+    """The saved file's name: the original's, as .docx, without characters a path can't take."""
+    stem = os.path.splitext(os.path.basename(file))[0]
+    stem = re.sub(r"[\x00-\x1f/\\:*?\"<>|]", "_", stem).strip(" .")[:150] or "file"
+    return stem + EXT
+
+
+_failed_lock = threading.Lock()
+_failed_bytes = [0]
+
+
+def keep_failed(rt: str, name: str, args) -> str | None:
+    """Copy a saved file with a verdict other than ok to --failed-dir while the total stays within
+    --failed-mb; the copy's name relative to that folder, or None."""
+    if not args.failed_dir or args.failed_mb <= 0:
+        return None
+    try:
+        size = os.path.getsize(rt)
+    except OSError:
+        return None
+    with _failed_lock:
+        if _failed_bytes[0] + size > args.failed_mb * 1024 * 1024:
+            return None
+        _failed_bytes[0] += size
+    try:
+        os.makedirs(args.failed_dir, exist_ok=True)
+        shutil.copyfile(rt, os.path.join(args.failed_dir, name))
+    except OSError:
+        with _failed_lock:
+            _failed_bytes[0] -= size
+        return None
+    return name
 
 
 def verdict(rec: dict) -> str:
@@ -369,10 +472,17 @@ def verdict(rec: dict) -> str:
             return f"{stage}:{st}"
     if rec.get("save") != "ok":
         return "save:skipped"
+    if structure_lost(rec) or (rec.get("sim_lo_text") is not None and rec["sim_lo_text"] < 0.99):
+        return "real_loss"
     sims = [rec.get(k) for k in ("sim_app_text", "sim_xml_text", "sim_lo_text") if rec.get(k) is not None]
     if sims and min(sims) < 0.99:
         return "text_changed"
     return "ok"
+
+
+def structure_lost(rec: dict) -> list[str]:
+    """Structure counts (outside mc:Fallback) that dropped on the round trip, empty paragraphs aside."""
+    return sorted(label for label, (a, b) in (rec.get("count_changes") or {}).items() if b < a and label not in NOT_LOSS)
 
 
 def badness(rec: dict) -> tuple:
@@ -381,7 +491,7 @@ def badness(rec: dict) -> tuple:
         stage, st = v.split(":", 1)
         return (0, STAGE_RANK.get(stage, 9), {"panic": 0, "crash": 0, "timeout": 1, "err": 2}.get(st, 3), rec["file"])
     sims = [rec.get(k) for k in ("sim_app_text", "sim_xml_text", "sim_lo_text") if rec.get(k) is not None]
-    return (1, min(sims) if sims else 1.0, -len(rec.get("count_changes") or {}), rec["file"])
+    return (1 if v == "real_loss" else 2, min(sims) if sims else 1.0, -len(rec.get("count_changes") or {}), rec["file"])
 
 
 # ---------------------------------------------------------------- report
@@ -414,6 +524,8 @@ def summarize(recs: list[dict], not_run: int) -> dict:
         for label, (a, b) in (r.get("count_changes") or {}).items():
             changes[f"{label} {'lost' if b < a else 'gained'}"] += 1
     s["structure_changes"] = dict(changes.most_common())
+    s["structure_lost"] = dict(collections.Counter(label for r in recs for label in structure_lost(r)).most_common())
+    s["rt_kept"] = sum(1 for r in recs if r.get("rt_kept"))
     by_src = {}
     for src in sorted({r["source"] for r in recs}):
         rs = [r for r in recs if r["source"] == src]
@@ -456,7 +568,11 @@ def render_md(report: dict, worst: int) -> tuple[str, str]:
         L.append(f"| {stage} | {c.get('ok', 0)} ({pct(c.get('ok', 0), s['processed'])}) | {c.get('err', 0)} | {c.get('panic', 0)} | "
                  f"{c.get('crash', 0)} | {c.get('timeout', 0)} | {c.get('skipped', 0)} |")
     L += ["", f"Full round trip (open, save, reopen, valid package): **{s['full_round_trip_ok']}** "
-          f"({pct(s['full_round_trip_ok'], s['processed'])}); verdict ok (and text kept ≥ 99%): **{s['verdicts'].get('ok', 0)}**.", ""]
+          f"({pct(s['full_round_trip_ok'], s['processed'])}); verdict ok (and text kept ≥ 99%): **{s['verdicts'].get('ok', 0)}**; "
+          f"real loss (LibreOffice's text or a structure count dropped): **{s['verdicts'].get('real_loss', 0)}**; "
+          f"text changed otherwise: {s['verdicts'].get('text_changed', 0)}.", ""]
+    if s.get("rt_kept"):
+        L += [f"Saved files kept for a look (verdict not ok): {s['rt_kept']}.", ""]
     L += ["| Text kept (word overlap) | files | identical | ≥ 0.99 | < 0.90 | median | mean |", "|---|---|---|---|---|---|---|"]
     labels = {"sim_app_text": "app text, original vs saved", "sim_xml_text": "document.xml text, original vs saved",
               "sim_lo_text": "LibreOffice text, original vs saved", "sim_open_vs_xml": "app text vs document.xml (open only)"}
@@ -465,8 +581,10 @@ def render_md(report: dict, worst: int) -> tuple[str, str]:
             v = s[key]
             L.append(f"| {label} | {v['files']} | {v['identical']} | {v['ge_0.99']} | {v['lt_0.90']} | {v['median']} | {v['mean']} |")
     if s["structure_changes"]:
-        L += ["", "Structure counts in document.xml that changed on the round trip (files):", ""]
+        L += ["", "Structure counts in document.xml (mc:Fallback copies left out) that changed on the round trip (files):", ""]
         L.append(", ".join(f"{k}: {v}" for k, v in s["structure_changes"].items()))
+    if s.get("structure_lost"):
+        L += ["", "Of those, drops that make a real loss (files): " + ", ".join(f"{k}: {v}" for k, v in s["structure_lost"].items())]
     L += ["", "| Source | files | open ok | round trip ok |", "|---|---|---|---|"]
     for src, v in s["by_source"].items():
         L.append(f"| {src} | {v['files']} | {v['open_ok']} | {v['round_trip_ok']} |")
@@ -474,10 +592,11 @@ def render_md(report: dict, worst: int) -> tuple[str, str]:
     for g in report["error_groups"][:25]:
         L.append(f"| {g['count']} | {g['stage']} | {g['status']} | {md_cell(g['message'])} | {md_cell(g['files'][0])} |")
     summary = "\n".join(L) + "\n"
-    W2 = ["", f"## Worst {worst} files", "", "| verdict | app text | xml text | LO text | file | error |", "|---|---|---|---|---|---|"]
+    W2 = ["", f"## Worst {worst} files", "", "| verdict | app text | xml text | LO text | lost | file | error |", "|---|---|---|---|---|---|---|"]
     for r in report["worst"][:worst]:
         err = next((r.get(f"{k}_error") for k in ("open", "save", "reopen", "package") if r.get(f"{k}_error")), "")
-        W2.append(f"| {r['verdict']} | {r.get('sim_app_text', '')} | {r.get('sim_xml_text', '')} | {r.get('sim_lo_text', '')} | "
+        lost = ", ".join(f"{k} {(r.get('count_changes') or {})[k][0]}→{(r.get('count_changes') or {})[k][1]}" for k in structure_lost(r))
+        W2.append(f"| {r['verdict']} | {r.get('sim_app_text', '')} | {r.get('sim_xml_text', '')} | {r.get('sim_lo_text', '')} | {md_cell(lost)} | "
                   f"[{md_cell(r['file'])}]({r['url']}) | {md_cell(err)} |")
     return summary, summary + "\n".join(W2) + "\n"
 
@@ -503,6 +622,8 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=0, help="only the first N files (0 = all)")
     ap.add_argument("--worst", type=int, default=40, help="files listed in the worst table")
     ap.add_argument("--keep", action="store_true", help="keep the saved round-trip files in OUT/work")
+    ap.add_argument("--failed-dir", default=None, help="copy saved files with a verdict other than ok here (default OUT/failed-rt)")
+    ap.add_argument("--failed-mb", type=float, default=50.0, help="total size of the copies in --failed-dir (default 50, 0 = none)")
     args = ap.parse_args()
     args.bin = os.path.abspath(args.bin)
     args.corpus = os.path.abspath(args.corpus)
@@ -512,6 +633,7 @@ def main() -> int:
             print(f"soffice not found ({args.soffice}); LibreOffice comparison off", file=sys.stderr)
         args.soffice = found
     os.makedirs(args.out, exist_ok=True)
+    args.failed_dir = os.path.abspath(args.failed_dir or os.path.join(args.out, "failed-rt"))
     workdir = os.path.join(os.path.abspath(args.out), "work")
     os.makedirs(workdir, exist_ok=True)
 
@@ -559,7 +681,7 @@ def main() -> int:
         "files": recs,
     }
     report["worst"] = [
-        {k: r.get(k) for k in ("file", "url", "verdict", "sim_app_text", "sim_xml_text", "sim_lo_text", "open_error", "save_error", "reopen_error", "package_error", "count_changes") if r.get(k) not in (None, {}, [])}
+        {k: r.get(k) for k in ("file", "url", "verdict", "sim_app_text", "sim_xml_text", "sim_lo_text", "open_error", "save_error", "reopen_error", "package_error", "count_changes", "rt_kept") if r.get(k) not in (None, {}, [])}
         for r in sorted(recs, key=badness)
         if r["verdict"] != "ok"
     ][: args.worst]

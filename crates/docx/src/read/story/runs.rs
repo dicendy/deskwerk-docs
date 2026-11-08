@@ -153,11 +153,7 @@ impl Reader<'_> {
         if depth > crate::xml::MAX_DEPTH {
             return;
         }
-        // A custom footnote mark: the text right after the reference is the mark.
-        if let Some((_, _, Some(custom))) = note.as_mut()
-            && k.name == "w:t"
-        {
-            custom.push_str(&clean_text(&k.text()));
+        if custom_mark(note, k) {
             return;
         }
         if k.name != "w:rPr"
@@ -210,14 +206,7 @@ impl Reader<'_> {
             "w:noBreakHyphen" => self.emit_text(sc, pb, "\u{2011}", props),
             "w:softHyphen" => self.emit_text(sc, pb, "\u{00AD}", props),
             "w:sym" => {
-                let h_str = k.attr("w:char").map(|h| {
-                    let s = h.trim();
-                    let s = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")).unwrap_or(s);
-                    let s = s.strip_prefix("U+").or_else(|| s.strip_prefix("u+")).unwrap_or(s);
-                    s.strip_prefix("#x").or_else(|| s.strip_prefix("#X")).unwrap_or(s)
-                });
-                let ch = h_str.and_then(|h| u32::from_str_radix(h, 16).ok()).and_then(char::from_u32).filter(|c| *c as u32 >= 0x20);
-                if let Some(ch) = ch {
+                if let Some(ch) = sym_char(k) {
                     let mut p = props.clone();
                     // The symbol's own font, kept apart from the run's (ECMA-376 §17.3.3.30).
                     if let Some(f) = k.attr("w:font").filter(|f| !f.trim().is_empty()) {
@@ -394,4 +383,30 @@ impl Reader<'_> {
             _ => pb.push_obj(o, props),
         }
     }
+}
+
+/// A custom footnote or endnote mark (`w:customMarkFollows`): the text right after the reference,
+/// or a symbol there (`w:sym`, Word's Insert › Symbol for the mark) as its Unicode character.
+/// Whether `k` was taken into the mark.
+fn custom_mark(note: &mut Option<(NoteKind, u32, Option<String>)>, k: &El) -> bool {
+    let Some((_, _, Some(custom))) = note.as_mut() else { return false };
+    match k.name.as_str() {
+        "w:t" => custom.push_str(&clean_text(&k.text())),
+        "w:sym" => match sym_char(k).and_then(|c| wordcraft_doc::symbol_fonts::symbol_char(k.attr("w:font").unwrap_or(""), c)) {
+            Some(c) if custom.len() < 64 => custom.push(c),
+            _ => return false,
+        },
+        _ => return false,
+    }
+    true
+}
+
+/// The character of a `w:sym` (`w:char`, hexadecimal, with or without a `0x`, `U+` or `#x`
+/// prefix); none for a control character.
+fn sym_char(k: &El) -> Option<char> {
+    let s = k.attr("w:char")?.trim();
+    let s = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")).unwrap_or(s);
+    let s = s.strip_prefix("U+").or_else(|| s.strip_prefix("u+")).unwrap_or(s);
+    let s = s.strip_prefix("#x").or_else(|| s.strip_prefix("#X")).unwrap_or(s);
+    u32::from_str_radix(s, 16).ok().and_then(char::from_u32).filter(|c| *c as u32 >= 0x20)
 }

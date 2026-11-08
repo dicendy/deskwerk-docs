@@ -39,17 +39,16 @@ impl Reader<'_> {
                         first.append(p);
                         first.props = props;
                         out.push(para_block(first));
-                        continue;
+                    } else {
+                        out.push(para_block(p));
                     }
-                    out.push(para_block(p));
-                }
-                "w:tbl" => {
-                    if depth / 4 >= MAX_TABLE_DEPTH {
-                        out.push(para_block(Paragraph::with_text(&clean_text(&e.deep_text()), CharProps::default())));
-                    } else if let Some(t) = self.read_table(sc, e, rels, depth) {
-                        out.push(Arc::new(Block::Table(t)));
+                    // A table written inside a paragraph (not valid, but some tools write it)
+                    // follows the paragraph, as LibreOffice shows it.
+                    for t in e.children("w:tbl") {
+                        self.read_block_table(sc, t, rels, out, depth);
                     }
                 }
+                "w:tbl" => self.read_block_table(sc, e, rels, out, depth),
                 "w:sdt" => self.read_block_sdt(sc, e, rels, out, depth),
                 "w:altChunk" => self.read_alt_chunk(sc, e, rels, out, depth),
                 "w:customXml" | "w:smartTag" | "w:ins" | "w:moveTo" => self.read_blocks(sc, e, rels, out, depth + 1),
@@ -73,6 +72,15 @@ impl Reader<'_> {
                 "w:moveFromRangeStart" | "w:moveFromRangeEnd" | "w:moveToRangeStart" | "w:moveToRangeEnd" => self.move_range(e),
                 _ => {}
             }
+        }
+    }
+
+    /// A table in a story; past the nesting limit, its text as one paragraph.
+    fn read_block_table(&mut self, sc: &mut StoryCtx, e: &El, rels: &Rels, out: &mut Blocks, depth: usize) {
+        if depth / 4 >= MAX_TABLE_DEPTH {
+            out.push(para_block(Paragraph::with_text(&clean_text(&e.deep_text()), CharProps::default())));
+        } else if let Some(t) = self.read_table(sc, e, rels, depth) {
+            out.push(Arc::new(Block::Table(t)));
         }
     }
 
@@ -332,7 +340,12 @@ impl Reader<'_> {
         }
         let mut rows = Vec::new();
         collect(t, "w:tr", &mut rows, &mut Vec::new(), 0);
-        for (tr, row_controls) in rows.into_iter().take(MAX_ROWS) {
+        // Bookmarks and other range markers between rows or cells (CT_Tbl and CT_Row allow them)
+        // go to the start of the next cell, or after the last one to the end of the last cell.
+        let (mut row_marks, mut next_row_mark) = (Vec::new(), 0);
+        collect_markers(t, "w:tr", &mut row_marks, &mut 0, 0);
+        for (ri, (tr, row_controls)) in rows.into_iter().take(MAX_ROWS).enumerate() {
+            self.pend_markers(sc, &row_marks, &mut next_row_mark, ri);
             let mut row = Row { props: tr.child("w:trPr").map(trpr).unwrap_or_default(), cells: Vec::new(), controls: row_controls };
             row.props.exceptions = tr.child("w:tblPrEx").map(|e| Box::new(self.pc.tblpr(e)));
             if let Some(ch) = tr.child("w:trPr").and_then(|p| p.child("w:trPrChange")) {
@@ -341,7 +354,10 @@ impl Reader<'_> {
             }
             let mut tcs = Vec::new();
             collect(tr, "w:tc", &mut tcs, &mut Vec::new(), 0);
-            for (tc, cell_controls) in tcs.into_iter().take(MAX_COLS) {
+            let (mut cell_marks, mut next_cell_mark) = (Vec::new(), 0);
+            collect_markers(tr, "w:tc", &mut cell_marks, &mut 0, 0);
+            for (ci, (tc, cell_controls)) in tcs.into_iter().take(MAX_COLS).enumerate() {
+                self.pend_markers(sc, &cell_marks, &mut next_cell_mark, ci);
                 let (mut props, hcont) = tc
                     .child("w:tcPr")
                     .map(|p| tcpr(&self.pc, p))
@@ -359,9 +375,17 @@ impl Reader<'_> {
                 self.flush_pending(sc, &mut blocks);
                 row.cells.push(Cell { props, blocks, controls: cell_controls });
             }
+            self.pend_markers(sc, &cell_marks, &mut next_cell_mark, usize::MAX);
+            if let Some(cell) = row.cells.last_mut() {
+                self.flush_pending(sc, &mut cell.blocks);
+            }
             if !row.cells.is_empty() {
                 table.rows.push(row);
             }
+        }
+        self.pend_markers(sc, &row_marks, &mut next_row_mark, usize::MAX);
+        if let Some(cell) = table.rows.last_mut().and_then(|r| r.cells.last_mut()) {
+            self.flush_pending(sc, &mut cell.blocks);
         }
         if table.rows.is_empty() {
             return None;
@@ -371,5 +395,46 @@ impl Reader<'_> {
             table.grid = vec![72.0; cols];
         }
         Some(table)
+    }
+
+    /// Read the markers of `marks` (from `collect_markers`) from `*next` on that come before
+    /// element `upto` into the pending markers.
+    fn pend_markers(&mut self, sc: &mut StoryCtx, marks: &[(usize, &El)], next: &mut usize, upto: usize) {
+        while let Some(&(at, m)) = marks.get(*next) {
+            if at > upto {
+                break;
+            }
+            *next += 1;
+            if let Some(o) = self.marker(m) {
+                sc.pending.push(o);
+            }
+        }
+    }
+}
+
+/// The range markers among `name` children (rows, cells), looked for where `collect` looks for
+/// those (through content controls, custom XML and the selected alternate-content branch); each
+/// with the number of `name` elements before it.
+fn collect_markers<'a>(e: &'a El, name: &str, out: &mut Vec<(usize, &'a El)>, seen: &mut usize, depth: usize) {
+    if depth > 8 {
+        return;
+    }
+    for k in e.els() {
+        match k.name.as_str() {
+            n if n == name => *seen += 1,
+            "w:bookmarkStart" | "w:bookmarkEnd" | "w:commentRangeStart" | "w:commentRangeEnd" | "w:permStart" | "w:permEnd" => out.push((*seen, k)),
+            "w:sdt" => {
+                if let Some(c) = k.child("w:sdtContent") {
+                    collect_markers(c, name, out, seen, depth + 1);
+                }
+            }
+            "w:customXml" => collect_markers(k, name, out, seen, depth + 1),
+            "mc:AlternateContent" => {
+                if let Some(branch) = children_of_choice(k) {
+                    collect_markers(branch, name, out, seen, depth + 1);
+                }
+            }
+            _ => {}
+        }
     }
 }

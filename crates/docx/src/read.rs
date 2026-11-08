@@ -66,6 +66,8 @@ const MAX_BIBLIOGRAPHY_PARTS: usize = 64;
 
 /// Longest attached-template path we keep (bytes); a longer one is not a real path.
 const MAX_TEMPLATE_PATH: usize = 32 * 1024;
+/// `w:body` elements read from the main part (a valid one has one).
+const MAX_BODIES: usize = 64;
 
 pub(crate) struct Reader<'p> {
     pkg: &'p Package,
@@ -278,19 +280,7 @@ fn read_opened_in(pkg: &Package, chunks: ChunkState) -> Result<(Document, usize,
             });
         }
     }
-    if let Some(body) = root.child("w:body") {
-        let mut sc = StoryCtx::default();
-        let mut blocks = Blocks::new();
-        r.read_blocks(&mut sc, body, &rels, &mut blocks, r.chunks.depth);
-        r.flush_pending(&mut sc, &mut blocks);
-        r.doc.body = blocks;
-        unstyle_toc_links(&mut r.doc);
-        toc_control_to_toc(&mut r.doc.body);
-        toc_field_to_heading(&mut r.doc.body);
-        if let Some(s) = body.child("w:sectPr") {
-            r.doc.last_section = r.read_section(s, &rels);
-        }
-    }
+    r.read_main_bodies(&root, &rels);
     // A watermark in the box Word's Design › Watermark gives it for the page keeps no box of its
     // own: it follows the page, as when it was made.
     let (pw, ph) = (r.doc.last_section.page_w, r.doc.last_section.page_h);
@@ -358,6 +348,29 @@ pub(crate) struct MoveCtx {
 }
 
 impl Reader<'_> {
+    /// The main story. A main part with several `w:body` elements (some tools write them) shows
+    /// them all, one after another, as LibreOffice does; the last section properties among them
+    /// are the document's.
+    fn read_main_bodies(&mut self, root: &El, rels: &Rels) {
+        let bodies: Vec<&El> = root.children("w:body").take(MAX_BODIES).collect();
+        if bodies.is_empty() {
+            return;
+        }
+        let mut sc = StoryCtx::default();
+        let mut blocks = Blocks::new();
+        for b in &bodies {
+            self.read_blocks(&mut sc, b, rels, &mut blocks, self.chunks.depth);
+        }
+        self.flush_pending(&mut sc, &mut blocks);
+        self.doc.body = blocks;
+        unstyle_toc_links(&mut self.doc);
+        toc_control_to_toc(&mut self.doc.body);
+        toc_field_to_heading(&mut self.doc.body);
+        if let Some(s) = bodies.iter().rev().find_map(|b| b.child("w:sectPr")) {
+            self.doc.last_section = self.read_section(s, rels);
+        }
+    }
+
     /// A `w:moveFromRangeStart/End` or `w:moveToRangeStart/End`.
     pub fn move_range(&mut self, e: &El) {
         let (side, start) = match e.name.as_str() {
