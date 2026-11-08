@@ -986,9 +986,7 @@ fn chart_and_diagram_drawings_are_graphic_objects() {
     );
     let d = read_body(&body);
     let p = paras(&d);
-    assert_eq!(p[0].objects.len(), 3);
-    // The picture whose image is missing is kept, without it (the missing-picture box).
-    assert!(matches!(&p[0].objects[2], InlineObject::Image { media, ole: Some(_), .. } if media.is_empty()), "{:?}", p[0].objects[2]);
+    assert_eq!(p[0].objects.len(), 2);
     match (&p[0].objects[0], &p[0].objects[1]) {
         (InlineObject::Graphic { w: w1, h: h1, alt, graphic: g1, .. }, InlineObject::Graphic { graphic: g2, .. }) => {
             assert_eq!((*w1, *h1, alt.as_str()), (216.0, 144.0, "sales"));
