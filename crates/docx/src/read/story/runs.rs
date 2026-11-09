@@ -54,26 +54,7 @@ impl Reader<'_> {
                     pb.push_obj(o, &props);
                 }
             }
-            "w:sdt" => {
-                let Some(c) = k.child("w:sdtContent") else { return };
-                let mut ctl = crate::read::sdt::sdt_pr(k.child("w:sdtPr"), false);
-                ctl.end_pr_xml = crate::read::sdt::sdt_end_pr(k.child("w:sdtEndPr"));
-                ctl.run_props = k.child("w:sdtPr").and_then(|pr| pr.child("w:rPr")).map(|r| self.pc.rpr(r));
-                // The markers take the formatting of the content's first run (typing at the
-                // start of the content continues it).
-                let props = c.find("w:rPr").map(|p| self.run_props(p, ctx)).unwrap_or_else(|| self.run_props_none(ctx));
-                let (at, k0) = (pb.text.len(), pb.objects.len());
-                pb.push_obj(InlineObject::ControlStart { control: Box::new(ctl) }, &props);
-                self.read_inline_children(sc, pb, c, rels, ctx, depth + 1);
-                if let Some(InlineObject::ControlStart { control }) = pb.objects.get_mut(k0)
-                    && control.showing_placeholder
-                {
-                    let shown: String = pb.text.get(at..).unwrap_or("").chars().filter(|c| *c != wordcraft_doc::para::OBJ).collect();
-                    control.placeholder_text = placeholder_of(&shown);
-                }
-                let end_props = pb.runs.last().map(|r| r.props.clone()).unwrap_or(props);
-                pb.push_obj(InlineObject::ControlEnd, &end_props);
-            }
+            "w:sdt" => self.read_inline_sdt(sc, pb, k, rels, ctx, depth),
             "w:smartTag" | "w:customXml" | "w:dir" | "w:bdo" => self.read_inline_children(sc, pb, k, rels, ctx, depth + 1),
             "m:oMath" => {
                 let mut props = self.run_props_none(ctx);
@@ -114,6 +95,31 @@ impl Reader<'_> {
         }
     }
 
+    /// An inline content control: markers around its content.
+    fn read_inline_sdt(&mut self, sc: &mut StoryCtx, pb: &mut PB, k: &El, rels: &Rels, ctx: &RunCtx, depth: usize) {
+        // A control without content (`w:sdtContent` left out) is kept, empty.
+        let c = k.child("w:sdtContent");
+        let mut ctl = crate::read::sdt::sdt_pr(k.child("w:sdtPr"), false);
+        ctl.end_pr_xml = crate::read::sdt::sdt_end_pr(k.child("w:sdtEndPr"));
+        ctl.run_props = k.child("w:sdtPr").and_then(|pr| pr.child("w:rPr")).map(|r| self.pc.rpr(r));
+        // The markers take the formatting of the content's first run (typing at the
+        // start of the content continues it).
+        let props = c.and_then(|c| c.find("w:rPr")).map(|p| self.run_props(p, ctx)).unwrap_or_else(|| self.run_props_none(ctx));
+        let (at, k0) = (pb.text.len(), pb.objects.len());
+        pb.push_obj(InlineObject::ControlStart { control: Box::new(ctl) }, &props);
+        if let Some(c) = c {
+            self.read_inline_children(sc, pb, c, rels, ctx, depth + 1);
+        }
+        if let Some(InlineObject::ControlStart { control }) = pb.objects.get_mut(k0)
+            && control.showing_placeholder
+        {
+            let shown: String = pb.text.get(at..).unwrap_or("").chars().filter(|c| *c != wordcraft_doc::para::OBJ).collect();
+            control.placeholder_text = placeholder_of(&shown);
+        }
+        let end_props = pb.runs.last().map(|r| r.props.clone()).unwrap_or(props);
+        pb.push_obj(InlineObject::ControlEnd, &end_props);
+    }
+
     fn run_props(&mut self, rpr: &El, ctx: &RunCtx) -> CharProps {
         let mut p = self.pc.rpr(rpr);
         p.link = ctx.link.clone();
@@ -132,24 +138,32 @@ impl Reader<'_> {
             Some(p) => self.run_props(p, ctx),
             None => self.run_props_none(ctx),
         };
-        let mut note: Option<(NoteKind, u32, Option<String>)> = None;
+        let mut note: PendingNote = None;
         for k in r.els() {
             self.read_run_child(sc, pb, k, (&props, rels), &mut note, depth + 1);
         }
-        if let Some((kind, id, custom)) = note.take() {
-            self.emit_obj(sc, pb, InlineObject::NoteRef { kind, id, custom: custom.unwrap_or_default() }, &props);
+        if let Some(n) = note.take() {
+            self.emit_note(sc, pb, n, &props);
         }
     }
 
-    fn read_run_child(
-        &mut self,
-        sc: &mut StoryCtx,
-        pb: &mut PB,
-        k: &El,
-        (props, rels): (&CharProps, &Rels),
-        note: &mut Option<(NoteKind, u32, Option<String>)>,
-        depth: usize,
-    ) {
+    /// A note reference, with its custom mark; a mark made only of symbols in one font keeps
+    /// that font as the reference's symbol font, so it is saved as the same `w:sym`s.
+    fn emit_note(&mut self, sc: &mut StoryCtx, pb: &mut PB, (kind, id, mark): (NoteKind, u32, Option<CustomMark>), props: &CharProps) {
+        let mark = mark.unwrap_or_default();
+        let o = InlineObject::NoteRef { kind, id, custom: mark.text };
+        let font = if mark.mixed { None } else { mark.sym_font };
+        match font {
+            Some(font) => {
+                let mut p = props.clone();
+                p.sym_font = Some(font);
+                self.emit_obj(sc, pb, o, &p);
+            }
+            None => self.emit_obj(sc, pb, o, props),
+        }
+    }
+
+    fn read_run_child(&mut self, sc: &mut StoryCtx, pb: &mut PB, k: &El, (props, rels): (&CharProps, &Rels), note: &mut PendingNote, depth: usize) {
         if depth > crate::xml::MAX_DEPTH {
             return;
         }
@@ -157,9 +171,9 @@ impl Reader<'_> {
             return;
         }
         if k.name != "w:rPr"
-            && let Some((kind, id, custom)) = note.take()
+            && let Some(n) = note.take()
         {
-            self.emit_obj(sc, pb, InlineObject::NoteRef { kind, id, custom: custom.unwrap_or_default() }, props);
+            self.emit_note(sc, pb, n, props);
         }
         match k.name.as_str() {
             "w:t" | "w:delText" => {
@@ -254,7 +268,7 @@ impl Reader<'_> {
                 let map = if foot { &self.footnotes } else { &self.endnotes };
                 if let Some(id) = map.get(&fid).copied() {
                     let kind = if foot { NoteKind::Footnote } else { NoteKind::Endnote };
-                    let custom = on_off_attr(k, "w:customMarkFollows").then(String::new);
+                    let custom = on_off_attr(k, "w:customMarkFollows").then(CustomMark::default);
                     *note = Some((kind, id, custom));
                 }
             }
@@ -385,17 +399,45 @@ impl Reader<'_> {
     }
 }
 
+/// A note reference read in a run and not yet placed: its kind, its id and, with
+/// `w:customMarkFollows`, its custom mark.
+type PendingNote = Option<(NoteKind, u32, Option<CustomMark>)>;
+
+/// A custom note mark being read.
+#[derive(Default)]
+struct CustomMark {
+    text: String,
+    /// The font of the mark's symbols (`w:sym`), when it starts with one.
+    sym_font: Option<String>,
+    /// Whether the mark also has text, or symbols in another font.
+    mixed: bool,
+}
+
 /// A custom footnote or endnote mark (`w:customMarkFollows`): the text right after the reference,
 /// or a symbol there (`w:sym`, Word's Insert › Symbol for the mark) as its Unicode character.
 /// Whether `k` was taken into the mark.
-fn custom_mark(note: &mut Option<(NoteKind, u32, Option<String>)>, k: &El) -> bool {
-    let Some((_, _, Some(custom))) = note.as_mut() else { return false };
+fn custom_mark(note: &mut PendingNote, k: &El) -> bool {
+    let Some((_, _, Some(mark))) = note.as_mut() else { return false };
     match k.name.as_str() {
-        "w:t" => custom.push_str(&clean_text(&k.text())),
-        "w:sym" => match sym_char(k).and_then(|c| wordcraft_doc::symbol_fonts::symbol_char(k.attr("w:font").unwrap_or(""), c)) {
-            Some(c) if custom.len() < 64 => custom.push(c),
-            _ => return false,
-        },
+        "w:t" => {
+            let t = clean_text(&k.text());
+            mark.mixed |= !t.is_empty();
+            mark.text.push_str(&t);
+        }
+        "w:sym" => {
+            let font = k.attr("w:font").unwrap_or("").trim();
+            match sym_char(k).and_then(|c| wordcraft_doc::symbol_fonts::symbol_char(font, c)) {
+                Some(c) if mark.text.len() < 64 => {
+                    if mark.text.is_empty() {
+                        mark.sym_font = Some(font.to_string());
+                    } else if mark.sym_font.as_deref() != Some(font) {
+                        mark.mixed = true;
+                    }
+                    mark.text.push(c);
+                }
+                _ => return false,
+            }
+        }
         _ => return false,
     }
     true
