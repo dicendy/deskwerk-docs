@@ -366,7 +366,7 @@ impl Reader<'_> {
         unstyle_toc_links(&mut self.doc);
         toc_control_to_toc(&mut self.doc.body);
         toc_field_to_heading(&mut self.doc.body);
-        if let Some(s) = bodies.iter().rev().find_map(|b| b.child("w:sectPr")) {
+        if let Some(s) = bodies.iter().rev().find_map(|b| b.children("w:sectPr").last()) {
             self.doc.last_section = self.read_section(s, rels);
         }
     }

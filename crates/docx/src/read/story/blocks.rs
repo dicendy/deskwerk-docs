@@ -10,6 +10,8 @@ impl Reader<'_> {
         if depth > crate::xml::MAX_DEPTH {
             return;
         }
+        // The body's last `w:sectPr` is the document's final section (`read_main_bodies`).
+        let last_section = (parent.name == "w:body").then(|| parent.children("w:sectPr").last()).flatten();
         for e in parent.els() {
             match e.name.as_str() {
                 "w:p" => {
@@ -70,16 +72,39 @@ impl Reader<'_> {
                     }
                 }
                 "w:moveFromRangeStart" | "w:moveFromRangeEnd" | "w:moveToRangeStart" | "w:moveToRangeEnd" => self.move_range(e),
+                "w:sectPr" => self.read_body_section(e, last_section, rels, out),
                 _ => {}
             }
         }
+    }
+
+    /// A `w:sectPr` straight in the body before the body's last one. Only the last belongs there
+    /// (ECMA-376 §17.6.17: the final section), but some files have others (LibreOffice's
+    /// tdf108849), read as section breaks so that none is lost: one ends the paragraph before it,
+    /// or, when that paragraph already ends a section or a table comes before, an empty paragraph
+    /// of its own.
+    fn read_body_section(&mut self, e: &El, last: Option<&El>, rels: &Rels, out: &mut Blocks) {
+        if last.is_none_or(|l| std::ptr::eq(l, e)) {
+            return;
+        }
+        let section = Box::new(self.read_section(e, rels));
+        if let Some(Block::Para(p)) = out.last_mut().map(Arc::make_mut)
+            && p.section.is_none()
+        {
+            p.section = Some(section);
+            return;
+        }
+        let mut p = Paragraph::new();
+        p.section = Some(section);
+        out.push(para_block(p));
     }
 
     /// A table in a story; past the nesting limit, its text as one paragraph.
     fn read_block_table(&mut self, sc: &mut StoryCtx, e: &El, rels: &Rels, out: &mut Blocks, depth: usize) {
         if depth / 4 >= MAX_TABLE_DEPTH {
             out.push(para_block(Paragraph::with_text(&clean_text(&e.deep_text()), CharProps::default())));
-        } else if let Some(t) = self.read_table(sc, e, rels, depth) {
+        } else {
+            let t = self.read_table(sc, e, rels, depth);
             out.push(Arc::new(Block::Table(t)));
         }
     }
@@ -88,18 +113,24 @@ impl Reader<'_> {
     /// of the first paragraph and an end marker at the end of the last (a table at either end
     /// carries the control instead).
     fn read_block_sdt(&mut self, sc: &mut StoryCtx, e: &El, rels: &Rels, out: &mut Blocks, depth: usize) {
-        let Some(content) = e.child("w:sdtContent") else { return };
         let mut ctl = crate::read::sdt::sdt_pr(e.child("w:sdtPr"), true);
         ctl.end_pr_xml = crate::read::sdt::sdt_end_pr(e.child("w:sdtEndPr"));
         ctl.run_props = e.child("w:sdtPr").and_then(|pr| pr.child("w:rPr")).map(|r| self.pc.rpr(r));
         let mut inner = Blocks::new();
-        self.read_blocks(sc, content, rels, &mut inner, depth + 1);
-        // A table of contents' control is handed to the TOC later, when the writer puts it back
-        // (`toc_control_to_toc`).
+        if let Some(content) = e.child("w:sdtContent") {
+            self.read_blocks(sc, content, rels, &mut inner, depth + 1);
+        }
+        // A control with no content (none at all, or no paragraph or table in it) is kept as an
+        // empty control where it stands: at the start of the next paragraph, as markers between
+        // blocks are, so no paragraph is added (Apache POI's Bug62859).
         if inner.is_empty() {
-            out.extend(inner);
+            ctl.block = false;
+            sc.pending.push(InlineObject::ControlStart { control: Box::new(ctl) });
+            sc.pending.push(InlineObject::ControlEnd);
             return;
         }
+        // A table of contents' control is handed to the TOC later, when the writer puts it back
+        // (`toc_control_to_toc`).
         if ctl.showing_placeholder
             && let Some(Block::Para(p)) = inner.first().map(|b| &**b)
         {
@@ -322,7 +353,7 @@ impl Reader<'_> {
 
     // ---- tables ----
 
-    fn read_table(&mut self, sc: &mut StoryCtx, t: &El, rels: &Rels, depth: usize) -> Option<Table> {
+    fn read_table(&mut self, sc: &mut StoryCtx, t: &El, rels: &Rels, depth: usize) -> Table {
         let mut table = Table::default();
         if let Some(p) = t.child("w:tblPr") {
             table.props = self.pc.tblpr(p);
@@ -383,18 +414,21 @@ impl Reader<'_> {
                 table.rows.push(row);
             }
         }
+        // A table without rows (CT_Tbl allows none; LibreOffice's tdf104713 has three) keeps a row
+        // of empty cells, one per grid column: every table needs a row to show and to save.
+        if table.rows.is_empty() {
+            let cols = table.grid.len().clamp(1, MAX_COLS);
+            table.rows.push(Row { cells: (0..cols).map(|_| Cell::empty()).collect(), ..Default::default() });
+        }
         self.pend_markers(sc, &row_marks, &mut next_row_mark, usize::MAX);
         if let Some(cell) = table.rows.last_mut().and_then(|r| r.cells.last_mut()) {
             self.flush_pending(sc, &mut cell.blocks);
-        }
-        if table.rows.is_empty() {
-            return None;
         }
         if table.grid.is_empty() {
             let cols = table.cols().clamp(1, MAX_COLS);
             table.grid = vec![72.0; cols];
         }
-        Some(table)
+        table
     }
 
     /// Read the markers of `marks` (from `collect_markers`) from `*next` on that come before

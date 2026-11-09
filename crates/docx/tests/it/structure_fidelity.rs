@@ -174,7 +174,124 @@ fn a_symbol_as_a_custom_note_mark_is_the_mark() {
             .collect();
         assert_eq!(customs, ["\u{2663}"]);
         assert!(!p.text.contains('\u{F0A7}'), "the symbol is the mark, not text after it");
+        assert!(p.runs.iter().any(|r| r.props.sym_font.as_deref() == Some("Symbol")), "the mark keeps its symbol font");
+        // Saved as the same symbol in its font, not as text.
+        let xml = part_xml(&wordcraft_docx::write(d).unwrap(), "word/document.xml");
+        assert!(xml.contains(r#"<w:sym w:font="Symbol" w:char="F0A7"/>"#), "{xml}");
+        assert!(!xml.contains('\u{2663}'), "{xml}");
     }
+}
+
+#[test]
+fn a_custom_note_mark_of_text_and_a_symbol_stays_text() {
+    // A mark mixing text and a symbol has no one font for a `w:sym`: it is saved as its text.
+    let notes = format!(r#"<w:footnotes {W_NS}><w:footnote w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:footnote></w:footnotes>"#);
+    let body = r#"<w:p><w:r><w:footnoteReference w:customMarkFollows="1" w:id="1"/><w:t>x</w:t><w:sym w:font="Symbol" w:char="F0A7"/></w:r></w:p>"#;
+    let d = wordcraft_docx::read(&body_package(body, &[("footnotes.xml", "footnotes", &notes)])).unwrap();
+    let mark = |d: &Document| {
+        para(&d.body[0])
+            .objects
+            .iter()
+            .find_map(|o| match o {
+                InlineObject::NoteRef { custom, .. } => Some(custom.clone()),
+                _ => None,
+            })
+            .expect("a note reference")
+    };
+    assert_eq!(mark(&d), "x\u{2663}");
+    assert!(para(&d.body[0]).runs.iter().all(|r| r.props.sym_font.is_none()));
+    let xml = part_xml(&wordcraft_docx::write(&d).unwrap(), "word/document.xml");
+    assert!(!xml.contains("<w:sym"), "{xml}");
+    assert_eq!(mark(&saved_and_read(&d)), "x\u{2663}");
+}
+
+/// The number of grid columns and the cells of each row of each table in `blocks`.
+fn table_shapes(blocks: &[std::sync::Arc<Block>]) -> Vec<(usize, Vec<usize>)> {
+    blocks
+        .iter()
+        .filter_map(|b| match &**b {
+            Block::Table(t) => Some((t.grid.len(), t.rows.iter().map(|r| r.cells.len()).collect())),
+            Block::Para(_) => None,
+        })
+        .collect()
+}
+
+#[test]
+fn a_table_without_rows_is_kept() {
+    // CT_Tbl allows a table with no rows (LibreOffice's tdf104713 has three, with a grid and
+    // borders): it stays a table, of one row of empty cells across its grid.
+    let body = r#"<w:p><w:r><w:t>Profiles</w:t></w:r></w:p><w:tbl><w:tblPr><w:tblBorders><w:top w:val="single"/></w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="2000"/><w:gridCol w:w="3000"/></w:tblGrid></w:tbl><w:p><w:r><w:t>Evidence</w:t></w:r></w:p><w:tbl><w:tblPr/><w:tblGrid><w:tblCol/></w:tblGrid></w:tbl><w:p/>"#;
+    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    for d in [&d, &saved_and_read(&d)] {
+        assert_eq!(d.body.len(), 5, "{:?}", outline(&d.body));
+        assert_eq!(table_shapes(&d.body), [(2, vec![2]), (1, vec![1])]);
+        let t = table(&d.body[1]);
+        assert!((t.grid[1] - 150.0).abs() < 0.1, "{:?}", t.grid);
+        assert!(t.rows[0].cells.iter().all(|c| c.blocks.len() == 1 && para(&c.blocks[0]).plain_text().is_empty()));
+    }
+}
+
+/// The page width of the section each body paragraph ends, if it ends one.
+fn section_widths(d: &Document) -> Vec<Option<i32>> {
+    d.body.iter().map(|b| b.as_para().and_then(|p| p.section.as_ref()).map(|s| s.page_w.round() as i32)).collect()
+}
+
+#[test]
+fn section_properties_before_the_end_of_the_body_are_section_breaks() {
+    // Only the body's last `w:sectPr` belongs there, but files have others (LibreOffice's
+    // tdf108849, two in a row): each is a section, none is lost. One after a paragraph that
+    // already ends a section gets an empty paragraph; one after a plain paragraph ends it.
+    let body = r#"<w:p><w:pPr><w:sectPr><w:pgSz w:w="8504" w:h="5669" w:orient="landscape"/></w:sectPr></w:pPr><w:r><w:t>Page 1</w:t></w:r></w:p><w:sectPr><w:pgSz w:w="5669" w:h="8504"/></w:sectPr><w:sectPr><w:pgSz w:w="14173" w:h="5669" w:orient="landscape"/></w:sectPr><w:p><w:r><w:t>Page 2</w:t></w:r></w:p>"#;
+    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    for d in [&d, &saved_and_read(&d)] {
+        assert_eq!(outline(&d.body), ["Page 1", "", "Page 2"]);
+        assert_eq!(section_widths(d), [Some(425), Some(283), None]);
+        assert!((d.last_section.page_w - 708.65).abs() < 0.1, "{}", d.last_section.page_w);
+    }
+    let body = r#"<w:p><w:r><w:t>one</w:t></w:r></w:p><w:sectPr><w:pgSz w:w="5669" w:h="8504"/></w:sectPr><w:p><w:r><w:t>two</w:t></w:r></w:p><w:sectPr><w:pgSz w:w="11906" w:h="16838"/></w:sectPr>"#;
+    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    for d in [&d, &saved_and_read(&d)] {
+        assert_eq!(outline(&d.body), ["one", "two"]);
+        assert_eq!(section_widths(d), [Some(283), None]);
+        assert!((d.last_section.page_w - 595.3).abs() < 0.1, "{}", d.last_section.page_w);
+    }
+}
+
+/// Each content control in the body's paragraphs: (tag, title, id, placeholder), and the number
+/// of control ends.
+fn body_controls(d: &Document) -> (Vec<(String, String, Option<i64>, String)>, usize) {
+    let objects = || d.body.iter().filter_map(|b| b.as_para()).flat_map(|p| p.objects.iter());
+    let starts = objects()
+        .filter_map(|o| match o {
+            InlineObject::ControlStart { control } => Some((control.tag.clone(), control.title.clone(), control.id, control.placeholder.clone())),
+            _ => None,
+        })
+        .collect();
+    (starts, objects().filter(|o| matches!(o, InlineObject::ControlEnd)).count())
+}
+
+#[test]
+fn an_empty_content_control_is_kept() {
+    // A block-level control without content (Apache POI's Bug62859: `w:sdtPr` and `w:sdtEndPr`
+    // only), one with empty content and an inline one without content: each is kept, empty,
+    // with its properties, and no paragraph is added for it.
+    let body = r#"<w:sdt><w:sdtPr><w:alias w:val="Name"/><w:tag w:val="first"/><w:id w:val="701672912"/><w:placeholder><w:docPart w:val="E1A47590F6F14F5BB2652EA3173D555C"/></w:placeholder></w:sdtPr><w:sdtEndPr/></w:sdt><w:p><w:pPr><w:rPr><w:b/></w:rPr></w:pPr></w:p><w:sdt><w:sdtPr><w:tag w:val="second"/></w:sdtPr><w:sdtContent></w:sdtContent></w:sdt><w:p><w:r><w:t>text</w:t></w:r></w:p><w:p><w:r><w:t>a</w:t></w:r><w:sdt><w:sdtPr><w:tag w:val="inline"/></w:sdtPr></w:sdt></w:p>"#;
+    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    let expected = (
+        vec![
+            ("first".to_string(), "Name".to_string(), Some(701_672_912), "E1A47590F6F14F5BB2652EA3173D555C".to_string()),
+            ("second".to_string(), String::new(), None, String::new()),
+            ("inline".to_string(), String::new(), None, String::new()),
+        ],
+        3,
+    );
+    for d in [&d, &saved_and_read(&d)] {
+        assert_eq!(outline(&d.body), ["", "text", "a"]);
+        assert_eq!(body_controls(d), expected);
+    }
+    let xml = part_xml(&wordcraft_docx::write(&d).unwrap(), "word/document.xml");
+    assert_eq!(xml.matches("<w:sdt>").count(), 3, "{xml}");
+    assert!(xml.contains(r#"<w:docPart w:val="E1A47590F6F14F5BB2652EA3173D555C"/>"#), "{xml}");
 }
 
 const DRAWING_NS: &str = r#"xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:lc="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas""#;

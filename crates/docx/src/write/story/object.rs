@@ -86,7 +86,7 @@ impl Writer<'_> {
                         if custom.is_empty() {
                             w.empty(mark, &[]);
                         } else {
-                            w.leaf("w:t", &[("xml:space", "preserve")], custom);
+                            custom_mark(w, custom, props);
                         }
                         w.close("w:r");
                         self.rev_close(w, props);
@@ -106,7 +106,7 @@ impl Writer<'_> {
                     w.empty(tag, &[("w:id", &nid)]);
                 } else {
                     w.empty(tag, &[("w:customMarkFollows", "1"), ("w:id", &nid)]);
-                    w.leaf("w:t", &[("xml:space", "preserve")], custom);
+                    custom_mark(w, custom, props);
                 }
                 w.close("w:r");
                 self.rev_close(w, props);
@@ -504,6 +504,27 @@ impl Writer<'_> {
         w.close("w:r");
         self.rev_close(w, props);
     }
+}
+
+/// A custom note mark: read from symbols in one font (the reference's symbol font), the same
+/// `w:sym`s again (ECMA-376 §17.3.3.30), else its text.
+fn custom_mark(w: &mut W, custom: &str, props: &CharProps) {
+    let font = props.sym_font.as_deref().map(str::trim).filter(|f| !f.is_empty());
+    let codes: Option<Vec<u32>> = font.and_then(|f| custom.chars().map(|c| symbol_code(f, c)).collect());
+    match (font, codes) {
+        (Some(font), Some(codes)) => {
+            for code in codes {
+                w.empty("w:sym", &[("w:font", font), ("w:char", &format!("{code:04X}"))]);
+            }
+        }
+        _ => w.leaf("w:t", &[("xml:space", "preserve")], custom),
+    }
+}
+
+/// The code (U+F020–U+F0FF, as Word writes it) of the character `c` shows in the symbol font
+/// `font`, as the reader mapped it.
+fn symbol_code(font: &str, c: char) -> Option<u32> {
+    (0xF020..=0xF0FF).find(|&u| char::from_u32(u).and_then(|s| wordcraft_doc::symbol_fonts::symbol_char(font, s)) == Some(c))
 }
 
 pub(super) fn ink_name(tool: wordcraft_doc::freeform::InkTool) -> &'static str {
