@@ -509,3 +509,35 @@ fn libreoffice_font_fallback_lists_are_not_reported_as_missing_when_installed() 
         "drawn: {drawn}"
     );
 }
+
+/// The web font pack's file `file` (`assets/webfonts`).
+fn pack_file(file: &str) -> Vec<u8> {
+    std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/webfonts").join(file)).unwrap()
+}
+
+#[test]
+fn a_font_drawn_in_its_pack_stand_in_keeps_its_name_in_the_saved_docx() {
+    // Each test runs in its own process under nextest: enabling the pack touches no other test.
+    if wordcraft_fonts::pack::enabled() {
+        return;
+    }
+    wordcraft_fonts::pack::enable();
+    let files = wordcraft_fonts::pack::files_of("Liberation Serif").chain(wordcraft_fonts::pack::files_of("Fira Sans"));
+    wordcraft_fonts::pack::add_files(files.map(|f| (f, pack_file(f.file))).collect());
+    let db = wordcraft_fonts::FontDb::global();
+    let doc = doc_of(vec![para_in("Serif", "Times New Roman"), para_in("Humanist", "Trebuchet MS")]);
+    let missing = missing_in(doc.clone());
+    for (font, drawn) in [("Times New Roman", "Liberation Serif"), ("Trebuchet MS", "Fira Sans")] {
+        if db.has_family(font) {
+            continue; // the real font wins
+        }
+        assert_eq!(crate::cmd::font::shown_as(&doc, font).as_deref(), Some(drawn), "{font}");
+        let m = missing.iter().find(|m| m.font == font).expect("listed");
+        assert!(m.metric_compatible, "a stand-in from the pack isn't a warning: {m:?}");
+    }
+    // The document keeps the chosen names; the stand-ins only draw them.
+    let bytes = crate::io::save_bytes("out.docx", &doc).unwrap();
+    let loaded = wordcraft_docx::read(&bytes).unwrap();
+    let fonts: Vec<Option<String>> = loaded.body.iter().filter_map(|b| b.as_para()).map(|p| p.runs[0].props.font.clone()).collect();
+    assert_eq!(fonts, [Some("Times New Roman".to_string()), Some("Trebuchet MS".to_string())]);
+}

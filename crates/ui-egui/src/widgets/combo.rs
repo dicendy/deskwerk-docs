@@ -126,9 +126,34 @@ pub fn combo_hint(
 /// caller runs `font.add`, which shows a file picker. Not a family name anyone can type.
 pub const ADD_FONT: &str = "\u{1}font.add";
 
-/// What [`font_combo`] returns when "Load System Installed Fonts…" is chosen on web: the
-/// caller runs `font.loadSystem`.
+/// What [`font_combo`] returns when "Use this computer's fonts" is chosen on web: the caller
+/// runs `font.loadSystem`.
 pub const LOAD_SYSTEM_FONTS: &str = "\u{1}font.loadSystem";
+
+static SYSTEM_FONTS_ACTION: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Whether the font lists offer "Use this computer's fonts" ([`LOAD_SYSTEM_FONTS`]): only where
+/// the browser can read the computer's fonts (the web app sets it, from
+/// `Services::load_system_fonts`).
+pub fn set_system_fonts_action(available: bool) {
+    SYSTEM_FONTS_ACTION.store(available, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// See [`set_system_fonts_action`].
+pub fn system_fonts_action() -> bool {
+    SYSTEM_FONTS_ACTION.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// The hover note for an Office font the web font pack draws in a look-alike (Fira Sans for
+/// Trebuchet MS): the document keeps the font's own name.
+pub fn stand_in_note(font: &str) -> String {
+    crate::i18n::fmt(tl!("Shown with a similar font; the file keeps “{font}”."), &[("font", font)])
+}
+
+/// The quiet mark for a font drawn in its stand-in, at the right of `r`.
+pub(crate) fn paint_stand_in_mark(ui: &Ui, r: Rect, t: &Tokens) {
+    ui.painter().text(pos2(r.right() - 9.0, r.center().y), egui::Align2::CENTER_CENTER, "≈", egui::FontId::proportional(12.0), t.text_dim);
+}
 
 /// The font box: a [`combo`] where typing lists the matching families under the field (#359).
 /// Its list ends with Add Font… ([`ADD_FONT`]).
@@ -328,7 +353,9 @@ fn combo_impl(ui: &mut Ui, options: ComboOptions<'_>) -> Option<String> {
         }
         // A font that isn't installed: room at the field's right end for the warning mark.
         let mark = shown_as.filter(|_| !current.is_empty());
-        let right = if mark.is_some() { 18 } else { 4 };
+        // An Office font the web font pack draws in a look-alike: a quieter mark of its own.
+        let stand_in = search && mark.is_none() && !current.is_empty() && wordcraft_fonts::pack::drawn_by_stand_in(current).is_some();
+        let right = if mark.is_some() || stand_in { 18 } else { 4 };
         let te = egui::TextEdit::singleline(&mut text).id(te_id).desired_width(width - 16.0).font(regular(12.0)).margin(egui::Margin {
             left: 4,
             right,
@@ -343,7 +370,13 @@ fn combo_impl(ui: &mut Ui, options: ComboOptions<'_>) -> Option<String> {
         if !tip.is_empty() {
             resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::TextInput, ui.is_enabled(), tip));
         }
-        let notes = missing_font_mark(ui, &resp, current, mark, &t);
+        let mut notes = missing_font_mark(ui, &resp, current, mark, &t);
+        if stand_in {
+            paint_stand_in_mark(ui, resp.rect, &t);
+            let note = stand_in_note(current);
+            ui.ctx().accesskit_node_builder(resp.id, |n| n.set_description(note.as_str()));
+            notes.push(note);
+        }
         keytip_badge(ui, resp.rect, "combo", id);
         focused = resp.has_focus();
         let enter = resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
@@ -445,8 +478,7 @@ fn combo_impl(ui: &mut Ui, options: ComboOptions<'_>) -> Option<String> {
                 picked = Some(ADD_FONT.to_string());
                 ui.close();
             }
-            #[cfg(target_arch = "wasm32")]
-            if ui.button(tl!("Load System Installed Fonts…")).clicked() {
+            if system_fonts_action() && ui.button(tl!("Use this computer's fonts")).clicked() {
                 picked = Some(LOAD_SYSTEM_FONTS.to_string());
                 ui.close();
             }

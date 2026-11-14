@@ -222,6 +222,8 @@ const METRIC_TWINS: &[&[&str]] = &[
     &["Calibri", "Carlito"],
     &["Cambria", "Caladea"],
     &["Palatino Linotype", "Palatino", "Book Antiqua", "TeX Gyre Pagella", "P052", "URW Palladio L", "Palladio"],
+    &["Georgia", "Gelasio"],
+    &["Segoe UI", "Selawik"],
 ];
 
 /// The fonts that measure like `family` ([`METRIC_TWINS`]), in the order they are tried, without
@@ -453,6 +455,12 @@ fn substitute(db: &FontDb, family: &str) -> Option<&'static str> {
     if let Some(twin) = metric_twins(family).find(|t| db.has_family(t)) {
         return Some(twin);
     }
+    // With the web font pack, the closest open design next (Fira Sans for Trebuchet MS…).
+    if crate::pack::enabled()
+        && let Some(s) = crate::pack::stand_in(family).map(|s| s.family).filter(|s| db.has_family(s))
+    {
+        return Some(s);
+    }
     let mut installed = substitutes(family).iter().copied().filter(|s| db.has_family(s));
     if !is_thai_family(family) {
         return installed.next();
@@ -570,7 +578,16 @@ fn remember_list_resolution(generation: u64, key: (u64, usize), family: &str, re
 }
 
 /// Resolve a single family or semicolon-separated fallback list to `(family_name, substituted)`.
+/// A family that isn't installed asks the web font pack for its files ([`crate::pack::want`]).
 fn resolve_family(db: &FontDb, family: &str) -> (String, bool) {
+    let r = resolve_installed_family(db, family);
+    if r.1 {
+        crate::pack::want(family);
+    }
+    r
+}
+
+fn resolve_installed_family(db: &FontDb, family: &str) -> (String, bool) {
     if !family.contains(';') {
         let base = if family.trim().eq_ignore_ascii_case("Symbol (PCL6)") { "Symbol" } else { charset_base_family(family) };
         return if db.has_family(family) {

@@ -1,5 +1,5 @@
 diff --git a/locales/ar/wordcraft.tsv b/locales/ar/wordcraft.tsv
-index 3fdb2ac2..3ea803d4 100644
+index 3fdb2ac..3ea803d 100644
 --- a/locales/ar/wordcraft.tsv
 +++ b/locales/ar/wordcraft.tsv
 @@ -849,7 +849,7 @@ numerals	Context	حسب السياق
@@ -12,7 +12,7 @@ index 3fdb2ac2..3ea803d4 100644
  	Everyone	الجميع
  	Exactly	بالضبط
 diff --git a/locales/bg/wordcraft.tsv b/locales/bg/wordcraft.tsv
-index f8027725..b3e441ba 100644
+index f802772..b3e441b 100644
 --- a/locales/bg/wordcraft.tsv
 +++ b/locales/bg/wordcraft.tsv
 @@ -762,7 +762,7 @@
@@ -25,7 +25,7 @@ index f8027725..b3e441ba 100644
  	Everyone	Всички
  	Exactly	Точно
 diff --git a/locales/bn/wordcraft.tsv b/locales/bn/wordcraft.tsv
-index d073418b..2ee20548 100644
+index d073418..2ee2054 100644
 --- a/locales/bn/wordcraft.tsv
 +++ b/locales/bn/wordcraft.tsv
 @@ -784,7 +784,7 @@ numerals	Arabic	আরবি
@@ -38,7 +38,7 @@ index d073418b..2ee20548 100644
  #	Everyone	
  #	Exactly	
 diff --git a/locales/bs/wordcraft.tsv b/locales/bs/wordcraft.tsv
-index 6866058e..b1472d8e 100644
+index 6866058..b1472d8 100644
 --- a/locales/bs/wordcraft.tsv
 +++ b/locales/bs/wordcraft.tsv
 @@ -784,7 +784,7 @@ numerals	Context	Kontekst
@@ -51,7 +51,7 @@ index 6866058e..b1472d8e 100644
  	Everyone	Svi
  	Exactly	Tačno
 diff --git a/locales/cs/wordcraft.tsv b/locales/cs/wordcraft.tsv
-index cf053acf..c7144749 100644
+index cf053ac..c714474 100644
 --- a/locales/cs/wordcraft.tsv
 +++ b/locales/cs/wordcraft.tsv
 @@ -778,7 +778,7 @@
@@ -64,7 +64,7 @@ index cf053acf..c7144749 100644
  	Everyone	Všichni
  	Exactly	Přesně
 diff --git a/locales/da/wordcraft.tsv b/locales/da/wordcraft.tsv
-index 9dd63a96..941b56e5 100644
+index 9dd63a9..941b56e 100644
 --- a/locales/da/wordcraft.tsv
 +++ b/locales/da/wordcraft.tsv
 @@ -799,7 +799,7 @@
@@ -77,7 +77,7 @@ index 9dd63a96..941b56e5 100644
  	Everyone	Alle
  	Exactly	Nøjagtigt
 diff --git a/locales/de/wordcraft.tsv b/locales/de/wordcraft.tsv
-index 61322bd5..76e78247 100644
+index 61322bd..9c5412d 100644
 --- a/locales/de/wordcraft.tsv
 +++ b/locales/de/wordcraft.tsv
 @@ -39,7 +39,7 @@
@@ -268,7 +268,7 @@ index 61322bd5..76e78247 100644
  	Search:	Suchen:
  	Dutch, Nederlands or nl	Niederländisch, Nederlands oder nl
  	No languages to show yet.	Noch keine Sprachen anzuzeigen.
-@@ -2265,3 +2265,414 @@
+@@ -2265,3 +2265,416 @@
  	Uruguay	Uruguay
  	Venezuela	Venezuela
  	South Africa	Südafrika
@@ -683,8 +683,10 @@ index 61322bd5..76e78247 100644
 +	there is nowhere to save it.	es gibt keinen Speicherort dafür.
 +	Deskwerk Docs failed to start: {error}	Deskwerk Docs konnte nicht gestartet werden: {error}
 +	It needs a browser with WebGPU or WebGL2.	Es benötigt einen Browser mit WebGPU oder WebGL2.
++	Use this computer's fonts	Schriftarten dieses Computers verwenden
++	Shown with a similar font; the file keeps “{font}”.	Wird mit einer ähnlichen Schrift angezeigt; in der Datei bleibt »{font}«.
 diff --git a/locales/es/wordcraft.tsv b/locales/es/wordcraft.tsv
-index 2d771296..0a102785 100644
+index 2d77129..0a10278 100644
 --- a/locales/es/wordcraft.tsv
 +++ b/locales/es/wordcraft.tsv
 @@ -750,7 +750,7 @@
@@ -697,7 +699,7 @@ index 2d771296..0a102785 100644
  	Everyone	Todos
  	Exactly	Exactamente
 diff --git a/locales/et/wordcraft.tsv b/locales/et/wordcraft.tsv
-index 1b310d4d..657f3710 100644
+index 1b310d4..657f371 100644
 --- a/locales/et/wordcraft.tsv
 +++ b/locales/et/wordcraft.tsv
 @@ -626,7 +626,7 @@
@@ -710,7 +712,7 @@ index 1b310d4d..657f3710 100644
  	Everyone	Kõik
  	Exactly	Täpselt
 diff --git a/locales/fa/wordcraft.tsv b/locales/fa/wordcraft.tsv
-index 1dc7cc9b..5c06d7ef 100644
+index 1dc7cc9..5c06d7e 100644
 --- a/locales/fa/wordcraft.tsv
 +++ b/locales/fa/wordcraft.tsv
 @@ -758,7 +758,7 @@ numerals	Context	زمینه
@@ -723,7 +725,7 @@ index 1dc7cc9b..5c06d7ef 100644
  	Everyone	همه
  	Exactly	دقیقاً
 diff --git a/locales/fr/wordcraft.tsv b/locales/fr/wordcraft.tsv
-index f117087a..e8379bde 100644
+index f117087..6458b12 100644
 --- a/locales/fr/wordcraft.tsv
 +++ b/locales/fr/wordcraft.tsv
 @@ -56,7 +56,7 @@
@@ -923,7 +925,7 @@ index f117087a..e8379bde 100644
  	Search:	Rechercher :
  	Dutch, Nederlands or nl	Néerlandais, Nederlands ou nl
  	No languages to show yet.	Aucune langue à afficher pour l’instant.
-@@ -2703,3 +2703,28 @@ preview	Title	Titre
+@@ -2703,3 +2703,30 @@ preview	Title	Titre
  	Uruguay	Uruguay
  	Venezuela	Venezuela
  	South Africa	Afrique du Sud
@@ -952,8 +954,10 @@ index f117087a..e8379bde 100644
 +	there is nowhere to save it.	il n’y a aucun emplacement où l’enregistrer.
 +	Deskwerk Docs failed to start: {error}	Deskwerk Docs n’a pas pu démarrer : {error}
 +	It needs a browser with WebGPU or WebGL2.	Il nécessite un navigateur prenant en charge WebGPU ou WebGL2.
++	Use this computer's fonts	Utiliser les polices de cet ordinateur
++	Shown with a similar font; the file keeps “{font}”.	Affichée avec une police similaire ; le fichier conserve « {font} ».
 diff --git a/locales/he/wordcraft.tsv b/locales/he/wordcraft.tsv
-index 5774382a..5d2759d1 100644
+index 5774382..5d2759d 100644
 --- a/locales/he/wordcraft.tsv
 +++ b/locales/he/wordcraft.tsv
 @@ -773,7 +773,7 @@ numerals	Context	לפי ההקשר
@@ -966,7 +970,7 @@ index 5774382a..5d2759d1 100644
  	Everyone	כולם
  	Exactly	בדיוק
 diff --git a/locales/hr/wordcraft.tsv b/locales/hr/wordcraft.tsv
-index c09fe550..cfde75c7 100644
+index c09fe55..cfde75c 100644
 --- a/locales/hr/wordcraft.tsv
 +++ b/locales/hr/wordcraft.tsv
 @@ -759,7 +759,7 @@
@@ -979,7 +983,7 @@ index c09fe550..cfde75c7 100644
  	Everyone	Svi
  	Exactly	Točno
 diff --git a/locales/hu/wordcraft.tsv b/locales/hu/wordcraft.tsv
-index 521a9154..1eb966af 100644
+index 521a915..1eb966a 100644
 --- a/locales/hu/wordcraft.tsv
 +++ b/locales/hu/wordcraft.tsv
 @@ -770,7 +770,7 @@
@@ -992,7 +996,7 @@ index 521a9154..1eb966af 100644
  	Everyone	Mindenki
  	Exactly	Pontosan
 diff --git a/locales/id/wordcraft.tsv b/locales/id/wordcraft.tsv
-index ea164653..a6742549 100644
+index ea16465..a674254 100644
 --- a/locales/id/wordcraft.tsv
 +++ b/locales/id/wordcraft.tsv
 @@ -186,7 +186,7 @@
@@ -1005,7 +1009,7 @@ index ea164653..a6742549 100644
  	Export a copy to share (PDF, Word document)	Ekspor salinan untuk dibagikan (PDF, dokumen Word)
  	Extend Selection	Perluas Seleksi
 diff --git a/locales/it/wordcraft.tsv b/locales/it/wordcraft.tsv
-index e5c6d7ea..6c6fc9ea 100644
+index e5c6d7e..6c6fc9e 100644
 --- a/locales/it/wordcraft.tsv
 +++ b/locales/it/wordcraft.tsv
 @@ -800,7 +800,7 @@
@@ -1018,7 +1022,7 @@ index e5c6d7ea..6c6fc9ea 100644
  	Everyone	Tutti
  	Exactly	Esatta
 diff --git a/locales/ja/wordcraft.tsv b/locales/ja/wordcraft.tsv
-index f8c3de61..4afa4661 100644
+index f8c3de6..4afa466 100644
 --- a/locales/ja/wordcraft.tsv
 +++ b/locales/ja/wordcraft.tsv
 @@ -664,7 +664,7 @@
@@ -1031,7 +1035,7 @@ index f8c3de61..4afa4661 100644
  	Everyone	すべてのユーザー
  	Exactly	固定値
 diff --git a/locales/ka/wordcraft.tsv b/locales/ka/wordcraft.tsv
-index daefd066..3faa1ec0 100644
+index daefd06..3faa1ec 100644
 --- a/locales/ka/wordcraft.tsv
 +++ b/locales/ka/wordcraft.tsv
 @@ -922,7 +922,7 @@ numerals	Context	კონტექსტური
@@ -1044,7 +1048,7 @@ index daefd066..3faa1ec0 100644
  	Everyone	ყველა
  	Exactly	ზუსტად
 diff --git a/locales/ko/wordcraft.tsv b/locales/ko/wordcraft.tsv
-index d7942816..966ef77a 100644
+index d794281..966ef77 100644
 --- a/locales/ko/wordcraft.tsv
 +++ b/locales/ko/wordcraft.tsv
 @@ -754,7 +754,7 @@
@@ -1057,7 +1061,7 @@ index d7942816..966ef77a 100644
  	Everyone	모든 사용자
  	Exactly	정확히
 diff --git a/locales/lv/wordcraft.tsv b/locales/lv/wordcraft.tsv
-index 104343ae..6925e37a 100644
+index 104343a..6925e37 100644
 --- a/locales/lv/wordcraft.tsv
 +++ b/locales/lv/wordcraft.tsv
 @@ -840,7 +840,7 @@ numerals	Context	Kontekstuāli
@@ -1070,7 +1074,7 @@ index 104343ae..6925e37a 100644
  	Everyone	Visi
  	Exactly	Tieši
 diff --git a/locales/nb/wordcraft.tsv b/locales/nb/wordcraft.tsv
-index 99453aaf..6e371c74 100644
+index 99453aa..6e371c7 100644
 --- a/locales/nb/wordcraft.tsv
 +++ b/locales/nb/wordcraft.tsv
 @@ -773,7 +773,7 @@ numerals	Context	Etter kontekst
@@ -1083,7 +1087,7 @@ index 99453aaf..6e371c74 100644
  	Everyone	Alle
  	Exactly	Nøyaktig
 diff --git a/locales/nl/wordcraft.tsv b/locales/nl/wordcraft.tsv
-index 98513303..fdb67b0e 100644
+index 9851330..fdb67b0 100644
 --- a/locales/nl/wordcraft.tsv
 +++ b/locales/nl/wordcraft.tsv
 @@ -786,7 +786,7 @@
@@ -1096,7 +1100,7 @@ index 98513303..fdb67b0e 100644
  	Everyone	Iedereen
  	Exactly	Precies
 diff --git a/locales/pl/wordcraft.tsv b/locales/pl/wordcraft.tsv
-index 273847ef..b48f27e4 100644
+index 273847e..b48f27e 100644
 --- a/locales/pl/wordcraft.tsv
 +++ b/locales/pl/wordcraft.tsv
 @@ -816,7 +816,7 @@ numerals	Context	Kontekstowe
@@ -1109,7 +1113,7 @@ index 273847ef..b48f27e4 100644
  	Everyone	Wszyscy
  	Exactly	Dokładnie
 diff --git a/locales/pt-br/wordcraft.tsv b/locales/pt-br/wordcraft.tsv
-index 3c9a60a9..7f92931b 100644
+index 3c9a60a..7f92931 100644
 --- a/locales/pt-br/wordcraft.tsv
 +++ b/locales/pt-br/wordcraft.tsv
 @@ -659,7 +659,7 @@
@@ -1122,7 +1126,7 @@ index 3c9a60a9..7f92931b 100644
  	Everyone	Todos
  	Exactly	Exatamente
 diff --git a/locales/ro/wordcraft.tsv b/locales/ro/wordcraft.tsv
-index f905a585..b71f9f5c 100644
+index f905a58..b71f9f5 100644
 --- a/locales/ro/wordcraft.tsv
 +++ b/locales/ro/wordcraft.tsv
 @@ -889,7 +889,7 @@
@@ -1135,7 +1139,7 @@ index f905a585..b71f9f5c 100644
  	Everyone	Toată lumea
  	Exactly	Exact
 diff --git a/locales/ru/wordcraft.tsv b/locales/ru/wordcraft.tsv
-index 98af6382..05fb4119 100644
+index 98af638..05fb411 100644
 --- a/locales/ru/wordcraft.tsv
 +++ b/locales/ru/wordcraft.tsv
 @@ -767,7 +767,7 @@
@@ -1148,7 +1152,7 @@ index 98af6382..05fb4119 100644
  	Everyone	Все
  	Exactly	Точно
 diff --git a/locales/sk/wordcraft.tsv b/locales/sk/wordcraft.tsv
-index eb04bcbe..54e3d8f6 100644
+index eb04bcb..54e3d8f 100644
 --- a/locales/sk/wordcraft.tsv
 +++ b/locales/sk/wordcraft.tsv
 @@ -897,7 +897,7 @@ numerals	Context	Podľa okolitého textu
@@ -1161,7 +1165,7 @@ index eb04bcbe..54e3d8f6 100644
  	Everyone	Všetci
  	Exactly	Presne
 diff --git a/locales/sl/wordcraft.tsv b/locales/sl/wordcraft.tsv
-index 26271413..166e3ec1 100644
+index 2627141..166e3ec 100644
 --- a/locales/sl/wordcraft.tsv
 +++ b/locales/sl/wordcraft.tsv
 @@ -835,7 +835,7 @@
@@ -1174,7 +1178,7 @@ index 26271413..166e3ec1 100644
  	Everyone	Vsi
  	Exactly	Natančno
 diff --git a/locales/sr-latn/wordcraft.tsv b/locales/sr-latn/wordcraft.tsv
-index 1d057d07..f369d58e 100644
+index 1d057d0..f369d58 100644
 --- a/locales/sr-latn/wordcraft.tsv
 +++ b/locales/sr-latn/wordcraft.tsv
 @@ -634,7 +634,7 @@
@@ -1187,7 +1191,7 @@ index 1d057d07..f369d58e 100644
  	Everyone	Svi
  	Exactly	Tačno
 diff --git a/locales/sr/wordcraft.tsv b/locales/sr/wordcraft.tsv
-index 16fe2ecb..9574ff47 100644
+index 16fe2ec..9574ff4 100644
 --- a/locales/sr/wordcraft.tsv
 +++ b/locales/sr/wordcraft.tsv
 @@ -622,7 +622,7 @@
@@ -1200,7 +1204,7 @@ index 16fe2ecb..9574ff47 100644
  	Everyone	Сви
  	Exactly	Тачно
 diff --git a/locales/sv/wordcraft.tsv b/locales/sv/wordcraft.tsv
-index 4c90f79e..6e191b64 100644
+index 4c90f79..6e191b6 100644
 --- a/locales/sv/wordcraft.tsv
 +++ b/locales/sv/wordcraft.tsv
 @@ -819,7 +819,7 @@ spacing	Open	Öppen
@@ -1213,7 +1217,7 @@ index 4c90f79e..6e191b64 100644
  	Everyone	Alla
  	Exactly	Exakt
 diff --git a/locales/tr/wordcraft.tsv b/locales/tr/wordcraft.tsv
-index 1eed6963..e2dd8060 100644
+index 1eed696..e2dd806 100644
 --- a/locales/tr/wordcraft.tsv
 +++ b/locales/tr/wordcraft.tsv
 @@ -752,7 +752,7 @@
@@ -1226,7 +1230,7 @@ index 1eed6963..e2dd8060 100644
  	Everyone	Herkes
  	Exactly	Tam
 diff --git a/locales/uk/wordcraft.tsv b/locales/uk/wordcraft.tsv
-index 3accea83..d5ba1c81 100644
+index 3accea8..d5ba1c8 100644
 --- a/locales/uk/wordcraft.tsv
 +++ b/locales/uk/wordcraft.tsv
 @@ -651,7 +651,7 @@
@@ -1239,7 +1243,7 @@ index 3accea83..d5ba1c81 100644
  	Everyone	Усі
  	Exactly	Точно
 diff --git a/locales/vi/wordcraft.tsv b/locales/vi/wordcraft.tsv
-index 97458b0d..aa3826de 100644
+index 97458b0..aa3826d 100644
 --- a/locales/vi/wordcraft.tsv
 +++ b/locales/vi/wordcraft.tsv
 @@ -784,7 +784,7 @@
@@ -1252,7 +1256,7 @@ index 97458b0d..aa3826de 100644
  	Everyone	Mọi người
  	Exactly	Chính xác
 diff --git a/locales/zh-hans/wordcraft.tsv b/locales/zh-hans/wordcraft.tsv
-index 5577b340..f68b889e 100644
+index 5577b34..f68b889 100644
 --- a/locales/zh-hans/wordcraft.tsv
 +++ b/locales/zh-hans/wordcraft.tsv
 @@ -647,7 +647,7 @@
@@ -1265,7 +1269,7 @@ index 5577b340..f68b889e 100644
  	Everyone	每个人
  	Exactly	固定值
 diff --git a/locales/zh-hant/wordcraft.tsv b/locales/zh-hant/wordcraft.tsv
-index c1f3b690..014f73ad 100644
+index c1f3b69..014f73a 100644
 --- a/locales/zh-hant/wordcraft.tsv
 +++ b/locales/zh-hant/wordcraft.tsv
 @@ -646,7 +646,7 @@

@@ -152,10 +152,14 @@ pub fn east_asian_shown_as(doc: &Document, font_ea: &str, font: &str) -> Option<
 
 /// Whether text in `font` drawn in `substitute` is worth a warning: the substitute measures
 /// differently, so line breaks can move, and the font isn't a symbol font (drawn as its
-/// Unicode equivalents on purpose, which layout leaves out of [`missing_fonts`] too). Decides
+/// Unicode equivalents on purpose, which layout leaves out of [`missing_fonts`] too), nor an
+/// Office font the web font pack draws in its chosen stand-in (Fira Sans for Trebuchet MS:
+/// shown with a quieter mark of its own, [`wordcraft_fonts::pack::drawn_by_stand_in`]). Decides
 /// [`MissingFont::metric_compatible`], which the font box and the status bar both read.
 pub fn warns(font: &str, substitute: &str) -> bool {
-    !wordcraft_doc::symbol_fonts::is_symbol_font(font) && !wordcraft_fonts::word::metric_compatible(font, substitute)
+    !wordcraft_doc::symbol_fonts::is_symbol_font(font)
+        && !wordcraft_fonts::word::metric_compatible(font, substitute)
+        && !(wordcraft_fonts::pack::enabled() && wordcraft_fonts::pack::stands_in(font, substitute))
 }
 
 /// The fonts `doc`'s laid-out text asks for that aren't installed, from what layout drew
