@@ -461,7 +461,7 @@ mod browser {
         if_match: Option<&str>,
         body: Option<(&str, &[u8])>,
     ) -> Result<web_sys::Response, Failure> {
-        let window = web_sys::window().ok_or((0, "no window".to_string()))?;
+        let window = web_sys::window().ok_or((0, Reason::unreachable()))?;
         let init = web_sys::RequestInit::new();
         init.set_method(method);
         init.set_mode(web_sys::RequestMode::Cors);
