@@ -27,10 +27,10 @@ fn sha256_hex(data: &[u8]) -> String {
         msg.push(0);
     }
     msg.extend_from_slice(&bits.to_be_bytes());
-    for block in msg.chunks_exact(64) {
+    for block in msg.as_chunks::<64>().0 {
         let mut w = [0u32; 64];
-        for (slot, word) in w.iter_mut().zip(block.chunks_exact(4)) {
-            *slot = u32::from_be_bytes([word[0], word[1], word[2], word[3]]);
+        for (slot, word) in w.iter_mut().zip(block.as_chunks::<4>().0) {
+            *slot = u32::from_be_bytes(*word);
         }
         for i in 16..64 {
             let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
@@ -188,7 +188,10 @@ fn the_list_names_appear_only_with_the_pack() {
     want("Times New Roman;Verdana");
     want("Roboto");
     want("Corbel");
-    assert_eq!(take_wanted(), ["DejaVu Sans", "Liberation Serif", "Roboto"]);
+    // Only what the computer lacks: a runner may have DejaVu Sans or Liberation Serif.
+    let db = crate::FontDb::global();
+    let expected: Vec<&str> = ["DejaVu Sans", "Liberation Serif", "Roboto"].into_iter().filter(|f| !db.has_family(f)).collect();
+    assert_eq!(take_wanted(), expected);
     want("Roboto");
     assert!(take_wanted().is_empty(), "each family is asked for once");
 }

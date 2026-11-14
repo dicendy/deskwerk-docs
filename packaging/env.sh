@@ -53,7 +53,16 @@ copy_docs() {
     if [[ -f "$ROOT/$f" ]]; then cp "$ROOT/$f" "$dest/"; fi
   done
   copy_font_licences "$dest"
+  copy_font_pack_licences "$dest"
   return 0
+}
+
+# The font pack (assets/webfonts) is built into the desktop app: its licences and manifest (family,
+# source, SHA-256 of every file) ship in font-pack-licences/.
+copy_font_pack_licences() {
+  local dest="$1/font-pack-licences"
+  mkdir -p "$dest"
+  cp "$ROOT"/assets/webfonts/licenses/*.txt "$ROOT/assets/webfonts/manifest.tsv" "$dest/"
 }
 
 # Builds made with craft-fonts (CRAFT_FONTS_DIR, set by the release workflow) embed its fonts, so

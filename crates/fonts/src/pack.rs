@@ -8,8 +8,10 @@
 //! list shows Word's usual names ([`STAND_INS`]) and the popular Google fonts
 //! ([`GOOGLE_FAMILIES`]); a document keeps the name it was given, and the stand-in only draws it.
 //!
-//! Native builds don't [`enable`] the pack: there the stand-in table only picks among fonts the
-//! computer already has, and the font list stays the installed families.
+//! The desktop app builds the same files into the program and [`enable`]s the pack too (no
+//! network there); the computer's installed fonts always win over a stand-in. Without [`enable`]
+//! (the CLI, tests) the stand-in table plays no part and the font list stays the installed
+//! families.
 
 use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -268,11 +270,13 @@ pub fn want(family: &str) {
     if !enabled() {
         return;
     }
+    // A pack family the computer has already (Liberation Serif on Linux) needs no files.
+    let db = crate::FontDb::global();
+    let needed: Vec<&'static str> =
+        family.split(';').map(str::trim).filter(|f| !f.is_empty()).take(16).filter_map(pack_family_for).filter(|p| !db.has_family(p)).collect();
     let mut r = requests().lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-    for f in family.split(';').map(str::trim).filter(|f| !f.is_empty()).take(16) {
-        if let Some(p) = pack_family_for(f)
-            && !r.asked.contains(p)
-        {
+    for p in needed {
+        if !r.asked.contains(p) {
             r.wanted.insert(p);
         }
     }

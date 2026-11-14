@@ -99,6 +99,10 @@ Copy-Item (Join-Path $Bin 'deskwerk-docs.exe'), (Join-Path $Bin 'deskwerk-docs-c
 $AppNotices = Join-Path $Stage 'app-notices'
 New-Item -ItemType Directory -Force -Path $AppNotices | Out-Null
 Copy-Item -LiteralPath (Join-Path $Root 'NOTICE'), (Join-Path $Root 'ATTRIBUTION.md') -Destination $AppNotices
+# The font pack (assets\webfonts) is built into deskwerk-docs.exe: ship its licences and manifest.
+$FontPackLicences = Join-Path $AppNotices 'font-pack-licences'
+New-Item -ItemType Directory -Force -Path $FontPackLicences | Out-Null
+Copy-Item -Path (Join-Path $Root 'assets\webfonts\licenses\*.txt'), (Join-Path $Root 'assets\webfonts\manifest.tsv') -Destination $FontPackLicences
 
 # ---- font notices for the MSI ------------------------------------------------------------------
 # The portable ZIP already carries these notices; stage the complete files before MSI creation too.
@@ -179,6 +183,7 @@ if ($env:CRAFT_FONTS_DIR) {
     Copy-Item $ofl.FullName (Join-Path $Portable "OFL-$($ofl.Directory.Name).txt")
   }
 }
+Copy-Item -Recurse -Path $FontPackLicences -Destination $Portable
 $Zip = Join-Path $Dist "deskwerk-docs-$Version-windows-$Arch-portable.zip"
 Remove-Item -Force $Zip -ErrorAction SilentlyContinue
 Compress-Archive -Path $Portable -DestinationPath $Zip
