@@ -1,5 +1,7 @@
 use super::select::{obj_size, selected, with_obj};
 use super::{CmdError, CmdResult, InlineObject, Rgb, Session, Value, Wrap, p};
+use wordcraft_doc::line_dash::LineDash;
+use wordcraft_doc::para::{Float, MAX_OUTLINE_WIDTH, PicOutline};
 use wordcraft_doc::picfx::PicFx;
 
 /// `picture.crop`: the crop, and optionally the new display size, as one edit. With a size, a
@@ -237,9 +239,63 @@ pub(super) fn grown(w: u32, h: u32, pad: u32) -> Option<(u32, u32)> {
     Some((w.checked_add(twice)?, h.checked_add(twice)?))
 }
 
-/// What Artistic Effects, Picture Styles and Picture Border drew on a picture's bitmap: the
-/// bitmap they started from and the effect, style and border on it, so the next one draws again
-/// from that bitmap instead of over the last result. Picking a second style replaces the first,
+/// `picture.border` (Picture Format › Picture Border): the selected picture's outline, as Word
+/// keeps it (`pic:spPr/a:ln`), not drawn into its bitmap. `color` `null` (or `"none"`) is No
+/// Outline; otherwise `color`, `width` (points) and `dash` (a DrawingML preset) each change only
+/// themselves, starting from the outline it has, else Word's: black, ¾ pt, solid. The room kept
+/// around the picture grows to take the half of the line outside its frame.
+pub(super) fn border(s: &mut Session, v: &Value) -> CmdResult {
+    let (_, o) = selected(s).ok_or_else(|| CmdError::Disabled("no picture".into()))?;
+    let InlineObject::Image { float, .. } = &o else { return Err(CmdError::Disabled("not a picture".into())) };
+    let outline = outline_from(float.outline.as_ref(), v)?;
+    with_obj(s, move |o| {
+        if let InlineObject::Image { float, .. } = o {
+            set_outline(float, outline.clone());
+        }
+    })
+}
+
+/// The outline `v` asks for, given the picture's `current` one (see [`border`]).
+pub(super) fn outline_from(current: Option<&PicOutline>, v: &Value) -> Result<Option<PicOutline>, CmdError> {
+    let color = v.get("color");
+    if color.is_some_and(Value::is_null) || p::str(v, "color").is_some_and(|c| c.eq_ignore_ascii_case("none")) {
+        return Ok(None);
+    }
+    let mut o = current.cloned().unwrap_or_else(|| PicOutline::new(Rgb::BLACK, DEFAULT_OUTLINE_WIDTH, LineDash::Solid));
+    if let Some(c) = color {
+        o.color = c.as_str().and_then(Rgb::parse).ok_or_else(|| CmdError::Params(format!("color: {c} is not RRGGBB")))?;
+    }
+    if let Some(w) = v.get("width") {
+        let w = w.as_f64().filter(|w| w.is_finite() && *w > 0.0).ok_or_else(|| CmdError::Params(format!("width: {w} is not a width in points")))?;
+        o.width = (w as f32).clamp(MIN_OUTLINE_WIDTH, MAX_OUTLINE_WIDTH);
+    }
+    if let Some(d) = p::str(v, "dash") {
+        o.dash = LineDash::from_ooxml(d);
+    }
+    Ok(Some(PicOutline::new(o.color, o.width, o.dash)))
+}
+
+/// Word's outline when only a colour or dash is picked (points).
+const DEFAULT_OUTLINE_WIDTH: f32 = 0.75;
+/// The thinnest outline Picture Border sets (points), Word's thinnest weight.
+const MIN_OUTLINE_WIDTH: f32 = 0.25;
+
+/// Give `float` the outline `outline`, keeping room for the half of it outside the frame.
+pub(super) fn set_outline(float: &mut Float, outline: Option<PicOutline>) {
+    if let Some(o) = &outline {
+        let half = o.width() / 2.0;
+        for e in &mut float.effect {
+            if !e.is_finite() || *e < half {
+                *e = half;
+            }
+        }
+    }
+    float.outline = outline;
+}
+
+/// What Artistic Effects and Picture Styles drew on a picture's bitmap: the bitmap they started
+/// from and the effect and style on it, so the next one draws again from that bitmap instead of
+/// over the last result. Picking a second style replaces the first,
 /// as in Word, instead of framing the frame (#2052). Kept in [`Session::picture_looks`] under the
 /// media key of the drawn bitmap.
 #[derive(Clone, Debug, Default)]
@@ -248,14 +304,13 @@ pub struct PictureLook {
     pub base: String,
     pub effect: Option<String>,
     pub style: Option<String>,
-    pub border: Option<(Rgb, u32)>,
     /// The drawn bitmap: a media key that names other bytes later (undo then a new picture
     /// reusing the key) is not this look's.
     pub drawn: std::sync::Arc<Vec<u8>>,
 }
 
-/// Change the selected picture's effect, style or border and draw it again from the bitmap
-/// under them (effect, then style, then border).
+/// Change the selected picture's effect or style and draw it again from the bitmap under them
+/// (effect, then style).
 pub(super) fn relook(s: &mut Session, change: impl FnOnce(&mut PictureLook)) -> CmdResult {
     let (_, o) = selected(s).ok_or_else(|| CmdError::Disabled("no picture".into()))?;
     let InlineObject::Image { media, .. } = o else { return Err(CmdError::Disabled("not a picture".into())) };
@@ -267,7 +322,7 @@ pub(super) fn relook(s: &mut Session, change: impl FnOnce(&mut PictureLook)) -> 
         .cloned()
         .unwrap_or_else(|| PictureLook { base: media.clone(), ..Default::default() });
     change(&mut look);
-    if look.effect.is_none() && look.style.is_none() && look.border.is_none() {
+    if look.effect.is_none() && look.style.is_none() {
         // Nothing left on it: the bitmap as it was.
         let base = look.base.clone();
         return with_obj(s, |o| {
@@ -277,7 +332,7 @@ pub(super) fn relook(s: &mut Session, change: impl FnOnce(&mut PictureLook)) -> 
         });
     }
     let l = look.clone();
-    // Styles, borders and effects leave the file's brightness, contrast and transparency alone.
+    // Styles and effects leave the file's brightness, contrast and transparency alone.
     let out = adjust_media(
         s,
         &look.base,
@@ -289,9 +344,6 @@ pub(super) fn relook(s: &mut Session, change: impl FnOnce(&mut PictureLook)) -> 
             };
             if let Some(st) = &l.style {
                 img = picture_style(img, st)?;
-            }
-            if let Some((c, w)) = l.border {
-                img = frame(img, w, [c.0, c.1, c.2, 255])?;
             }
             Ok(img)
         },

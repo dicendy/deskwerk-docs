@@ -5066,6 +5066,7 @@ fn a_pictures_corrections_and_crop_change_its_page_key() {
             off: 0,
             spin: Default::default(),
             fx,
+            outline: None,
         }],
         ..Default::default()
     };

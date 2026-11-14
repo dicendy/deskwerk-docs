@@ -12,6 +12,10 @@ choices stay app-owned. No new cleanup operation or model/settings migration is 
 Packaged resources remain package-owned; separately downloaded shared models are not caches
 and are outside this installer's ownership.
 
+Setup puts a "Deskwerk Docs" shortcut with the app icon on the desktop of the selected
+context (the common desktop for everyone, the user's own for the current account); uninstall
+removes it. Pass `DESKTOPSHORTCUT=0` to `msiexec` to skip it.
+
 ## Repeatable metadata tests
 
 On Windows with WiX 5.0.2 and its matching UI/Util extensions:

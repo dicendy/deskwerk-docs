@@ -38,6 +38,12 @@
       </Directory>
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="DesktopFolder" />
+
+    <!-- Desktop shortcut, on by default; DESKTOPSHORTCUT=0 on the msiexec command line skips it.
+         It follows the install context (the common desktop for Everyone, the user's own for
+         Only for me) and goes away on uninstall. -->
+    <Property Id="DESKTOPSHORTCUT" Value="1" Secure="yes" />
 
     <Feature Id="Main" Title="Deskwerk Docs" Level="1">
       <ComponentGroupRef Id="AppNotices" />
@@ -45,6 +51,7 @@
       <ComponentGroupRef Id="CraftFontLicences" />
       <?endif?>
       <ComponentGroupRef Id="WordcraftFiles" />
+      <ComponentGroupRef Id="WordcraftDesktop" />
     </Feature>
   </Package>
 
@@ -143,6 +150,17 @@
 
       <Component Id="WordcraftCli">
         <File Id="WordcraftCliExe" Source="$(var.BinDir)\deskwerk-docs-cli.exe" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="WordcraftDesktop">
+      <Component Id="WordcraftDesktopShortcut" Directory="DesktopFolder" Condition="DESKTOPSHORTCUT = &quot;1&quot;">
+        <Shortcut Id="DesktopShortcut" Name="Deskwerk Docs" Description="Deskwerk Docs word processor" Target="[#WordcraftExe]" WorkingDirectory="INSTALLFOLDER" Icon="WordcraftIcon.ico" IconIndex="0" />
+        <!-- HKMU follows the install context, so the marker (and the shortcut with it) is removed
+             by whichever account uninstalls; MSI root -1 also satisfies ICE43. -->
+        <RegistryValue Root="HKMU" Key="Software\DeskwerkDocs\Installer" Name="DesktopShortcut" Value="1" Type="integer" KeyPath="yes" />
       </Component>
     </ComponentGroup>
   </Fragment>

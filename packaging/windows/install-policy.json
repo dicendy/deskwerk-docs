@@ -286,6 +286,12 @@
       "Software\\Classes\\Applications\\deskwerk-docs.exe\\SupportedTypes",
       ".txt",
       ""
+    ],
+    [
+      "-1",
+      "Software\\DeskwerkDocs\\Installer",
+      "DesktopShortcut",
+      "#1"
     ]
   ],
   "mode": "dualScope"

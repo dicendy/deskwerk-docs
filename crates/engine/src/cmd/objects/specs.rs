@@ -1,6 +1,6 @@
 use super::arrange::{MAX_OFFSET, bounds, copy_to, move_with_text, unalign};
 use super::group::{add_object, group, ungroup};
-use super::picture::{adjust, adjust_media, clear_lum, crop, original_media, recolor, relook, remove_background, reset, size};
+use super::picture::{adjust, adjust_media, border, clear_lum, crop, original_media, recolor, relook, remove_background, reset, size};
 use super::select::{
     all_objects, alt_text, can_group, edit_obj, has_floating, has_group, has_movable, has_object, has_picture, has_placeable, has_shape,
     has_shape_or_canvas, has_sizable, obj_size, objects_list, selected, with_float, with_obj,
@@ -160,20 +160,20 @@ pub fn specs() -> Vec<CommandSpec> {
         CommandSpec::new("picture.style", "Picture Styles", "Picture Format › Picture Styles", |s, v| {
             // A style replaces the picture's style and border, as Word's gallery does (#2052).
             let style = p::str(v, "style").unwrap_or("simpleFrame").to_string();
-            relook(s, move |l| {
-                l.style = Some(style);
-                l.border = None;
+            relook(s, move |l| l.style = Some(style))?;
+            with_obj(s, |o| {
+                if let InlineObject::Image { float, .. } = o {
+                    float.outline = None;
+                }
             })
         })
         .params(r#"{"style": "simpleFrame|thickFrame|rounded|softEdge|shadow"} (replaces the picture's style and border)"#)
         .when(has_picture),
-        CommandSpec::new("picture.border", "Picture Border", "Picture Format › Picture Styles", |s, v| {
-            let c = p::str(v, "color").and_then(Rgb::parse).unwrap_or(Rgb::BLACK);
-            let w = p::u64(v, "width").unwrap_or(4).clamp(1, 200) as u32;
-            // Replaces the picture's border, keeping its style (#2052).
-            relook(s, move |l| l.border = Some((c, w)))
-        })
-        .params(r#"{"color"?: "RRGGBB", "width"?: px} (replaces the picture's border)"#)
+        // The picture's outline (`a:ln`), as Word keeps it: its bitmap and style stay (#2052).
+        CommandSpec::new("picture.border", "Picture Border", "Picture Format › Picture Styles", border)
+        .params(
+            r#"{"color"?: "RRGGBB" | null, "width"?: pt, "dash"?: "solid|sysDot|sysDash|dash|dashDot|lgDash|lgDashDot|lgDashDotDot"} (the picture's outline; color null removes it; what is left out stays as it was, else black ¾ pt solid)"#,
+        )
         .when(has_picture),
         CommandSpec::new("arrange.rotate", "Rotate", "Layout › Arrange", |s, v| {
             // Turns and flips are the object's angle and mirroring (DrawingML `a:xfrm`): the

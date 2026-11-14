@@ -107,9 +107,30 @@ pub(super) fn picture_format(app: &mut WordApp, ui: &mut Ui) {
             app,
             crate::widgets::MenuButtonOptions::new("picture", Some("Border"), "Picture border", true, "picture.border"),
             |ui, app| {
-                for (l, w) in [("Thin", 2), ("Medium", 4), ("Thick", 8)] {
-                    mi(ui, app, l, "picture.border", json!({"width": w}));
-                }
+                // The picture's outline, as Word's Picture Border menu sets it (`a:ln`).
+                let theme = app.session.doc.settings.theme_colors.clone();
+                mi(ui, app, "No Outline", "picture.border", json!({"color": null}));
+                crate::colors::menu(ui, app, &theme, Target::cmd("picture.border"));
+                ui.separator();
+                ui.menu_button(crate::tl!("Weight"), |ui| {
+                    for w in [0.25, 0.5, 0.75, 1.0, 1.5, 2.25, 3.0, 4.5, 6.0] {
+                        mi(ui, app, &format!("{w} pt"), "picture.border", json!({"width": w}));
+                    }
+                });
+                ui.menu_button(crate::tl!("Dashes"), |ui| {
+                    for (l, d) in [
+                        ("Solid", "solid"),
+                        ("Round Dot", "sysDot"),
+                        ("Square Dot", "sysDash"),
+                        ("Dash", "dash"),
+                        ("Dash Dot", "dashDot"),
+                        ("Long Dash", "lgDash"),
+                        ("Long Dash Dot", "lgDashDot"),
+                        ("Long Dash Dot Dot", "lgDashDotDot"),
+                    ] {
+                        mi(ui, app, l, "picture.border", json!({"dash": d}));
+                    }
+                });
             },
         );
     });

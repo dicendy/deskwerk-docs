@@ -117,7 +117,8 @@ pub(super) fn group(s: &mut Session, _: &Value) -> CmdResult {
         })
         .collect();
     // The group takes the first member's placement; its members keep their own alt text.
-    let mut float = found.first().and_then(|(o, _)| o.frame()).map(|(_, _, f)| Float { alt: Default::default(), ..f.clone() }).unwrap_or_default();
+    let mut float =
+        found.first().and_then(|(o, _)| o.frame()).map(|(_, _, f)| Float { alt: Default::default(), outline: None, ..f.clone() }).unwrap_or_default();
     float.set_spin(Spin::default());
     let grouped = InlineObject::Group { w, h, float, ch_w: w, ch_h: h, children, canvas: None };
     // Take the members out, last first so the earlier positions hold, and put the group where

@@ -265,21 +265,27 @@ pub(crate) fn go_to_page(app: &mut WordApp, id: &str) {
         return;
     }
     match id {
-        // A document without a file goes to the Save As page (as in Word) instead
-        // of `file.save`, which would also open the native Save As dialog.
+        // A document without a file asks where to save in the system's Save As dialog straight
+        // away, as Ctrl+S does; the Save As page (Browse…, Save as Word Template…) is File › Save
+        // As. Showing that page here made Save look like a template picker instead of a save.
+        // Once saved the Backstage closes; a failed write shows its reason on the Save As page.
         // In the browser a save is a download, so it saves right away.
         "save" if app.session.path.is_none() && app.services.download.is_none() => {
-            app.ui.backstage_page = "saveAs".into();
+            app.save_as_dialog();
         }
-        "save" => {
-            let r = app.run("file.save", json!({}));
-            if r.is_ok_and(|v| v.get("saved").and_then(serde_json::Value::as_bool) == Some(true) || v.get("downloaded").is_some()) {
+        "save" => match app.run("file.save", json!({})) {
+            Ok(v) if v.get("saved").and_then(serde_json::Value::as_bool) == Some(true) || v.get("downloaded").is_some() => {
                 app.ui.backstage = false;
                 app.canvas.want_focus = true;
-            } else {
-                app.ui.backstage_page = "saveAs".into();
             }
-        }
+            // The system Save As dialog is asking (an import-only Word 97–2003 file is saved as
+            // .docx); it closes the Backstage once the document is saved.
+            Ok(v) if v.get("pending").is_some() => {}
+            Ok(_) => app.ui.backstage_page = "saveAs".into(),
+            // Writing the document's own file failed (no permission, the file locked by another
+            // app): say why where the user is looking, and offer Save As elsewhere.
+            Err(e) => app.fail_save_as(&e),
+        },
         "saveAs" => {
             app.ui.backstage_page = "saveAs".into();
         }

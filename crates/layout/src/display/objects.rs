@@ -398,10 +398,11 @@ pub(super) fn spun(spin: Spin, rect: Rect, items: Vec<Draw>, out: &mut Vec<Draw>
 pub(super) fn object_draws(o: &InlineObject, rect: Rect, outer: Spin, alpha: f32, opts: &DisplayOptions, out: &mut Vec<Draw>) {
     let own = o.frame().map(|(_, _, f)| f.spin()).unwrap_or_default();
     match o {
-        InlineObject::Image { media, crop, alt, fx, .. } => {
+        InlineObject::Image { media, crop, alt, fx, float, .. } => {
             let alpha = alpha * fx.opacity();
             let decorative = o.is_decorative();
-            spun(own, rect, vec![Draw::Image { rect, media: media.clone(), crop: *crop, alpha, alt: alt.clone(), fx: *fx, decorative }], out)
+            let image = Draw::Image { rect, media: media.clone(), crop: *crop, alpha, alt: alt.clone(), fx: *fx, decorative };
+            spun(own, rect, outlined(image, rect, float.outline.as_ref()), out)
         }
         InlineObject::Shape { kind, fill, stroke, stroke_width, effects, freeform, extra, .. } => {
             let effects = effects_in(*effects, own.within(outer));
@@ -510,6 +511,27 @@ pub(crate) fn inline_rect(obj: Option<&InlineObject>, cx: f32, base: f32, adv: f
     let k = if bw > 0.0 { room.w / bw } else { 1.0 };
     let (fw, fh) = (w * k, h * k);
     Rect::new(room.x + (room.w - fw) / 2.0, room.y + (room.h - fh) / 2.0, fw, fh)
+}
+
+/// A picture's `image` with its outline (Picture Border) over it: a line centred on its frame
+/// `rect`, half inside and half outside, as Word draws it.
+pub(super) fn outlined(image: Draw, rect: Rect, outline: Option<&wordcraft_doc::para::PicOutline>) -> Vec<Draw> {
+    let mut items = vec![image];
+    if let Some(o) = outline {
+        let width = o.width();
+        items.push(Draw::Shape {
+            rect,
+            kind: ShapeKind::Rectangle,
+            fill: None,
+            stroke: Some(o.color),
+            stroke_width: width,
+            effects: Default::default(),
+            corner: None,
+            dash: o.dash.pattern(width),
+            cap: Default::default(),
+        });
+    }
+    items
 }
 
 /// A Drawing Canvas's background and outline over its frame `rect`.

@@ -447,8 +447,9 @@ fn remove_background_keeps_a_small_stack() {
     assert_eq!(clear_background(&mut image::RgbaImage::new(0, 0), 30.0), 0);
 }
 
-/// #3611: a style or border is drawn only when the picture it makes can still be drawn. On a
-/// 1 × 2,000,000 picture Thick Frame asked for about 1.8 TB and aborted the process.
+/// #3611: a style is drawn only when the picture it makes can still be drawn. On a
+/// 1 × 2,000,000 picture Thick Frame asked for about 1.8 TB and aborted the process. A border
+/// is the picture's outline, not drawn into it, so it is set on any picture.
 #[test]
 fn picture_styles_and_borders_check_the_size_they_draw() {
     let mut thin = Vec::new();
@@ -456,15 +457,11 @@ fn picture_styles_and_borders_check_the_size_they_draw() {
     let mut s = Session::new(wordcraft_doc::Document::new());
     s.run("insert.picture", &json!({"data": super::super::insert::base64_encode(&thin)})).unwrap();
     let media = s.doc.media.len();
-    for (id, v) in [
-        ("picture.style", json!({"style": "thickFrame"})),
-        ("picture.style", json!({"style": "shadow"})),
-        ("picture.style", json!({})),
-        ("picture.border", json!({"width": 200})),
-    ] {
+    for (id, v) in [("picture.style", json!({"style": "thickFrame"})), ("picture.style", json!({"style": "shadow"})), ("picture.style", json!({}))] {
         let e = s.run(id, &v).unwrap_err().to_string();
         assert!(e.contains("too large to edit"), "{id} {v}: {e}");
     }
+    s.run("picture.border", &json!({"width": 200})).unwrap();
     assert_eq!(s.doc.media.len(), media, "nothing was drawn");
     assert_eq!(grown(u32::MAX, 1, 1), None);
 }
@@ -658,8 +655,9 @@ fn reset_never_borrows_another_pictures_corrections() {
 }
 
 /// #2052: a picture style picked after another replaces it (Thick Frame then Simple Frame is
-/// only the simple frame), a border replaces the border and keeps the style, an artistic
-/// effect replaces the effect, and transparency 50% then 10% is 10%, as in Word.
+/// only the simple frame), a border replaces the border and keeps the style, a style removes
+/// the border, an artistic effect replaces the effect, and transparency 50% then 10% is 10%,
+/// as in Word.
 #[test]
 fn picture_styles_borders_and_effects_replace_the_last_one() {
     let picture = || {
@@ -682,16 +680,21 @@ fn picture_styles_borders_and_effects_replace_the_last_one() {
     let (thick, simple) = (json!({"style": "thickFrame"}), json!({"style": "simpleFrame"}));
     assert_eq!(after(&[("picture.style", thick.clone()), ("picture.style", simple.clone())]), after(&[("picture.style", simple.clone())]));
     let (wide, thin) = (json!({"width": 8}), json!({"width": 2}));
-    assert_eq!(
-        after(&[("picture.style", thick.clone()), ("picture.border", wide.clone()), ("picture.border", thin.clone())]),
-        after(&[("picture.style", thick.clone()), ("picture.border", thin.clone())]),
-        "a border replaces the border and keeps the style"
-    );
-    assert_eq!(
-        after(&[("picture.border", wide), ("picture.style", simple.clone())]),
-        after(&[("picture.style", simple)]),
-        "a style replaces the border too"
-    );
+    let outline = |cmds: &[(&str, Value)]| {
+        let mut s = picture();
+        for (id, v) in cmds {
+            s.run(id, v).unwrap();
+        }
+        let (_, o) = selected(&s).unwrap();
+        let InlineObject::Image { float, .. } = o else { panic!("a picture") };
+        (float.outline, bitmap(&s))
+    };
+    let (line, styled) = outline(&[("picture.style", thick.clone()), ("picture.border", wide.clone()), ("picture.border", thin.clone())]);
+    assert_eq!(line.map(|o| o.width), Some(2.0), "a border replaces the border");
+    assert_eq!(styled, after(&[("picture.style", thick.clone())]), "and keeps the style");
+    let (line, styled) = outline(&[("picture.border", wide), ("picture.style", simple.clone())]);
+    assert_eq!(line, None, "a style replaces the border too");
+    assert_eq!(styled, after(&[("picture.style", simple)]));
     assert_eq!(
         after(&[("picture.effects", json!({"effect": "invert"})), ("picture.effects", json!({"effect": "posterize"}))]),
         after(&[("picture.effects", json!({"effect": "posterize"}))])
@@ -707,7 +710,41 @@ fn picture_styles_borders_and_effects_replace_the_last_one() {
     s.run("picture.effects", &json!({"effect": "invert"})).unwrap();
     s.run("picture.border", &json!({"width": 2})).unwrap();
     let (w, h) = bitmap(&s).dimensions();
-    assert_eq!((w, h), (84, 44), "the effect and a 2 px border, no thick frame from before the undo");
+    assert_eq!((w, h), (80, 40), "the effect alone: no thick frame from before the undo, and the border is no pixels");
+}
+
+/// Picture Border is the picture's outline, as Word keeps it (`a:ln`): colour, weight and dash
+/// change on their own, No Outline removes it, the room around the picture takes the line's
+/// outer half, and the bitmap stays as it was. Undo takes it back.
+#[test]
+fn picture_border_sets_the_outline_not_the_pixels() {
+    use wordcraft_doc::line_dash::LineDash;
+    use wordcraft_doc::para::PicOutline;
+    let mut s = Session::new(wordcraft_doc::Document::new());
+    s.run("insert.picture", &json!({"data": super::super::insert::base64_encode(&png(80, 40))})).unwrap();
+    let state = |s: &Session| {
+        let (_, o) = selected(s).unwrap();
+        let InlineObject::Image { float, media, .. } = o else { panic!("a picture") };
+        (float.outline, float.effect, media)
+    };
+    let (none, effect, media) = state(&s);
+    assert_eq!((none, effect), (None, [0.0; 4]));
+    s.run("picture.border", &json!({"color": "C00000"})).unwrap();
+    assert_eq!(state(&s).0, Some(PicOutline::new(wordcraft_doc::Rgb(0xC0, 0, 0), 0.75, LineDash::Solid)), "Word's ¾ pt, solid");
+    s.run("picture.border", &json!({"width": 3})).unwrap();
+    s.run("picture.border", &json!({"dash": "dash"})).unwrap();
+    let (line, effect, now) = state(&s);
+    assert_eq!(line, Some(PicOutline::new(wordcraft_doc::Rgb(0xC0, 0, 0), 3.0, LineDash::Dash)));
+    assert_eq!(effect, [1.5; 4], "room for the outer half of the line");
+    assert_eq!(now, media, "the bitmap is untouched");
+    s.run("picture.border", &json!({"width": 1000})).unwrap();
+    assert_eq!(state(&s).0.map(|o| o.width), Some(wordcraft_doc::para::MAX_OUTLINE_WIDTH));
+    assert!(s.run("picture.border", &json!({"color": "nope"})).is_err());
+    assert!(s.run("picture.border", &json!({"width": -1})).is_err());
+    s.run("picture.border", &json!({"color": null})).unwrap();
+    assert_eq!(state(&s).0, None, "No Outline");
+    s.run("edit.undo", &json!({})).unwrap();
+    assert_eq!(state(&s).0.map(|o| o.dash), Some(LineDash::Dash), "undo gives the outline back");
 }
 
 /// #513: Wrap Text › Fix Position on Page / Move with Text re-anchor a floating picture

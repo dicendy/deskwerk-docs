@@ -25,6 +25,7 @@ mod nested_block_controls;
 mod note_comments;
 mod passthrough;
 mod picture_links;
+mod picture_outline;
 mod positional_tabs;
 mod privacy;
 mod roundtrip;

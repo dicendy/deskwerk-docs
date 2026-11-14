@@ -310,6 +310,7 @@ impl Reader<'_> {
     fn read_pic(&mut self, pic: &El, rels: &Rels, w: f32, h: f32, alt: String, mut float: Float) -> Option<InlineObject> {
         let blip = pic.find("a:blip")?;
         float.set_spin(xfrm_spin(pic.find("pic:spPr")));
+        float.outline = self.pic_outline(pic);
         let media = blip.attr("r:embed").and_then(|id| self.media_for(rels, id))?;
         let mut crop = [0.0f32; 4];
         if let Some(sr) = pic.find("a:srcRect") {
@@ -322,6 +323,17 @@ impl Reader<'_> {
             }
         }
         Some(InlineObject::Image { media, w, h, alt, float, crop, fx: crate::units::blip_fx(blip), ole: None })
+    }
+
+    /// A picture's outline (`pic:spPr/a:ln`, else its `pic:style` line reference): its colour,
+    /// width (0.75 pt when coloured without one, as Word draws it) and dashes. `None` for
+    /// `a:noFill` or no line at all.
+    fn pic_outline(&self, pic: &El) -> Option<wordcraft_doc::para::PicOutline> {
+        let sppr = pic.find("pic:spPr");
+        let paint = shape_paint(sppr, pic.find("pic:style"), &self.doc.settings.theme_colors, &self.theme_fills, None);
+        let color = paint.stroke?;
+        let dash = crate::read::shape_style::line_dash(sppr.and_then(|s| s.child("a:ln")));
+        Some(wordcraft_doc::para::PicOutline::new(color, paint.stroke_width, dash))
     }
 
     /// A `wpg:wgp` group (`w` × `h`): its pictures, shapes and text boxes, nested groups

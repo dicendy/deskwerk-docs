@@ -64,6 +64,9 @@ impl Writer<'_> {
         w.open("a:prstGeom", &[("prst", "rect")]);
         w.empty("a:avLst", &[]);
         w.close("a:prstGeom");
+        if let Some(outline) = &float.outline {
+            pic_outline(w, outline);
+        }
         w.close("pic:spPr");
         w.close("pic:pic");
     }
@@ -380,6 +383,17 @@ fn cust_geom(w: &mut W, f: &wordcraft_doc::freeform::Freeform, sw: f32, sh: f32)
     }
     w.close("a:pathLst");
     w.close("a:custGeom");
+}
+
+/// A picture's outline as Word writes it (Picture Border): `a:ln` with its width in EMU, a solid
+/// fill of its colour and its dashes.
+fn pic_outline(w: &mut W, outline: &wordcraft_doc::para::PicOutline) {
+    w.open("a:ln", &[("w", &emu(outline.width()))]);
+    w.open("a:solidFill", &[]);
+    w.empty("a:srgbClr", &[("val", &outline.color.hex())]);
+    w.close("a:solidFill");
+    line_dash(w, &outline.dash);
+    w.close("a:ln");
 }
 
 /// Explicit DrawingML outline dashes, before joins and arrowheads.

@@ -81,3 +81,37 @@ fn other_path_alpha_defaults() {
         |item| matches!(item, Draw::Path { fill, .. } if fill.as_ref().is_none_or(|paint| matches!(paint, Paint::Solid(_, alpha) if *alpha == 1.0)))
     ));
 }
+
+/// A picture's outline (Picture Border) is drawn over it, centred on its frame, in its colour,
+/// width and dashes, inside the picture's turn; a picture without one is the image alone.
+#[test]
+fn picture_outline_is_drawn_on_the_frame() {
+    use wordcraft_doc::line_dash::LineDash;
+    use wordcraft_doc::para::{Float, PicOutline};
+    let rect = Rect::new(10.0, 20.0, 100.0, 50.0);
+    let picture = |outline: Option<PicOutline>, rot: f32| InlineObject::Image {
+        media: "m".into(),
+        w: 100.0,
+        h: 50.0,
+        alt: String::new(),
+        float: Float { outline, rot, ..Default::default() },
+        crop: [0.0; 4],
+        fx: Default::default(),
+        ole: None,
+    };
+    let draws = |o: &InlineObject| {
+        let mut out = Vec::new();
+        object_draws(o, rect, Spin::default(), 1.0, &DisplayOptions::default(), &mut out);
+        out
+    };
+    let plain = draws(&picture(None, 0.0));
+    assert!(matches!(plain.as_slice(), [Draw::Image { .. }]), "{plain:?}");
+    let red = PicOutline::new(Rgb(0xC0, 0, 0), 3.0, LineDash::Dash);
+    let out = draws(&picture(Some(red.clone()), 0.0));
+    let [Draw::Image { .. }, Draw::Shape { rect: r, kind, fill, stroke, stroke_width, dash, .. }] = out.as_slice() else { panic!("{out:?}") };
+    assert_eq!((*r, *kind, fill.is_none(), *stroke, *stroke_width), (rect, ShapeKind::Rectangle, true, Some(Rgb(0xC0, 0, 0)), 3.0));
+    assert_eq!(*dash, LineDash::Dash.pattern(3.0));
+    let turned = draws(&picture(Some(red), 30.0));
+    let [Draw::Rotated { items, .. }] = turned.as_slice() else { panic!("{turned:?}") };
+    assert!(matches!(items.as_slice(), [Draw::Image { .. }, Draw::Shape { .. }]), "the outline turns with the picture: {items:?}");
+}

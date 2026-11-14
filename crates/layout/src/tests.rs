@@ -12094,6 +12094,7 @@ fn split_cell_moves_image_frame() {
             path: Path::top(0),
             off: 0,
             spin: Default::default(),
+            outline: None,
         };
         let frame = Placed::Object {
             rect,

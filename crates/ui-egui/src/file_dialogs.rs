@@ -369,12 +369,17 @@ impl WordApp {
         let _ = self.save_as(AfterSave::Nothing);
     }
 
-    /// A plain Save As (Backstage's Browse…, AutoSave) failed to write: say so on the status bar,
-    /// and, if the Save As page is what's showing, there too — its own render loop skips the
-    /// status bar while Backstage is open, so that page was otherwise left with nothing to explain
-    /// a failed write (no permission, disk full, a bad path).
-    fn fail_save_as(&mut self, error: &str) {
+    /// A plain Save As (Backstage's Save or Browse…, AutoSave) or Backstage's Save of the
+    /// document's own file failed to write: say so on the status bar and, with the Backstage
+    /// open, on its Save As page — its own render loop skips the status bar while Backstage is
+    /// open, so that page was otherwise left with nothing to explain a failed write (no
+    /// permission, disk full, a bad path).
+    pub(crate) fn fail_save_as(&mut self, error: &str) {
         self.status(error.to_string());
+        // The message is drawn on the Save As page: an open Backstage goes there to show it.
+        if self.ui.backstage {
+            self.ui.backstage_page = "saveAs".into();
+        }
         if let Some(ctx) = self.ctx.clone() {
             ctx.data_mut(|d| d.insert_temp(crate::backstage::save_as_error_id(), error.to_string()));
         }

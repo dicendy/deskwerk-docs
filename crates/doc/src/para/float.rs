@@ -191,6 +191,41 @@ pub struct Float {
     /// the turned object overhang it (see [`Float::line_pad`]). Cleared by [`Float::set_spin`].
     #[serde(skip_serializing_if = "is_false")]
     pub bare_turn: bool,
+    /// A picture's outline (`pic:spPr/a:ln`, Picture Format › Picture Border); `None` = no
+    /// outline. Only pictures use it: shapes keep theirs in their own stroke.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub outline: Option<PicOutline>,
+}
+
+/// Thickest picture outline kept (points), as for shapes' outlines.
+pub const MAX_OUTLINE_WIDTH: f32 = 100.0;
+
+/// A picture's outline: a solid line of `color`, `width` points wide, centred on the picture's
+/// frame (half of it inside, half outside, as Word draws it), in `dash`es.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct PicOutline {
+    pub color: crate::Rgb,
+    /// Points (`a:ln/@w` is EMU, 12 700 to the point).
+    pub width: f32,
+    #[serde(skip_serializing_if = "crate::line_dash::LineDash::is_solid")]
+    pub dash: crate::line_dash::LineDash,
+}
+
+impl PicOutline {
+    /// An outline with its width made finite and within `0..=MAX_OUTLINE_WIDTH`.
+    pub fn new(color: crate::Rgb, width: f32, dash: crate::line_dash::LineDash) -> PicOutline {
+        PicOutline { color, width: Self::fit(width), dash }
+    }
+
+    /// The width as drawn and saved: finite, within `0..=MAX_OUTLINE_WIDTH`.
+    pub fn width(&self) -> f32 {
+        Self::fit(self.width)
+    }
+
+    fn fit(w: f32) -> f32 {
+        if w.is_finite() { w.clamp(0.0, MAX_OUTLINE_WIDTH) } else { 0.0 }
+    }
 }
 
 /// Longest alternative text kept (characters): hostile files and commands are capped.

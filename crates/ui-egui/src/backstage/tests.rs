@@ -809,28 +809,11 @@ fn save_as_page_shows_browse_and_no_open_list() {
     assert!(h.query_by_label("Recent").is_none(), "Save As has no list that opens documents");
 }
 
+/// Save on a document without a file asks where in the system's Save As dialog straight away,
+/// as Ctrl+S does: not the Save As page with Browse… and Save as Word Template…, which looked
+/// like a template picker instead of a save.
 #[test]
-fn backstage_save_navigates_to_save_as_when_unnamed() {
-    let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
-    a.run("ui.backstage", json!({"value": true, "page": "home"})).unwrap();
-    let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
-        |ui, app: &mut WordApp| {
-            let ctx = ui.ctx().clone();
-            app.logic(&ctx);
-            app.ui(ui);
-        },
-        a,
-    );
-    h.run_steps(4);
-    h.get_by_label("Save").click();
-    h.run_steps(4);
-    assert_eq!(h.state().ui.backstage_page, "saveAs", "unnamed Save opens Save As page");
-    assert!(h.state().ui.backstage, "backstage remains open");
-}
-
-/// Save on a document without a file shows the Save As page only: no native dialog as well.
-#[test]
-fn backstage_save_when_unnamed_opens_no_file_dialog() {
+fn backstage_save_when_unnamed_opens_the_file_dialog() {
     let shown = std::rc::Rc::new(std::cell::Cell::new(0));
     let count = shown.clone();
     let services = Services {
@@ -853,12 +836,58 @@ fn backstage_save_when_unnamed_opens_no_file_dialog() {
     h.run_steps(4);
     h.get_by_label("Save").click();
     h.run_steps(4);
-    assert_eq!(h.state().ui.backstage_page, "saveAs");
-    assert_eq!(shown.get(), 0, "no native Save As dialog");
-    assert!(!h.state().file_dialog_open());
+    assert_eq!(shown.get(), 1, "one native Save As dialog");
+    assert!(h.state().file_dialog_open());
+    assert_ne!(h.state().ui.backstage_page, "saveAs", "not the Save As page");
 }
 
-/// Repro: a brand-new document, typed text, File > Save (unnamed) > Save As page > Browse…,
+/// Save on a document opened from a file writes it back there at once, with no dialog, as in
+/// Word: a .docx stays a .docx.
+#[test]
+fn backstage_save_of_an_opened_docx_writes_it_back_without_a_dialog() {
+    let shown = std::rc::Rc::new(std::cell::Cell::new(0));
+    let count = shown.clone();
+    let services = Services {
+        file_dialog: Some(Box::new(move |_| {
+            count.set(count.get() + 1);
+            std::sync::mpsc::channel::<crate::FileDialogAnswer>().1
+        })),
+        ..Default::default()
+    };
+    let dir = std::env::temp_dir().join(format!("wordcraft-backstage-save-back-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("Report.docx");
+    let mut first = wordcraft_engine::Session::new(wordcraft_doc::Document::new());
+    first.run("text.insert", &json!({"text": "First"})).unwrap();
+    first.run("file.save", &json!({"path": path.to_string_lossy()})).unwrap();
+
+    let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), services);
+    a.run("file.open", json!({"path": path.to_string_lossy()})).unwrap();
+    a.run("text.insert", json!({"text": "Second "})).unwrap();
+    assert!(a.session.dirty);
+    a.run("ui.backstage", json!({"value": true, "page": "home"})).unwrap();
+    let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
+        |ui, app: &mut WordApp| {
+            let ctx = ui.ctx().clone();
+            app.logic(&ctx);
+            app.ui(ui);
+        },
+        a,
+    );
+    h.run_steps(4);
+    h.get_by_label("Save").click();
+    h.run_steps(4);
+    assert_eq!(shown.get(), 0, "no dialog");
+    assert!(!h.state().ui.backstage, "back to the document");
+    assert!(!h.state().session.dirty);
+    assert_eq!(h.state().session.path.as_deref(), Some(path.as_path()));
+    let back = wordcraft_engine::io::open_path(&path).unwrap();
+    assert!(back.final_text(wordcraft_doc::StoryRef::Body).contains("Second"), "written back as .docx");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// Repro: a brand-new document, typed text, File > Save (unnamed) > the native dialog,
 /// answered asynchronously by a native dialog (as the desktop host does), should land back on
 /// the document, not the "no document" screen.
 #[test]
@@ -894,10 +923,7 @@ fn backstage_save_browse_native_dialog_lands_on_the_document() {
     h.run_steps(4);
     h.get_by_label("Save").click();
     h.run_steps(4);
-    assert_eq!(h.state().ui.backstage_page, "saveAs", "unnamed Save opens Save As page");
-    h.get_by_label("Browse…").click();
-    h.run_steps(4);
-    assert!(h.state().file_dialog_open(), "Browse opened the native dialog");
+    assert!(h.state().file_dialog_open(), "Save opened the native dialog");
     let (_, tx) = shown.borrow_mut().pop().unwrap();
     tx.send(Ok(vec![path.to_string_lossy().to_string()])).unwrap();
     h.run_steps(6);
@@ -942,8 +968,6 @@ fn backstage_save_browse_write_failure_shows_on_the_save_as_page() {
     );
     h.run_steps(4);
     h.get_by_label("Save").click();
-    h.run_steps(4);
-    h.get_by_label("Browse…").click();
     h.run_steps(4);
     let (_, tx) = shown.borrow_mut().pop().unwrap();
     tx.send(Ok(vec![bogus.to_string_lossy().to_string()])).unwrap();
