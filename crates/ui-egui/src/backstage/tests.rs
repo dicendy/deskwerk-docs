@@ -816,10 +816,15 @@ fn save_as_page_shows_browse_and_no_open_list() {
 fn backstage_save_when_unnamed_opens_the_file_dialog() {
     let shown = std::rc::Rc::new(std::cell::Cell::new(0));
     let count = shown.clone();
+    // The dialog stays open while nobody has answered: keep its sender.
+    let answers = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    let keep = answers.clone();
     let services = Services {
         file_dialog: Some(Box::new(move |_| {
             count.set(count.get() + 1);
-            std::sync::mpsc::channel::<crate::FileDialogAnswer>().1
+            let (tx, rx) = std::sync::mpsc::channel::<crate::FileDialogAnswer>();
+            keep.borrow_mut().push(tx);
+            rx
         })),
         ..Default::default()
     };
