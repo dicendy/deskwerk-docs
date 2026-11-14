@@ -17,6 +17,9 @@ use crate::Registry;
 /// isn't part of the customizable list.
 pub const TABS: [&str; 13] =
     ["File", "Home", "Insert", "Draw", "Design", "Layout", "References", "Mailings", "Review", "View", "Developer", "Zotero", "Help"];
+/// Built-in tabs a default ribbon doesn't show: Zotero (a citation manager few offices run).
+/// Customize Ribbon (File › Options) turns them on; the commands stay available either way.
+pub const HIDDEN_BY_DEFAULT: [&str; 1] = ["Zotero"];
 /// Tabs that come up with the selection; custom tabs can't take their names.
 pub const CONTEXTUAL_TABS: [&str; 7] =
     ["Table Design", "Table Layout", "Picture Format", "Shape Format", "Equation", "Chart Design", "SmartArt Design"];
@@ -86,8 +89,13 @@ fn reserved(name: &str) -> bool {
     TABS.iter().chain(CONTEXTUAL_TABS.iter()).any(|t| same(t, name))
 }
 
+/// A built-in tab as the default ribbon has it.
+fn default_entry(name: &str) -> TabEntry {
+    TabEntry { name: name.to_string(), custom: false, hidden: HIDDEN_BY_DEFAULT.contains(&name), groups: Vec::new() }
+}
+
 fn default_tabs() -> Vec<TabEntry> {
-    TABS.iter().skip(1).map(|t| TabEntry { name: (*t).to_string(), custom: false, hidden: false, groups: Vec::new() }).collect()
+    TABS.iter().skip(1).copied().map(default_entry).collect()
 }
 
 /// `base`, or `base 2`, `base 3`… whichever `taken` doesn't have yet.
@@ -168,8 +176,7 @@ impl RibbonLayout {
                 continue;
             }
             let at = TABS.get(1..i).and_then(|before| before.iter().rev().find_map(|b| tabs.iter().position(|t| !t.custom && t.name == *b)));
-            let entry = TabEntry { name: (*name).to_string(), custom: false, hidden: false, groups: Vec::new() };
-            tabs.insert(at.map_or(0, |p| p + 1), entry);
+            tabs.insert(at.map_or(0, |p| p + 1), default_entry(name));
         }
         self.tabs = if tabs == default_tabs() { Vec::new() } else { tabs };
     }
@@ -467,6 +474,25 @@ mod tests {
         assert_eq!(s.ribbon, RibbonLayout::default());
         s.run("tools.customizeRibbon", &json!({})).unwrap();
         assert_eq!(s.ui_requests.last(), Some(&json!({"open": "customizeRibbon"})));
+    }
+
+    /// Deskwerk: the Zotero tab is off by default, Customize Ribbon brings it back, and a saved
+    /// layout from before the tab existed gets it hidden.
+    #[test]
+    fn zotero_tab_is_hidden_until_turned_on() {
+        let shown = |l: &RibbonLayout| l.tabs().iter().filter(|t| !t.hidden).map(|t| t.name.clone()).collect::<Vec<_>>();
+        let mut l = RibbonLayout::default();
+        assert!(!shown(&l).contains(&"Zotero".to_string()), "{:?}", shown(&l));
+        assert!(shown(&l).contains(&"Developer".to_string()) && shown(&l).contains(&"Help".to_string()));
+        assert!(l.tabs().iter().any(|t| t.name == "Zotero" && t.hidden), "still listed for Customize Ribbon");
+        l.set_hidden("Zotero", false).unwrap();
+        assert!(!l.ribbon_is_default());
+        let back: RibbonLayout = serde_json::from_str(&serde_json::to_string(&l).unwrap()).unwrap();
+        assert!(shown(&back).contains(&"Zotero".to_string()), "turned on stays on: {:?}", shown(&back));
+        l.set_hidden("Zotero", true).unwrap();
+        assert!(l.ribbon_is_default(), "hidden again is the default ribbon");
+        let old = RibbonLayout::from_value(&json!({"tabs": [{"name": "Home"}, {"name": "Mine", "custom": true}]}));
+        assert!(old.tabs().iter().any(|t| t.name == "Zotero" && t.hidden), "{:?}", old.tabs());
     }
 
     #[test]
