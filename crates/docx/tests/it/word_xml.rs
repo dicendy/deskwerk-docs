@@ -74,7 +74,7 @@ fn wordml_2003_sample() -> String {
     format!(
         r##"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <?mso-application progid="Word.Document"?>
-<w:wordDocument xmlns:w="http://schemas.microsoft.com/office/word/2003/wordml" xmlns:wx="http://schemas.microsoft.com/office/word/2003/auxHint" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:aml="http://schemas.microsoft.com/aml/2001/core" w:macrosPresent="no">
+<w:wordDocument xmlns:w="http://schemas.microsoft.com/office/word/2003/wordml" xmlns:wx="http://schemas.microsoft.com/office/word/2003/auxHint" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:aml="http://schemas.microsoft.com/aml/2001/core" w:macrosPresent="no" xml:space="preserve">
   <o:DocumentProperties><o:Title>Garden notes</o:Title><o:Author>Ada Gardener</o:Author><o:Keywords>beans</o:Keywords></o:DocumentProperties>
   <w:fonts><w:defaultFonts w:ascii="Georgia" w:fareast="Georgia" w:h-ansi="Georgia" w:cs="Georgia"/></w:fonts>
   <w:lists>

@@ -3,7 +3,8 @@
 //! cells, and a symbol as a custom note mark. Each is read as LibreOffice and Word show it and
 //! survives a save. So do drawings the model can't show (a locked canvas, a picture whose image
 //! is linked or missing), a shapetype inside a VML group, fields inside fields, a bibliography's
-//! result of several paragraphs, and a list's own level definition without a restart.
+//! result of several paragraphs, a list's own level definition without a restart, text whose
+//! outer spaces are not preserved, and a HYPERLINK field in a tracked deletion.
 
 use std::io::Read;
 
@@ -560,5 +561,49 @@ fn a_lists_own_level_without_a_start_override_goes_on_counting() {
         let mut c = Counters::default();
         let labels: Vec<String> = [1, 1, 2].iter().map(|&n| c.next_label(&d.numbering, n, 0).unwrap().0).collect();
         assert_eq!(labels, ["1.", "2.", "3)"]);
+    }
+}
+
+#[test]
+fn text_without_preserved_space_reads_as_word_shows_it() {
+    // Apache POI's Bug66263-paragraph.docx: inline content controls between runs whose `w:t`
+    // has no `xml:space="preserve"`. Word and LibreOffice drop the outer spaces of such text
+    // (ECMA-376 §17.3.3.31); saved with `preserve`, they would come back as new spaces.
+    let body = r#"<w:p><w:r><w:t>Before </w:t></w:r><w:sdt><w:sdtPr><w:id w:val="1001"/></w:sdtPr><w:sdtContent><w:r><w:rPr><w:b w:val="on"/></w:rPr><w:t>Control</w:t></w:r></w:sdtContent></w:sdt><w:r><w:t> After</w:t></w:r></w:p><w:p><w:r><w:t xml:space="preserve">Kept </w:t></w:r><w:r><w:t>
+            indented
+        </w:t></w:r></w:p>"#;
+    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    for d in [&d, &saved_and_read(&d)] {
+        assert_eq!(outline(&d.body), ["BeforeControlAfter", "Kept indented"]);
+        assert_eq!(body_controls(d).1, 1);
+    }
+}
+
+#[test]
+fn a_hyperlink_field_in_a_deletion_stays_a_deleted_link() {
+    // Apache POI's delins.docx: a HYPERLINK field whose code is `w:delInstrText`, all of it in
+    // `w:del`. The link and its text stay, still deleted, and nothing of it becomes live text.
+    let url = "http://en.wikipedia.org/wiki/Tilaka";
+    let del = |inner: &str| format!(r#"<w:del w:id="1" w:author="pavel" w:date="2009-07-24T15:05:00Z">{inner}</w:del>"#);
+    let field = [
+        fld("begin"),
+        format!(r#"<w:r><w:delInstrText xml:space="preserve"> HYPERLINK "{url}" \o "Tilaka" </w:delInstrText></w:r>"#),
+        fld("separate"),
+        r#"<w:r><w:delText>tilaka</w:delText></w:r>"#.to_string(),
+        fld("end"),
+    ]
+    .concat();
+    let body = format!(r#"<w:p><w:r><w:t xml:space="preserve">A pendant (</w:t></w:r>{}<w:r><w:t>).</w:t></w:r></w:p>"#, del(&field));
+    let d = wordcraft_docx::read(&body_package(&body, &[])).unwrap();
+    for d in [&d, &saved_and_read(&d)] {
+        let p = para(&d.body[0]);
+        assert_eq!(p.plain_text(), "A pendant (tilaka).");
+        let props = p.props_of_char(p.text.find("tilaka").unwrap());
+        assert!(props.link.as_deref().is_some_and(|l| l.starts_with(url)), "{:?}", props.link);
+        assert!(props.del.is_some(), "the link text stays deleted");
+        assert!(p.props_of_char(0).del.is_none());
+        let xml = part_xml(&wordcraft_docx::write(d).unwrap(), "word/document.xml");
+        assert!(xml.contains("<w:delText xml:space=\"preserve\">tilaka</w:delText>"), "{xml}");
+        assert!(!xml.contains("<w:instrText"), "the field's code is not live text: {xml}");
     }
 }

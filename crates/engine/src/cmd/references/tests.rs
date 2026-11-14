@@ -751,7 +751,7 @@ fn output_shows_references_to_bookmarks_outside_the_body() {
     let names = ["HDR", "FTR", "FN", "EN", "CMT"];
     let refs: String = names.iter().map(|n| field(n)).collect();
     let document = format!(
-        r#"<w:document {ns}><w:body>{refs}<w:p><w:r><w:t>Body </w:t></w:r><w:r><w:footnoteReference w:id="1"/></w:r><w:r><w:endnoteReference w:id="1"/></w:r><w:commentRangeStart w:id="0"/><w:r><w:t>commented</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r></w:p><w:sectPr><w:headerReference w:type="default" r:id="rIdH"/><w:footerReference w:type="default" r:id="rIdF"/></w:sectPr></w:body></w:document>"#
+        r#"<w:document {ns}><w:body>{refs}<w:p><w:r><w:t xml:space="preserve">Body </w:t></w:r><w:r><w:footnoteReference w:id="1"/></w:r><w:r><w:endnoteReference w:id="1"/></w:r><w:commentRangeStart w:id="0"/><w:r><w:t>commented</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r></w:p><w:sectPr><w:headerReference w:type="default" r:id="rIdH"/><w:footerReference w:type="default" r:id="rIdF"/></w:sectPr></w:body></w:document>"#
     );
     let header = format!(r#"<w:hdr {ns}><w:p>{}</w:p></w:hdr>"#, mark("HDR", 1));
     let footer = format!(r#"<w:ftr {ns}><w:p>{}</w:p></w:ftr>"#, mark("FTR", 2));

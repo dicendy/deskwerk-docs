@@ -4247,7 +4247,7 @@ fn field_result_keeps_run_props() {
                     r#"<w:r><w:rPr><w:sz w:val="6"/><w:i/></w:rPr><w:fldChar w:fldCharType="begin" w:fldLock="1" w:dirty="1"/></w:r><w:r><w:instrText>PAGE</w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="40"/></w:rPr><w:t/></w:r>{result}<w:r><w:rPr><w:sz w:val="50"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r>"#
                 )
             };
-            let body = format!(r#"<w:p><w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:t>Counter </w:t></w:r>{field}</w:p>"#);
+            let body = format!(r#"<w:p><w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:t xml:space="preserve">Counter </w:t></w:r>{field}</w:p>"#);
             let mut d = wordcraft_docx::read(&docx(&body, &[("styles", "styles", "styles.xml")], &[("word/styles.xml", &styles)])).unwrap();
             for _ in 0..2 {
                 let p = paras(&d)[0];

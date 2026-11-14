@@ -50,6 +50,7 @@ W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 W_NAMESPACES = ("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "http://purl.oclc.org/ooxml/wordprocessingml/main")
 M_NAMESPACES = ("http://schemas.openxmlformats.org/officeDocument/2006/math", "http://purl.oclc.org/ooxml/officeDocument/math")
 MC_FALLBACK = "{http://schemas.openxmlformats.org/markup-compatibility/2006}Fallback"
+XML_SPACE = "{http://www.w3.org/XML/1998/namespace}space"
 VML_SHAPETYPE = "{urn:schemas-microsoft-com:vml}shapetype"
 OFFICE_DOC = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
 STRICT_OFFICE_DOC = "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument"
@@ -261,6 +262,9 @@ def _body_of(f) -> dict:
     cur: list[str] = []
     fallback = 0  # depth inside mc:Fallback
     fields: list[list] = []  # open complex fields: [instruction so far, counted yet]
+    # xml:space="preserve" in force per open element: text of w:t without it loses its outer
+    # white space, as Word and LibreOffice read it.
+    spaces: list[bool] = [False]
 
     def count_field(fld: list) -> None:
         if not fld[1]:
@@ -269,6 +273,12 @@ def _body_of(f) -> dict:
 
     for event, el in ET.iterparse(f, events=("start", "end")):
         tag = el.tag
+        if event == "start":
+            space = el.get(XML_SPACE)
+            spaces.append(spaces[-1] if space is None else space == "preserve")
+            preserve = spaces[-1]
+        else:
+            preserve = spaces.pop() if len(spaces) > 1 else False
         if tag == MC_FALLBACK:
             fallback += 1 if event == "start" else -1
             continue
@@ -294,8 +304,8 @@ def _body_of(f) -> dict:
                         fields.pop()
             continue
         if local == "t":
-            cur.append(el.text or "")
-        elif local == "instrText" and fields:
+            cur.append((el.text or "") if preserve else (el.text or "").strip(" \t\n\r"))
+        elif local in ("instrText", "delInstrText") and fields:
             fields[-1][0] += el.text or ""
         elif local == "tab":
             cur.append("\t")
