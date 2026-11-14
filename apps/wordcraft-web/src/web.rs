@@ -132,7 +132,13 @@ pub fn start() {
         if let Some(el) = document.get_element_by_id(LOADING_ID) {
             match result {
                 Ok(()) => el.remove(),
-                Err(e) => el.set_inner_html(&format!("<p>Deskwerk Docs failed to start: {e:?}</p><p>It needs a browser with WebGPU or WebGL2.</p>")),
+                Err(e) => {
+                    // The app never ran, so no language was chosen yet: the browser's.
+                    use wordcraft_ui_egui::i18n;
+                    let lang = i18n::system_lang();
+                    let failed = i18n::fmt_plain(i18n::tr(lang, "Deskwerk Docs failed to start: {error}"), &[("error", &format!("{e:?}"))]);
+                    el.set_inner_html(&format!("<p>{failed}</p><p>{}</p>", i18n::tr(lang, "It needs a browser with WebGPU or WebGL2.")));
+                }
             }
         }
     });
@@ -277,13 +283,13 @@ fn services(inbox: Inbox, ctx: egui::Context, dirty: Rc<Cell<bool>>, saves: Asyn
             let inbox = open_inbox.clone();
             let ctx = ctx.clone();
             let dialog = if purpose == "picture" {
-                rfd::AsyncFileDialog::new().add_filter("Pictures", IMAGE_EXTS)
+                rfd::AsyncFileDialog::new().add_filter(wordcraft_ui_egui::i18n::t("Pictures"), IMAGE_EXTS)
             } else if purpose == "font" {
-                rfd::AsyncFileDialog::new().add_filter("Fonts", wordcraft_fonts::FONT_FILE_EXTS)
+                rfd::AsyncFileDialog::new().add_filter(wordcraft_ui_egui::i18n::t("Fonts"), wordcraft_fonts::FONT_FILE_EXTS)
             } else if purpose == "recipients" {
-                rfd::AsyncFileDialog::new().add_filter("Recipient lists", RECIPIENT_EXTS)
+                rfd::AsyncFileDialog::new().add_filter(wordcraft_ui_egui::i18n::t("Recipient lists"), RECIPIENT_EXTS)
             } else {
-                rfd::AsyncFileDialog::new().add_filter("Documents", DOC_EXTS)
+                rfd::AsyncFileDialog::new().add_filter(wordcraft_ui_egui::i18n::t("Documents"), DOC_EXTS)
             };
             let many = purpose == "font";
             wasm_bindgen_futures::spawn_local(async move {

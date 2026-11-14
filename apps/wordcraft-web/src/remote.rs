@@ -122,28 +122,87 @@ fn file_name(path: &str) -> Option<String> {
     (!name.is_empty() && name != "." && name != "..").then(|| name.to_string())
 }
 
-/// Why the server refused a save, as the status bar says it.
-pub fn save_error(status: u16) -> String {
+/// Why a load or a save failed: the English wording, which is also its catalog key, and the value
+/// of its one placeholder, if any. The framing page is told it in English ([`Reason::english`]);
+/// the status bar shows it in the interface language ([`Reason::shown`]).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Reason {
+    template: &'static str,
+    arg: Option<(&'static str, String)>,
+}
+
+impl Reason {
+    const fn plain(template: &'static str) -> Self {
+        Self { template, arg: None }
+    }
+
+    fn with(template: &'static str, key: &'static str, value: impl ToString) -> Self {
+        Self { template, arg: Some((key, value.to_string())) }
+    }
+
+    /// The server didn't answer (or the request couldn't be made).
+    pub const fn unreachable() -> Self {
+        Self::plain("the server couldn't be reached.")
+    }
+
+    /// A save with no `save` URL to send it to.
+    pub const fn nowhere() -> Self {
+        Self::plain("there is nowhere to save it.")
+    }
+
+    /// A document over the size limit, in MiB.
+    pub fn too_large(mib: u64) -> Self {
+        Self::with("the file is larger than {size} MiB.", "size", mib)
+    }
+
+    fn fill(&self, template: &str) -> String {
+        match &self.arg {
+            Some((key, value)) => wordcraft_ui_egui::i18n::fmt_plain(template, &[(*key, value.as_str())]),
+            None => template.to_string(),
+        }
+    }
+
+    /// The reason in English, as the framing page gets it.
+    pub fn english(&self) -> String {
+        self.fill(self.template)
+    }
+
+    /// The reason in the interface language, for the status bar.
+    pub fn shown(&self) -> String {
+        self.fill(wordcraft_ui_egui::i18n::t(self.template))
+    }
+}
+
+/// Why the server refused a save.
+pub fn save_error(status: u16) -> Reason {
     match status {
-        412 => "the file was changed on the server since it was opened. Save a copy with File › Save As to keep your changes.".into(),
-        423 => "the file is no longer locked for you on the server (the lock was released, expired or taken over). Save a copy with File › Save As to keep your changes.".into(),
-        401 | 403 => "the server no longer accepts this editing session. Save a copy with File › Save As to keep your changes.".into(),
-        413 => "the file is too large for the server.".into(),
-        415 => "the server doesn't take this file format.".into(),
-        507 => "there is no storage space left on the server.".into(),
-        0 => "the server couldn't be reached.".into(),
-        s => format!("the server refused it (HTTP {s})."),
+        412 => Reason::plain("the file was changed on the server since it was opened. Save a copy with File › Save As to keep your changes."),
+        423 => Reason::plain(
+            "the file is no longer locked for you on the server (the lock was released, expired or taken over). Save a copy with File › Save As to keep your changes.",
+        ),
+        401 | 403 => Reason::plain("the server no longer accepts this editing session. Save a copy with File › Save As to keep your changes."),
+        413 => Reason::plain("the file is too large for the server."),
+        415 => Reason::plain("the server doesn't take this file format."),
+        507 => Reason::plain("there is no storage space left on the server."),
+        0 => Reason::unreachable(),
+        s => Reason::with("the server refused it (HTTP {status}).", "status", s),
     }
 }
 
 /// Why the document couldn't be loaded.
-pub fn load_error(status: u16) -> String {
+pub fn load_error(status: u16) -> Reason {
     match status {
-        401 | 403 => "the server didn't accept this editing session. Open the file from the server again.".into(),
-        404 => "the file isn't on the server.".into(),
-        0 => "the server couldn't be reached.".into(),
-        s => format!("the server refused it (HTTP {s})."),
+        401 | 403 => Reason::plain("the server didn't accept this editing session. Open the file from the server again."),
+        404 => Reason::plain("the file isn't on the server."),
+        0 => Reason::unreachable(),
+        s => Reason::with("the server refused it (HTTP {status}).", "status", s),
     }
+}
+
+/// The status bar's message when the document couldn't be loaded, in the interface language.
+pub fn open_failed(name: &str, reason: &Reason) -> String {
+    use wordcraft_ui_egui::i18n;
+    i18n::fmt(i18n::t("Couldn't open {path}: {error}"), &[("path", &i18n::isolate_path(name)), ("error", &reason.shown())])
 }
 
 /// The version number in the server's `ETag` (`"<file>.<version>"`, maybe weak).
@@ -183,7 +242,7 @@ mod browser {
     use wordcraft_ui_egui::async_saves::{AsyncSaves, SaveOutcome};
     use wordcraft_ui_egui::{ControlRequest, Inbox, Services};
 
-    use super::{APP, Params, load_error, message, save_error, version_from_etag};
+    use super::{APP, Params, Reason, load_error, message, open_failed, save_error, version_from_etag};
 
     /// The largest document loaded, as for one a host page sends.
     const MAX_LOAD_BYTES: u64 = crate::host::MAX_OPEN_BYTES;
@@ -192,7 +251,7 @@ mod browser {
     const WAIT_MS: i32 = 50;
 
     /// A failed request: the HTTP status (0 when there was no answer) and the reason.
-    type Failure = (u16, String);
+    type Failure = (u16, Reason);
 
     pub struct Remote {
         params: Params,
@@ -272,9 +331,10 @@ mod browser {
                         inbox.lock().unwrap_or_else(|e| e.into_inner()).push((name, bytes));
                         remote.post("deskwerk:loaded", json!({}));
                     }
-                    Err((status, error)) => {
+                    Err((status, reason)) => {
+                        let error = reason.english();
                         log::error!("couldn't load {name}: {error}");
-                        messages.borrow_mut().push(format!("Couldn't open {name}: {error}"));
+                        messages.borrow_mut().push(open_failed(&name, &reason));
                         remote.post("deskwerk:load-failed", json!({ "status": status, "error": error }));
                     }
                 }
@@ -291,7 +351,7 @@ mod browser {
             if !resp.ok() {
                 return Err((resp.status(), load_error(resp.status())));
             }
-            let too_big = || (413, format!("the file is larger than {} MiB.", MAX_LOAD_BYTES >> 20));
+            let too_big = || (413, Reason::too_large(MAX_LOAD_BYTES >> 20));
             let length = resp.headers().get("Content-Length").ok().flatten().and_then(|l| l.trim().parse::<u64>().ok());
             if length.is_some_and(|l| l > MAX_LOAD_BYTES) {
                 return Err(too_big());
@@ -320,17 +380,18 @@ mod browser {
                     self.post("deskwerk:saved", json!({ "version": version, "etag": etag }));
                     Ok(())
                 }
-                Err((status, error)) => {
+                Err((status, reason)) => {
+                    let error = reason.english();
                     log::error!("saving {} on the server failed: {error}", self.params.name);
                     self.post("deskwerk:save-failed", json!({ "status": status, "error": error }));
-                    Err(error)
+                    Err(reason.shown())
                 }
             }
         }
 
         /// The new `ETag` on success (the server's next `If-Match`).
         async fn put_now(&self, bytes: &[u8]) -> Result<Option<String>, Failure> {
-            let Some(url) = &self.params.save else { return Err((0, "there is nowhere to save it.".into())) };
+            let Some(url) = &self.params.save else { return Err((0, Reason::nowhere())) };
             let etag = self.etag.borrow().clone();
             let body = (crate::web::mime_for(&self.params.name), bytes);
             let resp = fetch("PUT", url, self.params.token.as_deref(), etag.as_deref(), Some(body)).await?;
@@ -389,7 +450,7 @@ mod browser {
 
     fn no_answer(e: JsValue) -> Failure {
         log::warn!("request failed: {e:?}");
-        (0, save_error(0))
+        (0, Reason::unreachable())
     }
 
     /// A cross-origin request with the token and no cookies (the server takes the token alone).
@@ -400,7 +461,7 @@ mod browser {
         if_match: Option<&str>,
         body: Option<(&str, &[u8])>,
     ) -> Result<web_sys::Response, Failure> {
-        let window = web_sys::window().ok_or((0, "no window".to_string()))?;
+        let window = web_sys::window().ok_or((0, Reason::unreachable()))?;
         let init = web_sys::RequestInit::new();
         init.set_method(method);
         init.set_mode(web_sys::RequestMode::Cors);
@@ -513,19 +574,33 @@ mod tests {
 
     #[test]
     fn statuses_say_what_to_do() {
-        assert!(save_error(412).contains("changed on the server"));
-        assert!(save_error(423).contains("no longer locked"));
+        let save = |status| save_error(status).english();
+        let load = |status| load_error(status).english();
+        assert!(save(412).contains("changed on the server"));
+        assert!(save(423).contains("no longer locked"));
         for status in [412, 423, 401, 403] {
-            assert!(save_error(status).contains("Save a copy"), "{status}");
+            assert!(save(status).contains("Save a copy"), "{status}");
         }
-        assert!(save_error(413).contains("too large"));
-        assert!(save_error(415).contains("format"));
-        assert!(save_error(507).contains("storage"));
-        assert!(save_error(0).contains("couldn't be reached"));
-        assert!(save_error(500).contains("HTTP 500"));
-        assert!(load_error(401).contains("again"));
-        assert!(load_error(404).contains("isn't on the server"));
-        assert!(load_error(502).contains("HTTP 502"));
+        assert!(save(413).contains("too large"));
+        assert!(save(415).contains("format"));
+        assert!(save(507).contains("storage"));
+        assert!(save(0).contains("couldn't be reached"));
+        assert_eq!(save(500), "the server refused it (HTTP 500).");
+        assert!(load(401).contains("again"));
+        assert!(load(404).contains("isn't on the server"));
+        assert_eq!(load(502), "the server refused it (HTTP 502).");
+        assert_eq!(Reason::too_large(256).english(), "the file is larger than 256 MiB.");
+    }
+
+    /// The status bar says it in the interface language (English here: tests run in English);
+    /// the framing page always gets English.
+    #[test]
+    fn reasons_are_shown_in_the_interface_language() {
+        for reason in [save_error(412), save_error(500), load_error(404), Reason::too_large(256), Reason::nowhere()] {
+            assert_eq!(reason.shown(), reason.english(), "{reason:?}");
+        }
+        let msg = open_failed("Report.docx", &load_error(404));
+        assert!(msg.starts_with("Couldn't open ") && msg.contains("Report.docx") && msg.ends_with("the file isn't on the server."), "{msg}");
     }
 
     #[test]

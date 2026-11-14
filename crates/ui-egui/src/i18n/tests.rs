@@ -1299,3 +1299,23 @@ fn a_path_in_a_message_is_isolated_in_a_right_to_left_interface() {
     set_current(Lang::EN);
     assert_eq!(msg, "تعذر فتح \u{2066}C:\\\u{200E}ملفات\\\u{200E}تقرير\u{200E}.docx\u{2069}: \u{2068}bad\u{2069}");
 }
+
+/// Deskwerk: the status bar's missing-font count and the web shell's open failure read in German
+/// and French (the rows `.github/i18n/deskwerk.patch` adds), with each language's plural forms.
+#[test]
+fn deskwerk_status_strings_are_german_and_french() {
+    needs_catalogs!();
+    let fonts = |n| tn(n, "{n} font not installed", "{n} fonts not installed");
+    set_current(lang("de"));
+    let de = (fonts(1), fonts(2), fmt(t("Couldn't open {path}: {error}"), &[("path", "a.docx"), ("error", t("the file isn't on the server."))]));
+    set_current(lang("fr"));
+    let fr = (fonts(1), fonts(2), fmt(t("the server refused it (HTTP {status})."), &[("status", "500")]));
+    set_current(Lang::EN);
+    assert_eq!(de.0, "1 Schriftart nicht installiert");
+    assert_eq!(de.1, "2 Schriftarten nicht installiert");
+    assert_eq!(de.2, "a.docx konnte nicht geöffnet werden: die Datei ist nicht auf dem Server.");
+    assert_eq!(fr.0, "1 police non installée");
+    assert_eq!(fr.1, "2 polices non installées");
+    assert_eq!(fr.2, "le serveur l’a refusé (HTTP 500).");
+    assert_eq!(fonts(2), "2 fonts not installed");
+}
