@@ -382,6 +382,8 @@ fn parse_with(bytes: &[u8], extra: &[(&'static str, &str)], strict: bool) -> Res
         c.check_end_names = strict;
     }
     let mut stack: Vec<El> = Vec::new();
+    // Whether `xml:space="preserve"` is in force in each open element (it is inherited).
+    let mut preserve: Vec<bool> = Vec::new();
     let mut root: Option<El> = None;
     let mut count = 0usize;
     let mut buf = Vec::new();
@@ -455,13 +457,15 @@ fn parse_with(bytes: &[u8], extra: &[(&'static str, &str)], strict: bool) -> Res
                     if stack.len() >= MAX_DEPTH {
                         return Err(DocxError::Limit("XML nesting too deep".into()));
                     }
+                    preserve.push(space_preserved(&el, preserve.last().copied()));
                     stack.push(el);
                 } else {
                     attach(&mut stack, &mut root, el);
                 }
             }
             Event::End(_) => {
-                if let Some(el) = stack.pop() {
+                if let Some(mut el) = stack.pop() {
+                    settle_space(&mut el, preserve.pop().unwrap_or(false));
                     attach(&mut stack, &mut root, el);
                 }
             }
@@ -516,6 +520,39 @@ fn parse_with(bytes: &[u8], extra: &[(&'static str, &str)], strict: bool) -> Res
         attach(&mut stack, &mut root, el);
     }
     root.ok_or_else(|| DocxError::Xml("no root element".into()))
+}
+
+/// Whether `xml:space="preserve"` is in force in `el`: its own `xml:space`, else its parent's.
+fn space_preserved(el: &El, parent: Option<bool>) -> bool {
+    match el.attr("xml:space") {
+        Some("preserve") => true,
+        Some("default") => false,
+        _ => parent.unwrap_or(false),
+    }
+}
+
+/// Text runs (`w:t`, `w:delText`) without `xml:space="preserve"` in force lose their leading and
+/// trailing white space, as in Word and LibreOffice (ECMA-376 §17.3.3.31): `<w:t>Before </w:t>`
+/// reads "Before". One that inherits `preserve` from an ancestor (Word 2003 XML sets it on the
+/// root) gets the attribute itself, so it keeps its spaces when re-emitted on its own.
+fn settle_space(el: &mut El, preserve: bool) {
+    const WS: [char; 4] = [' ', '\t', '\n', '\r'];
+    if !matches!(el.name.as_str(), "w:t" | "w:delText") {
+        return;
+    }
+    if preserve {
+        if el.attr("xml:space").is_none() {
+            el.attrs.push(("xml:space".into(), "preserve".into()));
+        }
+        return;
+    }
+    if let Some(Node::Text(t)) = el.kids.first_mut() {
+        *t = t.trim_start_matches(WS).to_string();
+    }
+    if let Some(Node::Text(t)) = el.kids.last_mut() {
+        *t = t.trim_end_matches(WS).to_string();
+    }
+    el.kids.retain(|n| !matches!(n, Node::Text(t) if t.is_empty()));
 }
 
 fn push_text(top: &mut El, s: &str) {
@@ -732,6 +769,22 @@ mod tests {
         let t = p.child("w:t").unwrap();
         assert_eq!(t.text(), " hi A< ");
         assert_eq!(t.attr("xml:space"), Some("preserve"));
+    }
+
+    /// `w:t` and `w:delText` keep their outer white space only with `xml:space="preserve"` in
+    /// force, on themselves or inherited (Bug66263-paragraph.docx in Apache POI's test data).
+    #[test]
+    fn text_without_preserve_loses_outer_white_space() {
+        let x = br#"<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:t> a b </w:t><w:delText>
+ c </w:delText><w:t xml:space="preserve"> d </w:t><w:t>   </w:t><w:x> e </w:x></w:p><w:p xml:space="preserve"><w:t> f </w:t><w:t xml:space="default"> g </w:t></w:p></w:document>"#;
+        let e = parse(x).unwrap();
+        let mut ps = e.children("w:p");
+        let texts = |p: &El| p.els().map(|k| k.text()).collect::<Vec<_>>();
+        assert_eq!(texts(ps.next().unwrap()), ["a b", "c", " d ", "", " e "]);
+        let p = ps.next().unwrap();
+        assert_eq!(texts(p), [" f ", "g"]);
+        // Inherited, it is written on the element, so the text keeps its spaces re-emitted alone.
+        assert_eq!(p.child("w:t").unwrap().to_xml(), r#"<w:t xml:space="preserve"> f </w:t>"#);
     }
 
     /// CDATA that isn't UTF-8 is decoded lossily, and its line ends are still normalised.
