@@ -8,6 +8,7 @@ static site in `deskwerk-docs-web-<version>/`:
 | `index.html` | The page. It loads everything through relative URLs. |
 | `wordcraft-web-<hash>.js` | wasm-bindgen glue (generated, ES module) |
 | `wordcraft-web-<hash>_bg.wasm` | The app, about 13 MB, or 5 MB with compression |
+| `webfonts/` | The font pack: open fonts that draw Word's fonts (Carlito for Calibri, Liberation Serif for Times New Roman…) and popular Google fonts, with `manifest.tsv` (family, licence, source, SHA-256) and `licenses/`. About 40 MB in all; the browser fetches three Regular faces (1.4 MB, 0.6 MB with zstd) at start and any other family only when a document or the user picks it. |
 | `_headers`, `.htaccess` | Sample header rules for Netlify/Cloudflare Pages and Apache |
 
 There is no server-side code. Upload the folder's contents anywhere that serves static files.
@@ -25,10 +26,15 @@ hash, so they can be cached forever. Only `index.html` needs revalidation.
   any other type, and the app then loads slowly or not at all. Serve `.js` as `text/javascript`.
   Most hosts already do both. For nginx, check that `mime.types` has `application/wasm wasm;`.
 - **Compression:** turn on gzip or Brotli for `.wasm`, `.js` and `.html`. That takes the
-  download from about 13 MB to about 5 MB. You can also precompress (`brotli -k *.wasm`) and let
+  download from about 13 MB to about 5 MB. Compress `webfonts/*.ttf` (`font/ttf`) too: they
+  shrink by about half (Caddy: `encode zstd gzip` with a `header Content-Type font/*` matcher if
+  your version leaves fonts out). You can also precompress (`brotli -k *.wasm`) and let
   the server send `Content-Encoding: br`.
 - **Caching:** `Cache-Control: public, max-age=31536000, immutable` on the hashed `.wasm` and
-  `.js` files, and `no-cache` on `index.html`.
+  `.js` files, and `no-cache` on `index.html`. The `webfonts/` files keep their names from
+  release to release: cache them for a while (`public, max-age=2592000`), not forever.
+- **No third-party font servers:** the app fetches fonts only from `webfonts/` on its own
+  origin, never from Google Fonts or another CDN.
 - **HTTPS:** WebGPU (and the clipboard) only work in a secure context, which means `https://`
   or `http://localhost`. Over plain HTTP elsewhere, the app falls back to WebGL2.
 - **No special isolation headers:** WordCraft doesn't use `SharedArrayBuffer`, so it doesn't

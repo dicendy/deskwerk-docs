@@ -189,8 +189,11 @@ impl Previews {
             self.font_gen = generation;
             let db = wordcraft_fonts::FontDb::global();
             let mut f: Vec<String> = db.families_in(lang).into_iter().filter(|f| !f.starts_with('.')).collect();
-            for w in [wordcraft_doc::styles::BODY_FONT, wordcraft_doc::styles::HEADING_FONT] {
-                if !f.iter().any(|x| x == w) {
+            // With the web font pack: Word's usual fonts (drawn in their stand-ins until the
+            // computer's own are loaded) and the Google fonts the pack carries.
+            let pack = wordcraft_fonts::pack::list_families().into_iter();
+            for w in [wordcraft_doc::styles::BODY_FONT, wordcraft_doc::styles::HEADING_FONT].into_iter().chain(pack) {
+                if !f.iter().any(|x| x.eq_ignore_ascii_case(w)) {
                     f.push(w.to_string());
                 }
             }
@@ -294,6 +297,11 @@ impl Previews {
                 None => {
                     ui.painter().text(pos2(r.min.x + 8.0, r.center().y), egui::Align2::LEFT_CENTER, name, regular(12.0), t.text);
                 }
+            }
+            // An Office font the web font pack draws in a look-alike: a quiet mark and a note.
+            if wordcraft_fonts::pack::drawn_by_stand_in(name).is_some() {
+                crate::widgets::paint_stand_in_mark(ui, r, &t);
+                return resp.on_hover_text(crate::widgets::stand_in_note(name));
             }
             resp
         })
@@ -431,8 +439,10 @@ pub fn ink_mask(img: &mut egui::ColorImage) {
 /// symbol font's), or a font that can't be read, shows in the default face.
 pub fn font_entry_image(name: &str, ppp: f32) -> egui::ColorImage {
     let db = wordcraft_fonts::FontDb::global();
+    // An Office font that isn't installed is previewed in its stand-in once the pack has it.
     let face = db
         .preview_face(name)
+        .or_else(|| wordcraft_fonts::pack::preview_family(name).and_then(|s| db.preview_face(s)))
         .filter(|f| name.chars().filter(|c| !c.is_whitespace()).all(|c| f.covers(c)))
         .unwrap_or_else(|| db.face(wordcraft_fonts::FALLBACK_FAMILY, "Regular"));
     // Rendered taller than the row and cut back to the drawn text: faces with tall line metrics

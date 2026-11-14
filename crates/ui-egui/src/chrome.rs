@@ -817,6 +817,12 @@ pub fn status_bar(app: &mut WordApp, ui: &mut Ui) {
                                 let _ = app.run("font.add", json!({}));
                                 ui.close();
                             }
+                            // Web, where the browser can read the computer's fonts: the real
+                            // fonts then win over the stand-ins.
+                            if app.services.load_system_fonts.is_some() && ui.button(tl!("Use this computer's fonts")).clicked() {
+                                let _ = app.run("font.loadSystem", json!({}));
+                                ui.close();
+                            }
                         });
                     }
                     if app.session.prefs.overtype && st(ui, tl!("Overtype")).on_hover_text(tl!("Click to switch back to inserting")).clicked() {

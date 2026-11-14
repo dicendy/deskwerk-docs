@@ -13,6 +13,7 @@ const DOC_EXTS: &[&str] =
     &["docx", "docm", "dotx", "dotm", "doc", "dot", "odt", "ott", "fodt", "rtf", "txt", "md", "html", "htm", "mht", "mhtml", "tex", "json", "xml"];
 const IMAGE_EXTS: &[&str] = &["png", "jpg", "jpeg", "gif", "webp", "bmp", "wmf", "emf"];
 const RECIPIENT_EXTS: &[&str] = wordcraft_engine::cmd::mailings::RECIPIENT_EXTENSIONS;
+mod font_pack;
 mod font_store;
 const CANVAS_ID: &str = "wordcraft_canvas";
 const LOADING_ID: &str = "wordcraft_loading";
@@ -62,6 +63,9 @@ pub fn start() {
                     }
                     // Fonts the user added on an earlier visit (#582); the app notices them arrive.
                     font_store::load_all(cc.egui_ctx.clone());
+                    // The font pack from this origin: Word's fonts drawn in open stand-ins.
+                    let pack = font_pack::Fetcher::default();
+                    pack.start(&cc.egui_ctx);
                     let inbox: Inbox = Inbox::default();
                     let pasted: Inbox = Inbox::default();
                     if let Err(e) = listen_for_pasted_pictures(pasted.clone(), cc.egui_ctx.clone()) {
@@ -78,6 +82,11 @@ pub fn start() {
                     session.system_region = region;
                     let messages = Rc::new(RefCell::new(Vec::new()));
                     let mut services = services(inbox.clone(), cc.egui_ctx.clone(), dirty, saves.clone(), messages.clone());
+                    // Fonts this computer has, when the user let the page read them on an earlier
+                    // visit: loaded without asking again; the real fonts win over the stand-ins.
+                    if services.load_system_fonts.is_some() {
+                        load_system_fonts_if_granted(cc.egui_ctx.clone(), messages.clone());
+                    }
                     if let Some(bridge) = &app_bridge {
                         bridge.connect(&mut services, inbox.clone(), cc.egui_ctx.clone());
                     }
@@ -113,7 +122,7 @@ pub fn start() {
                         crate::host::Bridge::set_author(&mut app, &author);
                         prefs.keep_own_author(&app.session.author, &own);
                     }
-                    Ok(Box::new(WebShell { app, inbox, messages, prefs }))
+                    Ok(Box::new(WebShell { app, inbox, messages, prefs, pack }))
                 }),
             )
             .await;
@@ -159,6 +168,8 @@ struct WebShell {
     inbox: Inbox,
     messages: Rc<RefCell<Vec<String>>>,
     prefs: crate::prefs::PrefsSync,
+    /// Fetches the font pack files the document's text asks for.
+    pack: font_pack::Fetcher,
 }
 
 fn local_storage() -> Option<web_sys::Storage> {
@@ -180,6 +191,8 @@ impl eframe::App for WebShell {
             self.app.status(msg);
         }
         self.app.logic(ctx);
+        // Families the layout found missing that the font pack carries.
+        self.pack.poll(ctx);
         // Store changed preferences straight away: a reload or closed tab runs no exit code (#2132).
         if let Some(json) = self.prefs.changed(&self.app) {
             match local_storage() {
@@ -222,6 +235,8 @@ impl eframe::App for WebShell {
             }
         }
         self.app.ui(ui);
+        // Drawing laid the document out: fetch what it asked for without waiting for input.
+        self.pack.poll(ui.ctx());
     }
 }
 
@@ -320,9 +335,12 @@ fn services(inbox: Inbox, ctx: egui::Context, dirty: Rc<Cell<bool>>, saves: Asyn
         animations_enabled: Some(animations_enabled()),
         store_font: Some(Box::new(font_store::store)),
         forget_font: Some(Box::new(font_store::forget)),
-        load_system_fonts: Some(Box::new(move || {
-            load_system_fonts(font_ctx.clone(), font_messages.clone());
-        })),
+        // "Use this computer's fonts" only where the browser can read them (not Firefox, Safari).
+        load_system_fonts: local_font_access().then(|| {
+            Box::new(move || {
+                load_system_fonts(font_ctx.clone(), font_messages.clone(), false);
+            }) as Box<dyn Fn()>
+        }),
         ..Default::default()
     }
 }
@@ -338,9 +356,51 @@ const MAX_SYSTEM_FONT_BYTES: usize = 256 << 20;
 /// Most local fonts looked at, installed or not (already available, unreadable, too big).
 const MAX_SYSTEM_FONTS_TRIED: u32 = 4000;
 
+/// Whether the browser has the Local Font Access API (`window.queryLocalFonts`); also tells the
+/// font lists whether to offer "Use this computer's fonts".
+fn local_font_access() -> bool {
+    let available = web_sys::window()
+        .and_then(|w| js_sys::Reflect::get(&w, &wasm_bindgen::JsValue::from_str("queryLocalFonts")).ok())
+        .is_some_and(|f| f.is_function());
+    wordcraft_ui_egui::widgets::set_system_fonts_action(available);
+    available
+}
+
+/// Load the computer's fonts without a prompt when the user already granted the page access
+/// (`navigator.permissions.query({name: 'local-fonts'})` is `granted`).
+fn load_system_fonts_if_granted(ctx: egui::Context, messages: Rc<RefCell<Vec<String>>>) {
+    wasm_bindgen_futures::spawn_local(async move {
+        let Some(window) = web_sys::window().map(wasm_bindgen::JsValue::from) else {
+            return;
+        };
+        let get = |v: &wasm_bindgen::JsValue, k: &str| js_sys::Reflect::get(v, &wasm_bindgen::JsValue::from_str(k)).ok();
+        let Some(permissions) = get(&window, "navigator").and_then(|n| get(&n, "permissions")).filter(|p| p.is_object()) else {
+            return;
+        };
+        let Some(query) = get(&permissions, "query").filter(|q| q.is_function()) else {
+            return;
+        };
+        let what = js_sys::Object::new();
+        if js_sys::Reflect::set(&what, &wasm_bindgen::JsValue::from_str("name"), &wasm_bindgen::JsValue::from_str("local-fonts")).is_err() {
+            return;
+        }
+        // Browsers that don't know the permission reject the query: nothing to load then.
+        let Ok(promise) = js_sys::Function::from(query).call1(&permissions, &what) else {
+            return;
+        };
+        let Ok(status) = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(promise)).await else {
+            return;
+        };
+        if get(&status, "state").and_then(|s| s.as_string()).as_deref() == Some("granted") {
+            load_system_fonts(ctx, messages, true);
+        }
+    });
+}
+
 /// Query the browser's Local Font Access API (`window.queryLocalFonts()`) and install the faces
 /// into the global font database, up to [`MAX_SYSTEM_FONTS`] faces and [`MAX_SYSTEM_FONT_BYTES`].
-fn load_system_fonts(ctx: egui::Context, messages: Rc<RefCell<Vec<String>>>) {
+/// `quiet` (the automatic load at start) leaves the status bar alone.
+fn load_system_fonts(ctx: egui::Context, messages: Rc<RefCell<Vec<String>>>, quiet: bool) {
     wasm_bindgen_futures::spawn_local(async move {
         let Some(window) = web_sys::window() else {
             return;
@@ -420,7 +480,9 @@ fn load_system_fonts(ctx: egui::Context, messages: Rc<RefCell<Vec<String>>>) {
                 Err(e) => log::warn!("local font {name} skipped: {e}"),
             }
         }
-        if loaded > 0 {
+        if quiet {
+            log::info!("local fonts: loaded {loaded}");
+        } else if loaded > 0 {
             let msg = wordcraft_ui_egui::i18n::fmt(wordcraft_ui_egui::i18n::t("Loaded {count} system fonts."), &[("count", &loaded.to_string())]);
             messages.borrow_mut().push(msg);
         } else {

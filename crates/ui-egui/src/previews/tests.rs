@@ -523,3 +523,28 @@ fn font_sample_shows_small_caps_and_the_script_mark() {
     assert_ne!(draw(&plain, None, false), draw(&plain, sup, false), "the mark is drawn");
     assert_ne!(draw(&plain, None, false), draw(&plain, None, true), "Switch Modes transforms the preview");
 }
+
+/// With the web font pack, the font list names Word's usual fonts and the Google fonts, whether
+/// or not their files have arrived; the document's name is what the list stores.
+#[test]
+fn the_font_list_names_word_and_google_fonts_with_the_pack() {
+    // Each test runs in its own process under nextest: enabling the pack touches no other test.
+    if wordcraft_fonts::pack::enabled() {
+        return;
+    }
+    let mut previews = Previews::default();
+    let before = previews.families();
+    wordcraft_fonts::pack::enable();
+    previews.fonts_changed();
+    let after = previews.families();
+    for name in ["Times New Roman", "Calibri", "Trebuchet MS", "Comic Sans MS", "Roboto", "Open Sans", "EB Garamond"] {
+        assert!(after.iter().any(|f| f.eq_ignore_ascii_case(name)), "{name}");
+        assert_eq!(previews.font_stored(name), name, "picking {name} stores {name}");
+    }
+    assert!(after.len() > before.len());
+    let mut sorted = after.clone();
+    sorted.sort_by_key(|a| a.to_lowercase());
+    assert_eq!(after, sorted, "one sorted list");
+    // A stand-in isn't installed in the test database, so it draws the name in the default face.
+    assert_eq!(font_entry_image("Trebuchet MS", 1.0).size, [244, 22]);
+}

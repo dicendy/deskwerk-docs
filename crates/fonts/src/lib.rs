@@ -10,6 +10,7 @@
 pub mod color;
 mod fontdb;
 pub mod math;
+pub mod pack;
 mod script;
 mod ui_fallback;
 pub mod word;

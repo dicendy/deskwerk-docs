@@ -18,6 +18,7 @@ mod clipboard;
 mod control_server;
 mod default_apps;
 mod file_dialogs;
+mod font_pack;
 #[cfg(any(target_os = "windows", target_os = "macos", test))]
 mod graphics;
 mod logging;
@@ -55,6 +56,8 @@ impl eframe::App for App {
         #[cfg(target_os = "macos")]
         apple_events::poll(&self.5, &mut self.0, ctx);
         self.0.logic(ctx);
+        // Stand-ins from the built-in font pack for fonts the computer doesn't have.
+        font_pack::poll(ctx);
         self.3.show(frame);
         let mut window = self.4;
         // Only until the off-screen check below has run: it is the one reader.
@@ -124,6 +127,8 @@ impl eframe::App for App {
     }
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         self.0.ui(ui);
+        // Drawing laid the document out: add what it asked for without waiting for input.
+        font_pack::poll(ui.ctx());
         self.3.show(frame);
     }
     fn on_exit(&mut self) {
@@ -594,6 +599,8 @@ fn main() -> eframe::Result {
             load_user_dictionary(&mut app);
             // Language packs from the suite's font store; an Install click is the person's own.
             wordcraft_engine::packs::use_font_store(true);
+            // Word's fonts in open stand-ins and the Google fonts, built in (no network).
+            font_pack::start();
             // A region chosen in File › Options replaces the system's for the first blank
             // document too (#838).
             if !sample && app.session.prefs.region.is_some() {

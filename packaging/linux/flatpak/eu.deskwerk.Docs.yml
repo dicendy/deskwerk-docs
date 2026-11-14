@@ -103,6 +103,7 @@ modules:
       - cargo --offline build --release --locked -p wordcraft -p wordcraft-cli
       - install -Dm755 target/release/deskwerk-docs /app/bin/deskwerk-docs
       - install -Dm644 NOTICE /app/share/doc/deskwerk-docs/NOTICE
+      - install -Dm644 -t /app/share/doc/deskwerk-docs/font-pack-licences assets/webfonts/licenses/*.txt assets/webfonts/manifest.tsv
       - install -Dm755 target/release/deskwerk-docs-cli /app/bin/deskwerk-docs-cli
       - install -Dm644 packaging/linux/eu.deskwerk.Docs.desktop /app/share/applications/eu.deskwerk.Docs.desktop
       - install -Dm644 packaging/linux/eu.deskwerk.Docs.mime.xml /app/share/mime/packages/eu.deskwerk.Docs.xml
