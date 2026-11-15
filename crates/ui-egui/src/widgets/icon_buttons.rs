@@ -8,6 +8,12 @@ pub fn primary_button(ui: &Ui, text: impl Into<String>) -> egui::Button<'static>
     egui::Button::new(egui::RichText::new(text.into()).color(t.on_accent)).fill(t.accent)
 }
 
+/// A dialog's secondary button with no fill: a 1 px `border` and `ink` text (Don't Save in
+/// the accent colour, Cancel in neutral grey), as in Word's prompts.
+pub fn outline_button(text: impl Into<String>, border: Color32, ink: Color32) -> egui::Button<'static> {
+    egui::Button::new(egui::RichText::new(text.into()).color(ink)).fill(Color32::TRANSPARENT).stroke(Stroke::new(1.0, border))
+}
+
 /// A frameless 22 px icon button (pane close buttons): ribbon-style hover and press feedback.
 pub fn icon_button(ui: &mut Ui, icon: &str, tip: &str) -> Response {
     let t = Tokens::get(ui.ctx());

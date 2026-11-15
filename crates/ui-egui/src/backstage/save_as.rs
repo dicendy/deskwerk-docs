@@ -273,13 +273,13 @@ pub(crate) fn folder_name(folder: &str, home: Option<&str>) -> String {
 }
 
 /// The user's home folder.
-fn home() -> Option<PathBuf> {
+pub(crate) fn home() -> Option<PathBuf> {
     let var = if cfg!(windows) { ["USERPROFILE", "HOME"] } else { ["HOME", "USERPROFILE"] };
     var.iter().find_map(std::env::var_os).filter(|h| !h.is_empty()).map(PathBuf::from)
 }
 
 /// The standard folders This PC lists, as (English name, folder), the ones that exist.
-fn standard_folders(home: Option<&Path>) -> Vec<(&'static str, PathBuf)> {
+pub(crate) fn standard_folders(home: Option<&Path>) -> Vec<(&'static str, PathBuf)> {
     let Some(home) = home else { return Vec::new() };
     #[cfg(all(unix, not(target_os = "macos")))]
     let xdg = xdg_user_dirs(home);
@@ -362,9 +362,9 @@ fn state_id(app: &WordApp) -> egui::Id {
     app.window_id("backstage_save_as_page")
 }
 
-fn page_state(app: &WordApp, ui: &Ui, web: bool) -> PageState {
+fn page_state(app: &WordApp, ctx: &egui::Context, web: bool) -> PageState {
     let key = (app.session.document_id(), app.session.path.clone());
-    if let Some(s) = ui.ctx().data(|d| d.get_temp::<PageState>(state_id(app))).filter(|s| s.key == key) {
+    if let Some(s) = ctx.data(|d| d.get_temp::<PageState>(state_id(app))).filter(|s| s.key == key) {
         return s;
     }
     let suggested = app.default_save_name();
@@ -386,11 +386,29 @@ fn document_folder(app: &WordApp) -> Option<PathBuf> {
 /// Where the quick-save row saves when no folder was chosen: the document's folder, else the
 /// most recent one, else Documents, else the home folder.
 fn default_folder(app: &WordApp, st: &PageState) -> Option<PathBuf> {
+    default_folder_in(app, &st.standard, st.home.as_deref())
+}
+
+/// [`default_folder`] given the standard folders and the home folder.
+pub(crate) fn default_folder_in(app: &WordApp, standard: &[(&'static str, PathBuf)], home: Option<&Path>) -> Option<PathBuf> {
     document_folder(app)
         .or_else(|| app.ui.recent_folders.iter().max_by_key(|f| f.used).map(|f| PathBuf::from(&f.path)))
         .or_else(|| app.ui.recent.first().and_then(|d| Path::new(d).parent()).filter(|p| !p.as_os_str().is_empty()).map(Path::to_path_buf))
-        .or_else(|| st.standard.iter().find(|(n, _)| *n == "Documents").map(|(_, p)| p.clone()))
-        .or_else(|| st.home.clone())
+        .or_else(|| standard.iter().find(|(n, _)| *n == "Documents").map(|(_, p)| p.clone()))
+        .or_else(|| home.map(Path::to_path_buf))
+}
+
+/// Opens File › Save As on this name and folder (More options… in the compact Save dialog).
+pub(crate) fn seed_page(app: &WordApp, ctx: &egui::Context, name: &str, folder: Option<PathBuf>) {
+    let web = app.services.download.is_some();
+    let mut st = page_state(app, ctx, web);
+    st.name = name.to_string();
+    st.ext = "docx";
+    st.place = Place::ThisPc;
+    st.folder = folder;
+    st.replace = None;
+    st.name_error = None;
+    ctx.data_mut(|d| d.insert_temp(state_id(app), st));
 }
 
 /// The file name the quick-save row writes: the typed name with the type's extension (not
@@ -416,7 +434,7 @@ pub(super) fn page(app: &mut WordApp, ui: &mut Ui) {
         ui.add_space(6.0);
     }
     let web = app.services.download.is_some();
-    let mut st = page_state(app, ui, web);
+    let mut st = page_state(app, ui.ctx(), web);
     if web {
         // No folders in the browser: name, type and Save, which downloads.
         quick_save_row(app, ui, &mut st, None);

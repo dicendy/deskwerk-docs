@@ -305,7 +305,11 @@ impl Writer<'_> {
         // the file it came from kept none.
         let (px, py) = if float.is_bare_turn() { (0.0, 0.0) } else { float.spin_pad(iw, ih) };
         let [el, et, er, eb] = float.effect_extent();
-        let [el, et, er, eb] = [el + px, et + py, er + px, eb + py].map(emu);
+        // A picture's outline is centred on its frame: half of it lies outside, and Word clips
+        // what the effect extent leaves no room for (the top edge drawn thinner).
+        let half = float.outline.as_ref().map_or(0, |o| (wordcraft_geom::to_emu(o.width()) + 1) / 2);
+        let room = |v: f32| wordcraft_geom::to_emu(v.clamp(-crate::units::MAX_LEN_PT, crate::units::MAX_LEN_PT)).max(half).to_string();
+        let [el, et, er, eb] = [el + px, et + py, er + px, eb + py].map(room);
         w.empty("wp:effectExtent", &[("l", &el), ("t", &et), ("r", &er), ("b", &eb)]);
         match float.wrap {
             Wrap::Inline => {}

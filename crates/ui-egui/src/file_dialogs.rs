@@ -28,6 +28,8 @@ pub enum FileDialogRequest {
     /// Pick a path to save to, given a suggested file name and, if it matters, the folder to
     /// start in (File › Save As's folders, the user templates folder for a template, #2852).
     Save { name: String, dir: Option<String> },
+    /// Pick a folder, starting in `dir` if it is one (Browse… in the compact Save dialog).
+    Folder { dir: Option<String> },
 }
 
 /// The host's answer to a [`FileDialogRequest`]: the picked paths (one for everything but
@@ -148,6 +150,8 @@ impl WordApp {
                 self.services.pick_open.as_ref().and_then(|f| f(purpose))
             }
             FileDialogRequest::Save { name, .. } => self.services.pick_save.as_ref().and_then(|f| f(name)),
+            // No blocking folder picker: cancelled.
+            FileDialogRequest::Folder { .. } => None,
         };
         Asked::Done(self.finish_pick(after, picked))
     }

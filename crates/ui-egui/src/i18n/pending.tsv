@@ -568,3 +568,138 @@ sl	Word Template (*.dotx)	Predloga Word (*.dotx)
 sl	Word Macro-Enabled Template (*.dotm)	Predloga Word z omogočenimi makri (*.dotm)
 sl	OpenDocument Text Template (*.ott)	Predloga besedila OpenDocument (*.ott)
 sl	Flat OpenDocument Text (*.fodt)	Ploščato besedilo OpenDocument (*.fodt)
+ar	File type	نوع الملف
+ar	Save this file	حفظ هذا الملف
+ar	Choose a location	اختيار موقع
+ar	More options…	مزيد من الخيارات…
+ar	Folder:	المجلد:
+bg	File type	Тип на файла
+bg	Save this file	Запиши този файл
+bg	Choose a location	Изберете местоположение
+bg	More options…	Още опции…
+bg	Folder:	Папка:
+cs	File type	Typ souboru
+cs	Save this file	Uložit tento soubor
+cs	Choose a location	Zvolte umístění
+cs	More options…	Další možnosti…
+cs	Folder:	Složka:
+da	File type	Filtype
+da	Save this file	Gem denne fil
+da	Choose a location	Vælg en placering
+da	More options…	Flere indstillinger…
+da	Folder:	Mappe:
+de	File type	Dateityp
+de	Save this file	Diese Datei speichern
+de	Choose a location	Speicherort auswählen
+de	More options…	Weitere Optionen…
+de	Folder:	Ordner:
+es	File type	Tipo de archivo
+es	Save this file	Guardar este archivo
+es	Choose a location	Elegir una ubicación
+es	More options…	Más opciones…
+es	Folder:	Carpeta:
+et	File type	Faili tüüp
+et	Save this file	Salvesta see fail
+et	Choose a location	Valige asukoht
+et	More options…	Rohkem suvandeid…
+et	Folder:	Kaust:
+fr	File type	Type de fichier
+fr	Save this file	Enregistrer ce fichier
+fr	Choose a location	Choisir un emplacement
+fr	More options…	Plus d’options…
+fr	Folder:	Dossier :
+hr	File type	Vrsta datoteke
+hr	Save this file	Spremi ovu datoteku
+hr	Choose a location	Odaberite mjesto
+hr	More options…	Više mogućnosti…
+hr	Folder:	Mapa:
+hu	File type	Fájltípus
+hu	Save this file	Fájl mentése
+hu	Choose a location	Hely kiválasztása
+hu	More options…	További beállítások…
+hu	Folder:	Mappa:
+it	File type	Tipo di file
+it	Save this file	Salva questo file
+it	Choose a location	Scegli una posizione
+it	More options…	Altre opzioni…
+it	Folder:	Cartella:
+ja	File type	ファイルの種類
+ja	Save this file	このファイルを保存
+ja	Choose a location	場所を選択
+ja	More options…	その他のオプション…
+ja	Folder:	フォルダー:
+ko	File type	파일 형식
+ko	Save this file	이 파일 저장
+ko	Choose a location	위치 선택
+ko	More options…	추가 옵션…
+ko	Folder:	폴더:
+nl	File type	Bestandstype
+nl	Save this file	Dit bestand opslaan
+nl	Choose a location	Kies een locatie
+nl	More options…	Meer opties…
+nl	Folder:	Map:
+pl	File type	Typ pliku
+pl	Save this file	Zapisz ten plik
+pl	Choose a location	Wybierz lokalizację
+pl	More options…	Więcej opcji…
+pl	Folder:	Folder:
+pt-br	File type	Tipo de arquivo
+pt-br	Save this file	Salvar este arquivo
+pt-br	Choose a location	Escolha um local
+pt-br	More options…	Mais opções…
+pt-br	Folder:	Pasta:
+ro	File type	Tip fișier
+ro	Save this file	Salvați acest fișier
+ro	Choose a location	Alegeți o locație
+ro	More options…	Mai multe opțiuni…
+ro	Folder:	Folder:
+ru	File type	Тип файла
+ru	Save this file	Сохранение файла
+ru	Choose a location	Выберите расположение
+ru	More options…	Дополнительные параметры…
+ru	Folder:	Папка:
+sl	File type	Vrsta datoteke
+sl	Save this file	Shrani to datoteko
+sl	Choose a location	Izberite mesto
+sl	More options…	Več možnosti …
+sl	Folder:	Mapa:
+sr	File type	Тип датотеке
+sr	Save this file	Сачувај ову датотеку
+sr	Choose a location	Изаберите локацију
+sr	More options…	Још опција…
+sr	Folder:	Фасцикла:
+sr-latn	File type	Tip datoteke
+sr-latn	Save this file	Sačuvaj ovu datoteku
+sr-latn	Choose a location	Izaberite lokaciju
+sr-latn	More options…	Još opcija…
+sr-latn	Folder:	Fascikla:
+sv	File type	Filtyp
+sv	Save this file	Spara den här filen
+sv	Choose a location	Välj en plats
+sv	More options…	Fler alternativ…
+sv	Folder:	Mapp:
+tr	File type	Dosya türü
+tr	Save this file	Bu dosyayı kaydet
+tr	Choose a location	Konum seçin
+tr	More options…	Diğer seçenekler…
+tr	Folder:	Klasör:
+uk	File type	Тип файлу
+uk	Save this file	Збереження файлу
+uk	Choose a location	Виберіть розташування
+uk	More options…	Додаткові параметри…
+uk	Folder:	Папка:
+vi	File type	Loại tệp
+vi	Save this file	Lưu tệp này
+vi	Choose a location	Chọn vị trí
+vi	More options…	Tùy chọn khác…
+vi	Folder:	Thư mục:
+zh-hans	File type	文件类型
+zh-hans	Save this file	保存此文件
+zh-hans	Choose a location	选择位置
+zh-hans	More options…	更多选项…
+zh-hans	Folder:	文件夹:
+zh-hant	File type	檔案類型
+zh-hant	Save this file	儲存此檔案
+zh-hant	Choose a location	選擇位置
+zh-hant	More options…	更多選項…
+zh-hant	Folder:	資料夾:

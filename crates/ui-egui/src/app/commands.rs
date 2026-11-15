@@ -327,6 +327,16 @@ impl WordApp {
                 file_dialogs::Asked::Busy => Ok(json!({"saved": false})),
             };
         }
+        // Ctrl+S or Save on a document never saved: the compact Save dialog, as Word 365 asks
+        // (File › Save As stays the full page; scripts and the browser save as before).
+        if id == "file.save"
+            && params.get("path").and_then(Value::as_str).is_none()
+            && self.has_document()
+            && self.session.path.is_none()
+            && self.open_save_file()
+        {
+            return Ok(json!({"saved": false, "pending": "saveFile"}));
+        }
         // Opening a file, or a new document from a template, reads a file that may be protected.
         let retry = matches!(id, "file.open" | "file.newFromTemplate").then(|| params.clone());
         let retry_path = retry.clone();

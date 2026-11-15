@@ -196,6 +196,7 @@ pub fn show(app: &mut WordApp, ctx: &egui::Context) {
         Dialog::EncryptPassword { .. } => "Encrypt with Password",
         Dialog::DefineList { .. } => "Define New Multilevel List",
         Dialog::TrackOptions { .. } => "Track Changes Options",
+        Dialog::SaveFile { .. } => "Save this file",
         Dialog::Review(d) => d.title(),
         Dialog::CustomizeKeyboard { .. } => "Customize Keyboard",
         Dialog::CustomizeRibbon { .. } => "Customize Ribbon",
@@ -208,7 +209,12 @@ pub fn show(app: &mut WordApp, ctx: &egui::Context) {
         Dialog::Layout(d) => d.title(),
     };
     let id = egui::Id::unique(("dialog", title));
-    let window = crate::window_close::window(ctx, egui::Window::new(tl!(title)).id(id).collapsible(false).resizable(false));
+    // The compact Save dialog's title is in the app colour, as Word's.
+    let heading: egui::WidgetText = match &d {
+        Dialog::SaveFile { .. } => egui::RichText::new(tl!(title)).color(Tokens::get(ctx).accent_text).into(),
+        _ => tl!(title).into(),
+    };
+    let window = crate::window_close::window(ctx, egui::Window::new(heading).id(id).collapsible(false).resizable(false));
     // A file browser or Colors dialog it opened is above it and takes the keys: Escape or Enter
     // there doesn't also cancel or OK this one.
     let held = (app.file_browser_open() || app.colors.is_some()).then(|| ctx.input_mut(|i| std::mem::take(&mut i.events)));
