@@ -174,7 +174,7 @@ fn name_field(ui: &mut Ui, f: &mut SaveFileForm, t: &Tokens) -> bool {
     let margin =
         if rtl { egui::Margin { left: room, right: 8, top: 6, bottom: 6 } } else { egui::Margin { left: 8, right: room, top: 6, bottom: 6 } };
     let mut out = egui::TextEdit::singleline(&mut f.name).font(font.clone()).margin(margin).desired_width(WIDTH).show(ui);
-    let field = out.response.labelled_by(label.id);
+    let field = egui::Response::clone(&out.response).labelled_by(label.id);
     if f.focus {
         f.focus = false;
         field.request_focus();
