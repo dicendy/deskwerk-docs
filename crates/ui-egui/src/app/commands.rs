@@ -256,6 +256,15 @@ impl WordApp {
         {
             self.autosave_path = self.session.path.clone();
         }
+        // A folder saved to (a copy too: a PDF, a page image) is File › Save As's most recent.
+        if let Ok(v) = &r
+            && matches!(id, "file.save" | "file.saveAs")
+            && v.get("saved").and_then(Value::as_bool) == Some(true)
+            && let Some(path) = v.get("path").and_then(Value::as_str)
+        {
+            let now = i64::try_from(wordcraft_engine::cmd::now_unix()).unwrap_or(i64::MAX);
+            crate::backstage::save_as::note_folder(&mut self.ui.recent_folders, path, now);
+        }
         // A renamed file is the same file: AutoSave keeps covering it, and Recent drops the old name.
         if r.is_ok()
             && id == "file.rename"
@@ -401,6 +410,9 @@ impl WordApp {
             && self.ui.recent.first() != Some(&p)
         {
             self.ui.recent.retain(|r| *r != p);
+            // File › Save As › Recent lists the folder it came from.
+            let now = i64::try_from(wordcraft_engine::cmd::now_unix()).unwrap_or(i64::MAX);
+            crate::backstage::save_as::note_folder(&mut self.ui.recent_folders, &p, now);
             self.ui.recent.insert(0, p);
             self.ui.recent.truncate(MAX_RECENT);
         }

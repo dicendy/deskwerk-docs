@@ -792,21 +792,161 @@ fn info_fields_keep_typed_properties_through_a_web_save() {
     assert_eq!(a.session.doc.core.title, "");
 }
 
-#[test]
-fn save_as_page_shows_browse_and_no_open_list() {
-    let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
-    a.run("ui.backstage", json!({"value": true, "page": "saveAs"})).unwrap();
-    let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
+fn save_as_harness(a: WordApp) -> egui_kittest::Harness<'static, WordApp> {
+    egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
         |ui, app: &mut WordApp| {
             let ctx = ui.ctx().clone();
             app.logic(&ctx);
             app.ui(ui);
         },
         a,
-    );
+    )
+}
+
+/// File › Save As is laid out as Word's: Recent, This PC and Browse on the left, the folders on
+/// the right. A Word template is one of the file types, not a button of its own.
+#[test]
+fn save_as_page_has_places_and_no_template_button() {
+    let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
+    a.run("ui.backstage", json!({"value": true, "page": "saveAs"})).unwrap();
+    let mut h = save_as_harness(a);
     h.run_steps(4);
-    assert!(h.query_by_label("Browse…").is_some(), "Save As has Browse button");
-    assert!(h.query_by_label("Recent").is_none(), "Save As has no list that opens documents");
+    for place in ["Recent", "This PC", "Browse"] {
+        assert!(h.query_by_label(place).is_some(), "Save As has {place}");
+    }
+    assert!(h.query_by_label("Save as Word Template…").is_none(), "no template button");
+    assert!(h.query_by_label("Browse…").is_none());
+    h.get_by_label("This PC").click();
+    h.run_steps(3);
+    assert!(h.query_by_label("Save as Word Template…").is_none());
+}
+
+/// A folder on Recent: its pin pins it, and a click opens the system Save As dialog in it with
+/// the document's name; Browse opens it too.
+#[test]
+fn save_as_recent_folder_opens_the_dialog_there_and_pins() {
+    let dir = std::env::temp_dir().join(format!("wordcraft-saveas-recent-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let folder = dir.to_string_lossy().into_owned();
+    let shown: std::rc::Rc<std::cell::RefCell<Vec<crate::FileDialogRequest>>> = Default::default();
+    let log = shown.clone();
+    let senders = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    let keep = senders.clone();
+    let services = Services {
+        file_dialog: Some(Box::new(move |req| {
+            log.borrow_mut().push(req);
+            let (tx, rx) = std::sync::mpsc::channel::<crate::FileDialogAnswer>();
+            keep.borrow_mut().push(tx);
+            rx
+        })),
+        ..Default::default()
+    };
+    let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), services);
+    let now = i64::try_from(wordcraft_engine::cmd::now_unix()).unwrap();
+    a.ui.recent_folders = vec![super::save_as::RecentFolder { path: folder.clone(), used: now }];
+    a.run("ui.backstage", json!({"value": true, "page": "saveAs"})).unwrap();
+    let mut h = save_as_harness(a);
+    h.run_steps(4);
+    assert!(h.query_by_label("Today").is_some(), "used today: under Today");
+    h.get_by_role_and_label(egui::accesskit::Role::Button, "Pin this folder").click();
+    h.run_steps(3);
+    assert_eq!(h.state().ui.pinned_folders, vec![folder.clone()]);
+    assert!(h.query_by_label("Pinned").is_some(), "the Pinned group");
+    h.get_by_role_and_label(egui::accesskit::Role::Button, "Unpin this folder").click();
+    h.run_steps(3);
+    assert!(h.state().ui.pinned_folders.is_empty());
+    let name = dir.file_name().unwrap().to_string_lossy().into_owned();
+    h.get_by_role_and_label(egui::accesskit::Role::Button, &name).click();
+    h.run_steps(3);
+    let req = shown.borrow().last().cloned().expect("the Save As dialog was asked for");
+    let crate::FileDialogRequest::Save { name, dir: start } = req else { panic!("not a Save dialog") };
+    assert_eq!(start.as_deref(), Some(folder.as_str()), "it starts in the folder clicked");
+    assert!(name.ends_with(".docx"), "{name}");
+    assert!(!senders.borrow().is_empty(), "the dialog is still open");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// Recent groups folders by the day they were last used, weeks starting on Monday.
+#[test]
+fn save_as_groups_folders_by_date() {
+    use super::save_as::{DateGroup, date_group};
+    // 1970-01-01 was a Thursday: day 19998 is a Wednesday, its week starts on day 19996.
+    let wednesday = 19_998;
+    assert_eq!(date_group(Some(wednesday), wednesday), DateGroup::Today);
+    assert_eq!(date_group(Some(wednesday + 2), wednesday), DateGroup::Today, "a clock put back");
+    assert_eq!(date_group(Some(wednesday - 1), wednesday), DateGroup::Yesterday);
+    assert_eq!(date_group(Some(19_996), wednesday), DateGroup::ThisWeek, "Monday");
+    assert_eq!(date_group(Some(19_995), wednesday), DateGroup::LastWeek, "Sunday");
+    assert_eq!(date_group(Some(19_989), wednesday), DateGroup::LastWeek, "last Monday");
+    assert_eq!(date_group(Some(19_988), wednesday), DateGroup::Older);
+    assert_eq!(date_group(None, wednesday), DateGroup::Older, "undated");
+    // On a Monday, Sunday is Yesterday and Saturday is last week.
+    assert_eq!(date_group(Some(19_995), 19_996), DateGroup::Yesterday);
+    assert_eq!(date_group(Some(19_994), 19_996), DateGroup::LastWeek);
+}
+
+/// A folder is listed once: saving to it again moves it to the top, pinned folders come first,
+/// and the folders of older Recent documents follow, undated.
+#[test]
+fn save_as_lists_each_folder_once() {
+    use super::save_as::{folder_rows, note_folder};
+    let mut used = Vec::new();
+    note_folder(&mut used, "/docs/a.docx", 1);
+    note_folder(&mut used, "/other/b.docx", 2);
+    note_folder(&mut used, "/docs/c.pdf", 3);
+    note_folder(&mut used, "plain name.docx", 4);
+    let paths: Vec<(&str, i64)> = used.iter().map(|f| (f.path.as_str(), f.used)).collect();
+    assert_eq!(paths, vec![("/docs", 3), ("/other", 2)], "deduped, newest first; a bare name has no folder");
+    let recent = ["/docs/old.docx".to_string(), "/third/x.docx".to_string(), "/third/y.docx".to_string()];
+    let rows = folder_rows(&used, &recent, &["/other/".to_string()]);
+    let got: Vec<(&str, Option<i64>, bool)> = rows.iter().map(|r| (r.path.as_str(), r.used, r.pinned)).collect();
+    assert_eq!(got, vec![("/other/", Some(2), true), ("/docs", Some(3), false), ("/third", None, false)]);
+    // Unordered history is shown newest first.
+    let shuffled = [super::save_as::RecentFolder { path: "/old".into(), used: 1 }, super::save_as::RecentFolder { path: "/new".into(), used: 9 }];
+    let order: Vec<String> = folder_rows(&shuffled, &[], &[]).into_iter().map(|r| r.path).collect();
+    assert_eq!(order, vec!["/new".to_string(), "/old".to_string()]);
+    let mut pins = vec!["/a".to_string()];
+    super::save_as::toggle_pin(&mut pins, "/b");
+    super::save_as::toggle_pin(&mut pins, "/a/");
+    assert_eq!(pins, vec!["/b".to_string()]);
+}
+
+/// The file types: Word's document first and the default, a template is one of them, and each
+/// type's extension is one the engine saves (it picks the format by extension).
+#[test]
+fn save_as_file_types_map_to_formats() {
+    use super::save_as::{PAGE_FORMATS, file_name, is_template, save_filters};
+    assert_eq!(PAGE_FORMATS[0], ("docx", "Word document (*.docx)"));
+    assert!(PAGE_FORMATS.contains(&("dotx", "Word Template (*.dotx)")));
+    for (ext, label) in PAGE_FORMATS {
+        assert!(wordcraft_engine::io::SAVE_EXTS.contains(&ext), "{ext} is saved by the engine");
+        assert!(label.ends_with(&format!("(*.{ext})")), "{label}");
+    }
+    assert!(is_template("dotx") && is_template("dotm") && !is_template("docx") && !is_template("ott"));
+    assert_eq!(file_name("Report", "dotx").unwrap(), "Report.dotx");
+    assert_eq!(file_name(" Report.DOTX ", "dotx").unwrap(), "Report.DOTX", "not doubled");
+    assert_eq!(file_name("v1.2", "docx").unwrap(), "v1.2.docx");
+    assert!(file_name("a/b", "docx").is_err() && file_name("a\\b", "docx").is_err() && file_name("  ", "docx").is_err());
+    // The system dialog: the suggested type first, every format the engine saves once.
+    let filters = save_filters("Report.dotx");
+    assert_eq!(filters[0], ("Word Template (*.dotx)".to_string(), vec!["dotx".to_string()]));
+    assert_eq!(filters.len(), wordcraft_engine::io::SAVE_EXTS.len());
+    assert_eq!(save_filters("Untitled")[0].1, vec!["docx".to_string()]);
+}
+
+/// A folder's path as Word shows it: from the home folder's own, with » between folders.
+#[test]
+fn save_as_folder_paths_read_as_breadcrumbs() {
+    use super::save_as::{breadcrumb, folder_name, parse_user_dirs};
+    assert_eq!(breadcrumb("/home/u/Documents/Work/2026", Some("/home/u")), "Documents » Work » 2026");
+    assert_eq!(breadcrumb("/home/u/projects", Some("/home/u")), "u » projects");
+    assert_eq!(breadcrumb("/srv/a/b/c/d", None), "srv » … » c » d");
+    assert_eq!(breadcrumb("/", None), "/");
+    assert_eq!(folder_name("/home/u/Downloads", Some("/home/u")), "Downloads");
+    assert_eq!(folder_name("/srv/reports", Some("/home/u")), "reports");
+    let home = std::path::Path::new("/home/u");
+    let dirs = parse_user_dirs("# comment\nXDG_DOCUMENTS_DIR=\"$HOME/Dokumente\"\nXDG_DESKTOP_DIR=\"$HOME/\"\n", home);
+    assert_eq!(dirs, vec![("XDG_DOCUMENTS_DIR".to_string(), home.join("Dokumente"))], "a folder set to home is off");
 }
 
 /// Save on a document without a file asks where in the system's Save As dialog straight away,

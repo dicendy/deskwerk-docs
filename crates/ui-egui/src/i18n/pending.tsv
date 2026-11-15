@@ -1,0 +1,570 @@
+# Interface text not in the craft-i18n catalogs yet (File › Save As, 0.15.3). Columns, separated
+# by a TAB: language code, English source text, translation; no escapes. A catalog row wins
+# over one here: move these rows to craft-i18n and drop them from this file.
+zh-hans	This PC	此电脑
+zh-hans	Pinned	已固定
+zh-hans	Yesterday	昨天
+zh-hans	This Week	本周
+zh-hans	Last Week	上周
+zh-hans	Older	更早
+zh-hans	Desktop	桌面
+zh-hans	Downloads	下载
+zh-hans	File name	文件名
+zh-hans	Folders	文件夹
+zh-hans	Pin this folder	固定此文件夹
+zh-hans	Unpin this folder	取消固定此文件夹
+zh-hans	Folders you open documents from or save them to show up here.	你打开或保存文档的文件夹会显示在这里。
+zh-hans	Type a file name.	请输入文件名。
+zh-hans	A file name can't contain \ or /.	文件名不能包含 \ 或 /。
+zh-hans	Browse	浏览
+zh-hans	Word Macro-Enabled Document (*.docm)	启用宏的 Word 文档 (*.docm)
+zh-hans	Word Template (*.dotx)	Word 模板 (*.dotx)
+zh-hans	Word Macro-Enabled Template (*.dotm)	启用宏的 Word 模板 (*.dotm)
+zh-hans	OpenDocument Text Template (*.ott)	OpenDocument 文本模板 (*.ott)
+zh-hans	Flat OpenDocument Text (*.fodt)	平面 OpenDocument 文本 (*.fodt)
+zh-hant	This PC	本機
+zh-hant	Pinned	已釘選
+zh-hant	Yesterday	昨天
+zh-hant	This Week	本週
+zh-hant	Last Week	上週
+zh-hant	Older	更早
+zh-hant	Desktop	桌面
+zh-hant	Downloads	下載
+zh-hant	File name	檔案名稱
+zh-hant	Folders	資料夾
+zh-hant	Pin this folder	釘選此資料夾
+zh-hant	Unpin this folder	取消釘選此資料夾
+zh-hant	Folders you open documents from or save them to show up here.	你開啟或儲存文件的資料夾會顯示在這裡。
+zh-hant	Type a file name.	請輸入檔案名稱。
+zh-hant	A file name can't contain \ or /.	檔案名稱不能包含 \ 或 /。
+zh-hant	Browse	瀏覽
+zh-hant	Word Macro-Enabled Document (*.docm)	Word 啟用巨集的文件 (*.docm)
+zh-hant	Word Template (*.dotx)	Word 範本 (*.dotx)
+zh-hant	Word Macro-Enabled Template (*.dotm)	Word 啟用巨集的範本 (*.dotm)
+zh-hant	OpenDocument Text Template (*.ott)	OpenDocument 文字範本 (*.ott)
+zh-hant	Flat OpenDocument Text (*.fodt)	平面 OpenDocument 文字 (*.fodt)
+ja	This PC	PC
+ja	Pinned	ピン留め
+ja	Yesterday	昨日
+ja	This Week	今週
+ja	Last Week	先週
+ja	Older	それ以前
+ja	Desktop	デスクトップ
+ja	Downloads	ダウンロード
+ja	File name	ファイル名
+ja	Folders	フォルダー
+ja	Pin this folder	このフォルダーをピン留めする
+ja	Unpin this folder	このフォルダーのピン留めを外す
+ja	Folders you open documents from or save them to show up here.	文書を開いたフォルダーや保存したフォルダーがここに表示されます。
+ja	Type a file name.	ファイル名を入力してください。
+ja	A file name can't contain \ or /.	ファイル名に \ や / は使えません。
+ja	Browse	参照
+ja	Word Macro-Enabled Document (*.docm)	Word マクロ有効文書 (*.docm)
+ja	Word Template (*.dotx)	Word テンプレート (*.dotx)
+ja	Word Macro-Enabled Template (*.dotm)	Word マクロ有効テンプレート (*.dotm)
+ja	OpenDocument Text Template (*.ott)	OpenDocument テキスト テンプレート (*.ott)
+ja	Flat OpenDocument Text (*.fodt)	フラット OpenDocument テキスト (*.fodt)
+ko	This PC	내 PC
+ko	Pinned	고정됨
+ko	Yesterday	어제
+ko	This Week	이번 주
+ko	Last Week	지난주
+ko	Older	이전
+ko	Desktop	바탕 화면
+ko	Downloads	다운로드
+ko	File name	파일 이름
+ko	Folders	폴더
+ko	Pin this folder	이 폴더 고정
+ko	Unpin this folder	이 폴더 고정 해제
+ko	Folders you open documents from or save them to show up here.	문서를 열거나 저장한 폴더가 여기에 표시됩니다.
+ko	Type a file name.	파일 이름을 입력하세요.
+ko	A file name can't contain \ or /.	파일 이름에는 \ 또는 /를 사용할 수 없습니다.
+ko	Browse	찾아보기
+ko	Word Macro-Enabled Document (*.docm)	Word 매크로 사용 문서 (*.docm)
+ko	Word Template (*.dotx)	Word 서식 파일 (*.dotx)
+ko	Word Macro-Enabled Template (*.dotm)	Word 매크로 사용 서식 파일 (*.dotm)
+ko	OpenDocument Text Template (*.ott)	OpenDocument 텍스트 서식 파일 (*.ott)
+ko	Flat OpenDocument Text (*.fodt)	플랫 OpenDocument 텍스트 (*.fodt)
+uk	This PC	Цей ПК
+uk	Pinned	Закріплені
+uk	Yesterday	Учора
+uk	This Week	Цього тижня
+uk	Last Week	Минулого тижня
+uk	Older	Раніше
+uk	Desktop	Робочий стіл
+uk	Downloads	Завантаження
+uk	File name	Ім'я файлу
+uk	Folders	Папки
+uk	Pin this folder	Закріпити цю папку
+uk	Unpin this folder	Відкріпити цю папку
+uk	Folders you open documents from or save them to show up here.	Тут з'являться папки, з яких ви відкриваєте документи або в які їх зберігаєте.
+uk	Type a file name.	Введіть ім'я файлу.
+uk	A file name can't contain \ or /.	Ім'я файлу не може містити \ або /.
+uk	Browse	Огляд
+uk	Word Macro-Enabled Document (*.docm)	Документ Word із підтримкою макросів (*.docm)
+uk	Word Template (*.dotx)	Шаблон Word (*.dotx)
+uk	Word Macro-Enabled Template (*.dotm)	Шаблон Word із підтримкою макросів (*.dotm)
+uk	OpenDocument Text Template (*.ott)	Шаблон тексту OpenDocument (*.ott)
+uk	Flat OpenDocument Text (*.fodt)	Плоский текст OpenDocument (*.fodt)
+es	This PC	Este equipo
+es	Pinned	Anclados
+es	Yesterday	Ayer
+es	This Week	Esta semana
+es	Last Week	La semana pasada
+es	Older	Más antiguos
+es	Desktop	Escritorio
+es	Downloads	Descargas
+es	File name	Nombre de archivo
+es	Folders	Carpetas
+es	Pin this folder	Anclar esta carpeta
+es	Unpin this folder	Desanclar esta carpeta
+es	Folders you open documents from or save them to show up here.	Aquí aparecen las carpetas desde las que abres documentos o en las que los guardas.
+es	Type a file name.	Escribe un nombre de archivo.
+es	A file name can't contain \ or /.	Un nombre de archivo no puede contener \ ni /.
+es	Browse	Examinar
+es	Word Macro-Enabled Document (*.docm)	Documento de Word habilitado para macros (*.docm)
+es	Word Template (*.dotx)	Plantilla de Word (*.dotx)
+es	Word Macro-Enabled Template (*.dotm)	Plantilla de Word habilitada para macros (*.dotm)
+es	OpenDocument Text Template (*.ott)	Plantilla de texto de OpenDocument (*.ott)
+es	Flat OpenDocument Text (*.fodt)	Texto de OpenDocument plano (*.fodt)
+pt-br	This PC	Este Computador
+pt-br	Pinned	Fixados
+pt-br	Yesterday	Ontem
+pt-br	This Week	Esta semana
+pt-br	Last Week	Semana passada
+pt-br	Older	Mais antigos
+pt-br	Desktop	Área de Trabalho
+pt-br	Downloads	Downloads
+pt-br	File name	Nome do arquivo
+pt-br	Folders	Pastas
+pt-br	Pin this folder	Fixar esta pasta
+pt-br	Unpin this folder	Desafixar esta pasta
+pt-br	Folders you open documents from or save them to show up here.	As pastas de onde você abre documentos ou onde os salva aparecem aqui.
+pt-br	Type a file name.	Digite um nome de arquivo.
+pt-br	A file name can't contain \ or /.	Um nome de arquivo não pode conter \ ou /.
+pt-br	Browse	Procurar
+pt-br	Word Macro-Enabled Document (*.docm)	Documento Word Habilitado para Macro (*.docm)
+pt-br	Word Template (*.dotx)	Modelo do Word (*.dotx)
+pt-br	Word Macro-Enabled Template (*.dotm)	Modelo do Word Habilitado para Macro (*.dotm)
+pt-br	OpenDocument Text Template (*.ott)	Modelo de texto OpenDocument (*.ott)
+pt-br	Flat OpenDocument Text (*.fodt)	Texto OpenDocument simples (*.fodt)
+sr	This PC	Овај рачунар
+sr	Pinned	Закачено
+sr	Yesterday	Јуче
+sr	This Week	Ове недеље
+sr	Last Week	Прошле недеље
+sr	Older	Старије
+sr	Desktop	Радна површина
+sr	Downloads	Преузимања
+sr	File name	Име датотеке
+sr	Folders	Фасцикле
+sr	Pin this folder	Закачи ову фасциклу
+sr	Unpin this folder	Откачи ову фасциклу
+sr	Folders you open documents from or save them to show up here.	Овде се приказују фасцикле из којих отварате документе или у које их чувате.
+sr	Type a file name.	Унесите име датотеке.
+sr	A file name can't contain \ or /.	Име датотеке не може да садржи \ или /.
+sr	Browse	Потражи
+sr	Word Macro-Enabled Document (*.docm)	Word документ са макроима (*.docm)
+sr	Word Template (*.dotx)	Word шаблон (*.dotx)
+sr	Word Macro-Enabled Template (*.dotm)	Word шаблон са макроима (*.dotm)
+sr	OpenDocument Text Template (*.ott)	OpenDocument шаблон текста (*.ott)
+sr	Flat OpenDocument Text (*.fodt)	Равни OpenDocument текст (*.fodt)
+sr-latn	This PC	Ovaj računar
+sr-latn	Pinned	Zakačeno
+sr-latn	Yesterday	Juče
+sr-latn	This Week	Ove nedelje
+sr-latn	Last Week	Prošle nedelje
+sr-latn	Older	Starije
+sr-latn	Desktop	Radna površina
+sr-latn	Downloads	Preuzimanja
+sr-latn	File name	Ime datoteke
+sr-latn	Folders	Fascikle
+sr-latn	Pin this folder	Zakači ovu fasciklu
+sr-latn	Unpin this folder	Otkači ovu fasciklu
+sr-latn	Folders you open documents from or save them to show up here.	Ovde se prikazuju fascikle iz kojih otvarate dokumente ili u koje ih čuvate.
+sr-latn	Type a file name.	Unesite ime datoteke.
+sr-latn	A file name can't contain \ or /.	Ime datoteke ne može da sadrži \ ili /.
+sr-latn	Browse	Pregledaj
+sr-latn	Word Macro-Enabled Document (*.docm)	Word dokument sa makroima (*.docm)
+sr-latn	Word Template (*.dotx)	Word šablon (*.dotx)
+sr-latn	Word Macro-Enabled Template (*.dotm)	Word šablon sa makroima (*.dotm)
+sr-latn	OpenDocument Text Template (*.ott)	OpenDocument šablon teksta (*.ott)
+sr-latn	Flat OpenDocument Text (*.fodt)	Ravni OpenDocument tekst (*.fodt)
+pl	This PC	Ten komputer
+pl	Pinned	Przypięte
+pl	Yesterday	Wczoraj
+pl	This Week	W tym tygodniu
+pl	Last Week	W zeszłym tygodniu
+pl	Older	Starsze
+pl	Desktop	Pulpit
+pl	Downloads	Pobrane
+pl	File name	Nazwa pliku
+pl	Folders	Foldery
+pl	Pin this folder	Przypnij ten folder
+pl	Unpin this folder	Odepnij ten folder
+pl	Folders you open documents from or save them to show up here.	Tutaj pojawiają się foldery, z których otwierasz dokumenty lub w których je zapisujesz.
+pl	Type a file name.	Wpisz nazwę pliku.
+pl	A file name can't contain \ or /.	Nazwa pliku nie może zawierać znaków \ ani /.
+pl	Browse	Przeglądaj
+pl	Word Macro-Enabled Document (*.docm)	Dokument Word z obsługą makr (*.docm)
+pl	Word Template (*.dotx)	Szablon Word (*.dotx)
+pl	Word Macro-Enabled Template (*.dotm)	Szablon Word z obsługą makr (*.dotm)
+pl	OpenDocument Text Template (*.ott)	Szablon tekstu OpenDocument (*.ott)
+pl	Flat OpenDocument Text (*.fodt)	Płaski tekst OpenDocument (*.fodt)
+cs	This PC	Tento počítač
+cs	Pinned	Připnuté
+cs	Yesterday	Včera
+cs	This Week	Tento týden
+cs	Last Week	Minulý týden
+cs	Older	Starší
+cs	Desktop	Plocha
+cs	Downloads	Stažené soubory
+cs	File name	Název souboru
+cs	Folders	Složky
+cs	Pin this folder	Připnout tuto složku
+cs	Unpin this folder	Odepnout tuto složku
+cs	Folders you open documents from or save them to show up here.	Zde se zobrazí složky, ze kterých otevíráte dokumenty nebo do kterých je ukládáte.
+cs	Type a file name.	Zadejte název souboru.
+cs	A file name can't contain \ or /.	Název souboru nemůže obsahovat \ ani /.
+cs	Browse	Procházet
+cs	Word Macro-Enabled Document (*.docm)	Dokument Word s podporou maker (*.docm)
+cs	Word Template (*.dotx)	Šablona Word (*.dotx)
+cs	Word Macro-Enabled Template (*.dotm)	Šablona Word s podporou maker (*.dotm)
+cs	OpenDocument Text Template (*.ott)	Šablona textu OpenDocument (*.ott)
+cs	Flat OpenDocument Text (*.fodt)	Plochý text OpenDocument (*.fodt)
+et	This PC	See arvuti
+et	Pinned	Kinnitatud
+et	Yesterday	Eile
+et	This Week	See nädal
+et	Last Week	Eelmine nädal
+et	Older	Vanemad
+et	Desktop	Töölaud
+et	Downloads	Allalaadimised
+et	File name	Faili nimi
+et	Folders	Kaustad
+et	Pin this folder	Kinnita see kaust
+et	Unpin this folder	Vabasta see kaust
+et	Folders you open documents from or save them to show up here.	Siin on kaustad, kust dokumente avad või kuhu neid salvestad.
+et	Type a file name.	Sisesta faili nimi.
+et	A file name can't contain \ or /.	Faili nimi ei tohi sisaldada märke \ ega /.
+et	Browse	Sirvi
+et	Word Macro-Enabled Document (*.docm)	Makrotoega Wordi dokument (*.docm)
+et	Word Template (*.dotx)	Wordi mall (*.dotx)
+et	Word Macro-Enabled Template (*.dotm)	Makrotoega Wordi mall (*.dotm)
+et	OpenDocument Text Template (*.ott)	OpenDocumenti tekstimall (*.ott)
+et	Flat OpenDocument Text (*.fodt)	Lame OpenDocumenti tekst (*.fodt)
+de	This PC	Dieser PC
+de	Pinned	Angeheftet
+de	Yesterday	Gestern
+de	This Week	Diese Woche
+de	Last Week	Letzte Woche
+de	Older	Älter
+de	Desktop	Desktop
+de	Downloads	Downloads
+de	File name	Dateiname
+de	Folders	Ordner
+de	Pin this folder	Diesen Ordner anheften
+de	Unpin this folder	Diesen Ordner lösen
+de	Folders you open documents from or save them to show up here.	Ordner, aus denen Sie Dokumente öffnen oder in die Sie sie speichern, werden hier angezeigt.
+de	Type a file name.	Geben Sie einen Dateinamen ein.
+de	A file name can't contain \ or /.	Ein Dateiname darf weder \ noch / enthalten.
+de	Browse	Durchsuchen
+de	Word Macro-Enabled Document (*.docm)	Word-Dokument mit Makros (*.docm)
+de	Word Template (*.dotx)	Word-Vorlage (*.dotx)
+de	Word Macro-Enabled Template (*.dotm)	Word-Vorlage mit Makros (*.dotm)
+de	OpenDocument Text Template (*.ott)	OpenDocument-Textvorlage (*.ott)
+de	Flat OpenDocument Text (*.fodt)	Flacher OpenDocument-Text (*.fodt)
+ru	This PC	Этот компьютер
+ru	Pinned	Закреплённые
+ru	Yesterday	Вчера
+ru	This Week	На этой неделе
+ru	Last Week	На прошлой неделе
+ru	Older	Ранее
+ru	Desktop	Рабочий стол
+ru	Downloads	Загрузки
+ru	File name	Имя файла
+ru	Folders	Папки
+ru	Pin this folder	Закрепить эту папку
+ru	Unpin this folder	Открепить эту папку
+ru	Folders you open documents from or save them to show up here.	Здесь появятся папки, из которых вы открываете документы или в которые их сохраняете.
+ru	Type a file name.	Введите имя файла.
+ru	A file name can't contain \ or /.	Имя файла не может содержать \ или /.
+ru	Browse	Обзор
+ru	Word Macro-Enabled Document (*.docm)	Документ Word с поддержкой макросов (*.docm)
+ru	Word Template (*.dotx)	Шаблон Word (*.dotx)
+ru	Word Macro-Enabled Template (*.dotm)	Шаблон Word с поддержкой макросов (*.dotm)
+ru	OpenDocument Text Template (*.ott)	Шаблон текста OpenDocument (*.ott)
+ru	Flat OpenDocument Text (*.fodt)	Плоский текст OpenDocument (*.fodt)
+tr	This PC	Bu bilgisayar
+tr	Pinned	Sabitlenenler
+tr	Yesterday	Dün
+tr	This Week	Bu hafta
+tr	Last Week	Geçen hafta
+tr	Older	Daha eski
+tr	Desktop	Masaüstü
+tr	Downloads	İndirilenler
+tr	File name	Dosya adı
+tr	Folders	Klasörler
+tr	Pin this folder	Bu klasörü sabitle
+tr	Unpin this folder	Bu klasörün sabitlemesini kaldır
+tr	Folders you open documents from or save them to show up here.	Belgeleri açtığınız veya kaydettiğiniz klasörler burada görünür.
+tr	Type a file name.	Bir dosya adı yazın.
+tr	A file name can't contain \ or /.	Dosya adı \ veya / içeremez.
+tr	Browse	Göz at
+tr	Word Macro-Enabled Document (*.docm)	Makro İçerebilen Word Belgesi (*.docm)
+tr	Word Template (*.dotx)	Word Şablonu (*.dotx)
+tr	Word Macro-Enabled Template (*.dotm)	Makro İçerebilen Word Şablonu (*.dotm)
+tr	OpenDocument Text Template (*.ott)	OpenDocument Metin Şablonu (*.ott)
+tr	Flat OpenDocument Text (*.fodt)	Düz OpenDocument Metni (*.fodt)
+it	This PC	Questo PC
+it	Pinned	Bloccate
+it	Yesterday	Ieri
+it	This Week	Questa settimana
+it	Last Week	La settimana scorsa
+it	Older	Meno recenti
+it	Desktop	Desktop
+it	Downloads	Download
+it	File name	Nome file
+it	Folders	Cartelle
+it	Pin this folder	Blocca questa cartella
+it	Unpin this folder	Sblocca questa cartella
+it	Folders you open documents from or save them to show up here.	Qui compaiono le cartelle da cui apri i documenti o in cui li salvi.
+it	Type a file name.	Digita un nome file.
+it	A file name can't contain \ or /.	Un nome file non può contenere \ o /.
+it	Browse	Sfoglia
+it	Word Macro-Enabled Document (*.docm)	Documento Word con attivazione macro (*.docm)
+it	Word Template (*.dotx)	Modello Word (*.dotx)
+it	Word Macro-Enabled Template (*.dotm)	Modello Word con attivazione macro (*.dotm)
+it	OpenDocument Text Template (*.ott)	Modello di testo OpenDocument (*.ott)
+it	Flat OpenDocument Text (*.fodt)	Testo OpenDocument flat (*.fodt)
+hu	This PC	Ez a gép
+hu	Pinned	Rögzítve
+hu	Yesterday	Tegnap
+hu	This Week	Ezen a héten
+hu	Last Week	Múlt héten
+hu	Older	Régebbi
+hu	Desktop	Asztal
+hu	Downloads	Letöltések
+hu	File name	Fájlnév
+hu	Folders	Mappák
+hu	Pin this folder	Mappa rögzítése
+hu	Unpin this folder	Mappa rögzítésének feloldása
+hu	Folders you open documents from or save them to show up here.	Itt jelennek meg azok a mappák, amelyekből dokumentumokat nyitsz meg, vagy amelyekbe mented őket.
+hu	Type a file name.	Írj be egy fájlnevet.
+hu	A file name can't contain \ or /.	A fájlnév nem tartalmazhat \ vagy / karaktert.
+hu	Browse	Tallózás
+hu	Word Macro-Enabled Document (*.docm)	Makróbarát Word-dokumentum (*.docm)
+hu	Word Template (*.dotx)	Word-sablon (*.dotx)
+hu	Word Macro-Enabled Template (*.dotm)	Makróbarát Word-sablon (*.dotm)
+hu	OpenDocument Text Template (*.ott)	OpenDocument szövegsablon (*.ott)
+hu	Flat OpenDocument Text (*.fodt)	Egyszerű OpenDocument szöveg (*.fodt)
+fr	This PC	Ce PC
+fr	Pinned	Épinglés
+fr	Yesterday	Hier
+fr	This Week	Cette semaine
+fr	Last Week	La semaine dernière
+fr	Older	Plus anciens
+fr	Desktop	Bureau
+fr	Downloads	Téléchargements
+fr	File name	Nom de fichier
+fr	Folders	Dossiers
+fr	Pin this folder	Épingler ce dossier
+fr	Unpin this folder	Détacher ce dossier
+fr	Folders you open documents from or save them to show up here.	Les dossiers à partir desquels vous ouvrez des documents ou dans lesquels vous les enregistrez s’affichent ici.
+fr	Type a file name.	Tapez un nom de fichier.
+fr	A file name can't contain \ or /.	Un nom de fichier ne peut pas contenir \ ou /.
+fr	Browse	Parcourir
+fr	Word Macro-Enabled Document (*.docm)	Document Word prenant en charge les macros (*.docm)
+fr	Word Template (*.dotx)	Modèle Word (*.dotx)
+fr	Word Macro-Enabled Template (*.dotm)	Modèle Word prenant en charge les macros (*.dotm)
+fr	OpenDocument Text Template (*.ott)	Modèle de texte OpenDocument (*.ott)
+fr	Flat OpenDocument Text (*.fodt)	Texte OpenDocument plat (*.fodt)
+bg	This PC	Този компютър
+bg	Pinned	Закачени
+bg	Yesterday	Вчера
+bg	This Week	Тази седмица
+bg	Last Week	Миналата седмица
+bg	Older	По-стари
+bg	Desktop	Работен плот
+bg	Downloads	Изтегляния
+bg	File name	Име на файл
+bg	Folders	Папки
+bg	Pin this folder	Закачи тази папка
+bg	Unpin this folder	Откачи тази папка
+bg	Folders you open documents from or save them to show up here.	Тук се показват папките, от които отваряте документи или в които ги записвате.
+bg	Type a file name.	Въведете име на файл.
+bg	A file name can't contain \ or /.	Името на файл не може да съдържа \ или /.
+bg	Browse	Преглед
+bg	Word Macro-Enabled Document (*.docm)	Документ на Word с разрешени макроси (*.docm)
+bg	Word Template (*.dotx)	Шаблон на Word (*.dotx)
+bg	Word Macro-Enabled Template (*.dotm)	Шаблон на Word с разрешени макроси (*.dotm)
+bg	OpenDocument Text Template (*.ott)	Шаблон за OpenDocument текст (*.ott)
+bg	Flat OpenDocument Text (*.fodt)	Плосък OpenDocument текст (*.fodt)
+vi	This PC	PC này
+vi	Pinned	Đã ghim
+vi	Yesterday	Hôm qua
+vi	This Week	Tuần này
+vi	Last Week	Tuần trước
+vi	Older	Cũ hơn
+vi	Desktop	Màn hình nền
+vi	Downloads	Tải xuống
+vi	File name	Tên tệp
+vi	Folders	Thư mục
+vi	Pin this folder	Ghim thư mục này
+vi	Unpin this folder	Bỏ ghim thư mục này
+vi	Folders you open documents from or save them to show up here.	Các thư mục bạn mở tài liệu hoặc lưu tài liệu vào sẽ xuất hiện ở đây.
+vi	Type a file name.	Nhập tên tệp.
+vi	A file name can't contain \ or /.	Tên tệp không được chứa \ hoặc /.
+vi	Browse	Duyệt
+vi	Word Macro-Enabled Document (*.docm)	Tài liệu Word hỗ trợ macro (*.docm)
+vi	Word Template (*.dotx)	Mẫu Word (*.dotx)
+vi	Word Macro-Enabled Template (*.dotm)	Mẫu Word hỗ trợ macro (*.dotm)
+vi	OpenDocument Text Template (*.ott)	Mẫu văn bản OpenDocument (*.ott)
+vi	Flat OpenDocument Text (*.fodt)	Văn bản OpenDocument phẳng (*.fodt)
+sv	This PC	Den här datorn
+sv	Pinned	Fästa
+sv	Yesterday	Igår
+sv	This Week	Den här veckan
+sv	Last Week	Förra veckan
+sv	Older	Äldre
+sv	Desktop	Skrivbord
+sv	Downloads	Hämtade filer
+sv	File name	Filnamn
+sv	Folders	Mappar
+sv	Pin this folder	Fäst den här mappen
+sv	Unpin this folder	Lossa den här mappen
+sv	Folders you open documents from or save them to show up here.	Mappar du öppnar dokument från eller sparar dem i visas här.
+sv	Type a file name.	Skriv ett filnamn.
+sv	A file name can't contain \ or /.	Ett filnamn får inte innehålla \ eller /.
+sv	Browse	Bläddra
+sv	Word Macro-Enabled Document (*.docm)	Makroaktiverat Word-dokument (*.docm)
+sv	Word Template (*.dotx)	Word-mall (*.dotx)
+sv	Word Macro-Enabled Template (*.dotm)	Makroaktiverad Word-mall (*.dotm)
+sv	OpenDocument Text Template (*.ott)	OpenDocument-textmall (*.ott)
+sv	Flat OpenDocument Text (*.fodt)	Platt OpenDocument-text (*.fodt)
+hr	This PC	Ovo računalo
+hr	Pinned	Prikvačeno
+hr	Yesterday	Jučer
+hr	This Week	Ovaj tjedan
+hr	Last Week	Prošli tjedan
+hr	Older	Starije
+hr	Desktop	Radna površina
+hr	Downloads	Preuzimanja
+hr	File name	Naziv datoteke
+hr	Folders	Mape
+hr	Pin this folder	Prikvači ovu mapu
+hr	Unpin this folder	Otkvači ovu mapu
+hr	Folders you open documents from or save them to show up here.	Ovdje se prikazuju mape iz kojih otvarate dokumente ili u koje ih spremate.
+hr	Type a file name.	Unesite naziv datoteke.
+hr	A file name can't contain \ or /.	Naziv datoteke ne smije sadržavati \ ili /.
+hr	Browse	Pregledaj
+hr	Word Macro-Enabled Document (*.docm)	Word dokument s omogućenim makronaredbama (*.docm)
+hr	Word Template (*.dotx)	Word predložak (*.dotx)
+hr	Word Macro-Enabled Template (*.dotm)	Word predložak s omogućenim makronaredbama (*.dotm)
+hr	OpenDocument Text Template (*.ott)	OpenDocument predložak teksta (*.ott)
+hr	Flat OpenDocument Text (*.fodt)	Ravni OpenDocument tekst (*.fodt)
+nl	This PC	Deze pc
+nl	Pinned	Vastgemaakt
+nl	Yesterday	Gisteren
+nl	This Week	Deze week
+nl	Last Week	Vorige week
+nl	Older	Ouder
+nl	Desktop	Bureaublad
+nl	Downloads	Downloads
+nl	File name	Bestandsnaam
+nl	Folders	Mappen
+nl	Pin this folder	Deze map vastmaken
+nl	Unpin this folder	Deze map losmaken
+nl	Folders you open documents from or save them to show up here.	Mappen waaruit je documenten opent of waarin je ze opslaat, staan hier.
+nl	Type a file name.	Typ een bestandsnaam.
+nl	A file name can't contain \ or /.	Een bestandsnaam mag geen \ of / bevatten.
+nl	Browse	Bladeren
+nl	Word Macro-Enabled Document (*.docm)	Word-document met macro's (*.docm)
+nl	Word Template (*.dotx)	Word-sjabloon (*.dotx)
+nl	Word Macro-Enabled Template (*.dotm)	Word-sjabloon met macro's (*.dotm)
+nl	OpenDocument Text Template (*.ott)	OpenDocument-tekstsjabloon (*.ott)
+nl	Flat OpenDocument Text (*.fodt)	Platte OpenDocument-tekst (*.fodt)
+da	This PC	Denne pc
+da	Pinned	Fastgjort
+da	Yesterday	I går
+da	This Week	Denne uge
+da	Last Week	Sidste uge
+da	Older	Ældre
+da	Desktop	Skrivebord
+da	Downloads	Overførsler
+da	File name	Filnavn
+da	Folders	Mapper
+da	Pin this folder	Fastgør denne mappe
+da	Unpin this folder	Frigør denne mappe
+da	Folders you open documents from or save them to show up here.	Mapper, du åbner dokumenter fra eller gemmer dem i, vises her.
+da	Type a file name.	Skriv et filnavn.
+da	A file name can't contain \ or /.	Et filnavn må ikke indeholde \ eller /.
+da	Browse	Gennemse
+da	Word Macro-Enabled Document (*.docm)	Word-dokument med makroer (*.docm)
+da	Word Template (*.dotx)	Word-skabelon (*.dotx)
+da	Word Macro-Enabled Template (*.dotm)	Word-skabelon med makroer (*.dotm)
+da	OpenDocument Text Template (*.ott)	OpenDocument-tekstskabelon (*.ott)
+da	Flat OpenDocument Text (*.fodt)	Flad OpenDocument-tekst (*.fodt)
+ro	This PC	Acest PC
+ro	Pinned	Fixate
+ro	Yesterday	Ieri
+ro	This Week	Săptămâna aceasta
+ro	Last Week	Săptămâna trecută
+ro	Older	Mai vechi
+ro	Desktop	Desktop
+ro	Downloads	Descărcări
+ro	File name	Nume fișier
+ro	Folders	Foldere
+ro	Pin this folder	Fixați acest folder
+ro	Unpin this folder	Anulați fixarea acestui folder
+ro	Folders you open documents from or save them to show up here.	Aici apar folderele din care deschideți documente sau în care le salvați.
+ro	Type a file name.	Scrieți un nume de fișier.
+ro	A file name can't contain \ or /.	Un nume de fișier nu poate conține \ sau /.
+ro	Browse	Răsfoire
+ro	Word Macro-Enabled Document (*.docm)	Document Word cu macrocomenzi (*.docm)
+ro	Word Template (*.dotx)	Șablon Word (*.dotx)
+ro	Word Macro-Enabled Template (*.dotm)	Șablon Word cu macrocomenzi (*.dotm)
+ro	OpenDocument Text Template (*.ott)	Șablon text OpenDocument (*.ott)
+ro	Flat OpenDocument Text (*.fodt)	Text OpenDocument plat (*.fodt)
+ar	This PC	هذا الكمبيوتر
+ar	Pinned	مثبّتة
+ar	Yesterday	أمس
+ar	This Week	هذا الأسبوع
+ar	Last Week	الأسبوع الماضي
+ar	Older	أقدم
+ar	Desktop	سطح المكتب
+ar	Downloads	التنزيلات
+ar	File name	اسم الملف
+ar	Folders	المجلدات
+ar	Pin this folder	تثبيت هذا المجلد
+ar	Unpin this folder	إلغاء تثبيت هذا المجلد
+ar	Folders you open documents from or save them to show up here.	تظهر هنا المجلدات التي تفتح منها المستندات أو تحفظها فيها.
+ar	Type a file name.	اكتب اسم ملف.
+ar	A file name can't contain \ or /.	لا يمكن أن يحتوي اسم الملف على \ أو /.
+ar	Browse	استعراض
+ar	Word Macro-Enabled Document (*.docm)	مستند Word ممكّن بماكرو (*.docm)
+ar	Word Template (*.dotx)	قالب Word (*.dotx)
+ar	Word Macro-Enabled Template (*.dotm)	قالب Word ممكّن بماكرو (*.dotm)
+ar	OpenDocument Text Template (*.ott)	قالب نص OpenDocument (*.ott)
+ar	Flat OpenDocument Text (*.fodt)	نص OpenDocument مسطّح (*.fodt)
+sl	This PC	Ta računalnik
+sl	Pinned	Pripeto
+sl	Yesterday	Včeraj
+sl	This Week	Ta teden
+sl	Last Week	Prejšnji teden
+sl	Older	Starejše
+sl	Desktop	Namizje
+sl	Downloads	Prenosi
+sl	File name	Ime datoteke
+sl	Folders	Mape
+sl	Pin this folder	Pripni to mapo
+sl	Unpin this folder	Odpni to mapo
+sl	Folders you open documents from or save them to show up here.	Tu so prikazane mape, iz katerih odpirate dokumente ali vanje shranjujete.
+sl	Type a file name.	Vnesite ime datoteke.
+sl	A file name can't contain \ or /.	Ime datoteke ne sme vsebovati \ ali /.
+sl	Browse	Prebrskaj
+sl	Word Macro-Enabled Document (*.docm)	Dokument Word z omogočenimi makri (*.docm)
+sl	Word Template (*.dotx)	Predloga Word (*.dotx)
+sl	Word Macro-Enabled Template (*.dotm)	Predloga Word z omogočenimi makri (*.dotm)
+sl	OpenDocument Text Template (*.ott)	Predloga besedila OpenDocument (*.ott)
+sl	Flat OpenDocument Text (*.fodt)	Ploščato besedilo OpenDocument (*.fodt)
