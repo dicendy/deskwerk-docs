@@ -537,7 +537,7 @@ fn quick_save_row(app: &mut WordApp, ui: &mut Ui, st: &mut PageState, target: Op
 fn file_type(ui: &mut Ui, ext: &mut &'static str) -> bool {
     let shown = PAGE_FORMATS.iter().find(|(e, _)| *e == *ext).map_or("", |(_, l)| *l);
     let mut changed = false;
-    craft_ui::ComboBox::from_id_salt("save_as_file_type").width(290.0).selected_text(tl!(shown)).show_ui(ui, |ui| {
+    let combo = craft_ui::ComboBox::from_id_salt("save_as_file_type").width(290.0).selected_text(tl!(shown)).show_ui(ui, |ui| {
         for (e, label) in PAGE_FORMATS {
             if ui.selectable_label(*ext == e, tl!(label)).clicked() && *ext != e {
                 *ext = e;
@@ -545,6 +545,7 @@ fn file_type(ui: &mut Ui, ext: &mut &'static str) -> bool {
             }
         }
     });
+    combo.response.accessible_name(tl!("File type"));
     changed
 }
 

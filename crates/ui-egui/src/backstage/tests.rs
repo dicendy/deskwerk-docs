@@ -848,11 +848,11 @@ fn save_as_recent_folder_opens_the_dialog_there_and_pins() {
     let mut h = save_as_harness(a);
     h.run_steps(4);
     assert!(h.query_by_label("Today").is_some(), "used today: under Today");
-    h.get_by_label("Pin this folder").click();
+    h.get_by_role_and_label(egui::accesskit::Role::Button, "Pin this folder").click();
     h.run_steps(3);
     assert_eq!(h.state().ui.pinned_folders, vec![folder.clone()]);
     assert!(h.query_by_label("Pinned").is_some(), "the Pinned group");
-    h.get_by_label("Unpin this folder").click();
+    h.get_by_role_and_label(egui::accesskit::Role::Button, "Unpin this folder").click();
     h.run_steps(3);
     assert!(h.state().ui.pinned_folders.is_empty());
     let name = dir.file_name().unwrap().to_string_lossy().into_owned();
