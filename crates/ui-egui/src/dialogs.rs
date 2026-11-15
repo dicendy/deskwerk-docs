@@ -441,6 +441,10 @@ pub enum Dialog {
     DefineList {
         form: Box<crate::dialogs_lists::ListForm>,
     },
+    /// Ctrl+S on a document never saved: name, location, Save ([`crate::backstage::save_file`]).
+    SaveFile {
+        form: Box<crate::backstage::save_file::SaveFileForm>,
+    },
     /// Review › Tracking › Track Changes Options (#328).
     TrackOptions {
         form: Box<crate::dialogs_lists::TrackForm>,
@@ -549,6 +553,7 @@ impl Dialog {
             Dialog::EncryptPassword { .. } => "encryptPassword",
             Dialog::DefineList { .. } => "defineList",
             Dialog::TrackOptions { .. } => "trackChangesOptions",
+            Dialog::SaveFile { .. } => "saveFile",
             Dialog::Review(d) => d.name(),
             Dialog::CustomizeKeyboard { .. } => "customizeKeyboard",
             Dialog::CustomizeRibbon { .. } => "customizeRibbon",

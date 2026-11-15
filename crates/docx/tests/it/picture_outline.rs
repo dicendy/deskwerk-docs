@@ -168,3 +168,92 @@ fn model_picture_outlines_round_trip() {
     let got: Vec<Option<PicOutline>> = outlines(&r).into_iter().map(|(_, o)| o).collect();
     assert_eq!(got, lines);
 }
+
+/// The `wp:effectExtent` of each drawing in `xml`, in order: (l, t, r, b), EMU.
+fn effect_extents(xml: &str) -> Vec<[i64; 4]> {
+    xml.split("<wp:effectExtent ")
+        .skip(1)
+        .map(|rest| {
+            let tag = &rest[..rest.find("/>").expect("an empty element")];
+            ["l", "t", "r", "b"].map(|n| {
+                let at = tag.find(&format!(r#"{n}=""#)).expect("the side") + n.len() + 2;
+                tag[at..at + tag[at..].find('"').unwrap()].parse().unwrap()
+            })
+        })
+        .collect()
+}
+
+/// Half an outline lies outside the picture's frame, so the effect extent written for it is at
+/// least half its width (rounded up to whole EMU) on every side, or Word clips that half — the
+/// top edge then looks thinner. A larger extent the file kept stays; a picture without an
+/// outline keeps its own.
+#[test]
+fn effect_extent_makes_room_for_the_outline() {
+    let mut d = Document::new();
+    let key = d.add_media(tiny_png(), "png");
+    let picture = |float: Float| InlineObject::Image {
+        media: key.clone(),
+        w: 144.0,
+        h: 72.0,
+        alt: String::new(),
+        float,
+        crop: [0.0; 4],
+        fx: Default::default(),
+        ole: None,
+    };
+    let lines = [
+        Some(PicOutline::new(Rgb(0x12, 0x34, 0x56), 0.25, LineDash::Solid)),
+        Some(PicOutline::new(Rgb(0, 0, 0), 6.0, LineDash::Solid)),
+        Some(PicOutline::new(Rgb(0xC0, 0, 0), 2.25, LineDash::Dash)),
+        None,
+    ];
+    let mut p = Paragraph::with_text("pictures ", CharProps::default());
+    for (i, outline) in lines.iter().enumerate() {
+        let wrap = if i % 2 == 0 { Wrap::Inline } else { Wrap::Square };
+        let end = p.len();
+        p.insert_object(end, picture(Float { wrap, outline: outline.clone(), ..Default::default() }), &CharProps::default()).unwrap();
+    }
+    d.body = vec![para_block(p)];
+    let bytes = wordcraft_docx::write(&d).expect("write");
+    // 3175, 76200 and 28575 EMU wide.
+    assert_eq!(effect_extents(&document_xml(&bytes)), vec![[1588; 4], [38100; 4], [14288; 4], [0; 4]]);
+    // Reopened and saved again, the same.
+    let again = wordcraft_docx::read(&bytes).expect("read");
+    let xml = document_xml(&wordcraft_docx::write(&again).expect("write again"));
+    assert_eq!(effect_extents(&xml), vec![[1588; 4], [38100; 4], [14288; 4], [0; 4]]);
+
+    // Word's file: 6350 recorded on the inline pictures, 19050 on the floating ones.
+    let d = wordcraft_docx::read(&word_document()).expect("read");
+    let xml = document_xml(&wordcraft_docx::write(&d).expect("write"));
+    assert_eq!(
+        effect_extents(&xml),
+        vec![
+            [6350; 4],  // 1 pt: room enough
+            [19050; 4], // 3 pt: room enough
+            [28575; 4], // 4.5 pt: widened
+            [6350; 4],  // no outline
+            [6350; 4], [19050; 4], // ¾ pt: the recorded room is larger
+        ]
+    );
+}
+
+/// A file that keeps no room for an outline (`wp:effectExtent` of zero, or none) still opens,
+/// and the picture's line is given that room: half the outline's width on each side.
+#[test]
+fn outline_without_recorded_room_is_given_it() {
+    let bare = |id: u32, ln: &str| inline(id, ln).replace(r#"<wp:effectExtent l="6350" t="6350" r="6350" b="6350"/>"#, "");
+    let zero = |id: u32, ln: &str| inline(id, ln).replace(r#"l="6350" t="6350" r="6350" b="6350""#, r#"l="0" t="0" r="0" b="0""#);
+    let d = wordcraft_docx::read(&docx(&[bare(1, BLUE_SOLID), zero(2, GREEN_3PT_DOT)].concat())).expect("read");
+    let p = d.body.iter().find_map(|b| b.as_para()).expect("a paragraph");
+    let extents: Vec<[f32; 4]> = p
+        .objects
+        .iter()
+        .filter_map(|o| match o {
+            InlineObject::Image { float, .. } => Some(float.effect_extent()),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(extents, vec![[2.25; 4], [1.5; 4]]);
+    let xml = document_xml(&wordcraft_docx::write(&d).expect("write"));
+    assert_eq!(effect_extents(&xml), vec![[28575; 4], [19050; 4]]);
+}

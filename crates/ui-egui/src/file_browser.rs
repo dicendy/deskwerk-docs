@@ -157,6 +157,8 @@ impl FileBrowser {
                 f.push(("All files".into(), vec!["*".into()]));
                 (name.clone(), f)
             }
+            // No file types: only the folders are listed.
+            FileDialogRequest::Folder { .. } => (String::new(), Vec::new()),
         };
         let mut b = FileBrowser {
             req,
@@ -199,6 +201,20 @@ impl FileBrowser {
     /// pick. Save adds the chosen type's extension to a name without one and asks once more
     /// before replacing a file; Open wants a file that exists.
     pub(crate) fn accept(&mut self) -> Step {
+        if let FileDialogRequest::Folder { .. } = self.req {
+            // A folder: the highlighted one, the typed one, else the one shown.
+            if let Some(dir) = self.selected.take().filter(|p| p.is_dir()) {
+                return Step::Pick(dir);
+            }
+            return match resolve(&self.dir, &self.name) {
+                None => Step::Pick(self.dir.clone()),
+                Some(p) if p.is_dir() => Step::Pick(p),
+                Some(_) => {
+                    self.note = Note::NotFound(self.name.trim().to_string());
+                    Step::Stay
+                }
+            };
+        }
         if let Some(dir) = self.selected.take().filter(|p| p.is_dir()) {
             self.navigate(dir);
             return Step::Stay;
@@ -229,6 +245,7 @@ impl FileBrowser {
                 }
                 Step::Pick(path)
             }
+            FileDialogRequest::Folder { .. } => Step::Stay,
         }
     }
 
@@ -245,6 +262,7 @@ impl FileBrowser {
         match self.req {
             FileDialogRequest::Open { .. } | FileDialogRequest::OpenMany { .. } => "Open",
             FileDialogRequest::Save { .. } => "Save As",
+            FileDialogRequest::Folder { .. } => "Choose a location",
         }
     }
 
@@ -252,6 +270,7 @@ impl FileBrowser {
         match self.req {
             FileDialogRequest::Open { .. } | FileDialogRequest::OpenMany { .. } => "Open",
             FileDialogRequest::Save { .. } => "Save",
+            FileDialogRequest::Folder { .. } => "OK",
         }
     }
 }
@@ -261,7 +280,9 @@ impl WordApp {
     pub(crate) fn show_file_browser(&mut self, req: FileDialogRequest, after: AfterPick, unavailable: bool) {
         // A folder the request names (the user templates folder, #2852) comes first.
         let asked = match &req {
-            FileDialogRequest::Save { dir: Some(d), .. } => Some(PathBuf::from(d)).filter(|d| d.is_dir()),
+            FileDialogRequest::Save { dir: Some(d), .. } | FileDialogRequest::Folder { dir: Some(d) } => {
+                Some(PathBuf::from(d)).filter(|d| d.is_dir())
+            }
             _ => None,
         };
         let start = asked
@@ -443,8 +464,9 @@ fn body(ui: &mut Ui, b: &mut FileBrowser, t: &Tokens) -> Option<Option<PathBuf>>
     }
     ui.add_space(6.0);
     let mut refilter = false;
+    let folders = matches!(b.req, FileDialogRequest::Folder { .. });
     ui.horizontal(|ui| {
-        let label = ui.label(tl!("File name:"));
+        let label = ui.label(tl!(if folders { "Folder:" } else { "File name:" }));
         // The name field takes what the label (longer in some languages) and the type list leave.
         let width = (ui.available_width() - 170.0).max(120.0);
         let r = ui.add(egui::TextEdit::singleline(&mut b.name).desired_width(width)).labelled_by(label.id);
@@ -458,6 +480,9 @@ fn body(ui: &mut Ui, b: &mut FileBrowser, t: &Tokens) -> Option<Option<PathBuf>>
         }
         let before = b.filter;
         let current = b.filters.get(b.filter).map(|(l, _)| tl!(l.as_str()).to_string()).unwrap_or_default();
+        if folders {
+            return;
+        }
         craft_ui::ComboBox::from_id_salt("builtin_file_browser_type")
             .selected_text(current)
             .width(150.0)

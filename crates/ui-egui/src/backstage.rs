@@ -7,6 +7,7 @@ use crate::theme::{Tokens, medium, regular, semibold};
 use crate::{WordApp, icons};
 
 pub mod save_as;
+pub mod save_file;
 
 /// The side menu: page id, label and icon (#1714).
 const PAGES: [(&str, &str, &str); 11] = [

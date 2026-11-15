@@ -294,7 +294,7 @@ impl Float {
     /// A [`Float::bare_turn`] still inline and without effects room: made floating, or given room
     /// for a shadow or glow since, it saves, and so lays out, with the turn's room again.
     pub fn is_bare_turn(&self) -> bool {
-        self.bare_turn && self.wrap == Wrap::Inline && self.effect_extent() == [0.0; 4]
+        self.bare_turn && self.wrap == Wrap::Inline && self.recorded_extent() == [0.0; 4]
     }
     /// The room an inline `w` × `h` object's line keeps past its frame on each side (x, y) for its
     /// turn: its rotated bounds ([`Float::spin_pad`]) — or, for a [`Float::is_bare_turn`], none, except
@@ -308,8 +308,14 @@ impl Float {
         let deg = wordcraft_geom::normalize_degrees(self.rot);
         if modern && ((45.0..135.0).contains(&deg) || (225.0..315.0).contains(&deg)) { ((h - w) / 2.0, (w - h) / 2.0) } else { (0.0, 0.0) }
     }
-    /// The effect extents, finite and clamped (left, top, right, bottom).
+    /// The effect extents, finite and clamped (left, top, right, bottom), each at least half a
+    /// picture outline's width: the line is centred on the frame, so half of it lies outside.
     pub fn effect_extent(&self) -> [f32; 4] {
+        let half = self.outline.as_ref().map_or(0.0, |o| o.width() / 2.0);
+        self.recorded_extent().map(|v| v.max(half))
+    }
+    /// The effect extents as recorded, finite and clamped (left, top, right, bottom).
+    fn recorded_extent(&self) -> [f32; 4] {
         self.effect.map(|v| if v.is_finite() { v.clamp(0.0, 1584.0) } else { 0.0 })
     }
 }

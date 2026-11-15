@@ -48,6 +48,7 @@ pub(super) fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
         Dialog::EncryptPassword { .. } => encrypt_password_dialog(app, ui, d),
         Dialog::DefineList { form } => crate::dialogs_lists::define_list(app, ui, form),
         Dialog::TrackOptions { form } => crate::dialogs_lists::track_options(app, ui, form),
+        Dialog::SaveFile { form } => crate::backstage::save_file::body(app, ui, form),
         Dialog::Review(d) => crate::dialogs_review::body(app, ui, d),
         Dialog::CustomizeKeyboard { form } => crate::dialogs_keyboard::customize_keyboard(app, ui, form),
         Dialog::CustomizeRibbon { form } => crate::dialogs_ribbon::customize_ribbon(app, ui, form),
@@ -1223,8 +1224,10 @@ fn save_changes_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
     ui.add_space(8.0);
     let buttons = ui.horizontal(|ui| {
         ui.with_layout(crate::rtl::far_side(ui, egui::Align::Center), |ui| {
-            let cancel = ui.button(tl!("Cancel"));
-            let dont_save = ui.button(tl!("Don't Save"));
+            // As in Word: Save filled in the app colour, Don't Save outlined in it, Cancel neutral.
+            let t = Tokens::get(ui.ctx());
+            let cancel = ui.add(crate::widgets::outline_button(tl!("Cancel"), t.input_border, t.text));
+            let dont_save = ui.add(crate::widgets::outline_button(tl!("Don't Save"), t.accent, t.accent_text));
             let save = ui.add(crate::widgets::primary_button(ui, tl!("Save")));
             [(cancel, "cancel"), (dont_save, "dontSave"), (save, "save")]
         })
