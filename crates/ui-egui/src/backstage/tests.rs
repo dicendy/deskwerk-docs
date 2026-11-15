@@ -897,12 +897,12 @@ fn save_as_lists_each_folder_once() {
     note_folder(&mut used, "plain name.docx", 4);
     let paths: Vec<(&str, i64)> = used.iter().map(|f| (f.path.as_str(), f.used)).collect();
     assert_eq!(paths, vec![("/docs", 3), ("/other", 2)], "deduped, newest first; a bare name has no folder");
-    let recent = vec!["/docs/old.docx".to_string(), "/third/x.docx".to_string(), "/third/y.docx".to_string()];
+    let recent = ["/docs/old.docx".to_string(), "/third/x.docx".to_string(), "/third/y.docx".to_string()];
     let rows = folder_rows(&used, &recent, &["/other/".to_string()]);
     let got: Vec<(&str, Option<i64>, bool)> = rows.iter().map(|r| (r.path.as_str(), r.used, r.pinned)).collect();
     assert_eq!(got, vec![("/other/", Some(2), true), ("/docs", Some(3), false), ("/third", None, false)]);
     // Unordered history is shown newest first.
-    let shuffled = vec![super::save_as::RecentFolder { path: "/old".into(), used: 1 }, super::save_as::RecentFolder { path: "/new".into(), used: 9 }];
+    let shuffled = [super::save_as::RecentFolder { path: "/old".into(), used: 1 }, super::save_as::RecentFolder { path: "/new".into(), used: 9 }];
     let order: Vec<String> = folder_rows(&shuffled, &[], &[]).into_iter().map(|r| r.path).collect();
     assert_eq!(order, vec!["/new".to_string(), "/old".to_string()]);
     let mut pins = vec!["/a".to_string()];

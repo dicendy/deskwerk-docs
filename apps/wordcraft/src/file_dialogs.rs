@@ -201,6 +201,7 @@ fn on_path(program: &str) -> bool {
 
 /// The file types Save As offers: every format the engine saves, with the suggested name's own
 /// format first (#689); shared with File › Save As's file type list.
+#[cfg(test)]
 fn save_exts(name: &str) -> Vec<String> {
     wordcraft_ui_egui::backstage::save_as::save_exts(name)
 }

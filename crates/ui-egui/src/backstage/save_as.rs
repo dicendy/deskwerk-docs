@@ -275,7 +275,7 @@ pub(crate) fn folder_name(folder: &str, home: Option<&str>) -> String {
 /// The user's home folder.
 fn home() -> Option<PathBuf> {
     let var = if cfg!(windows) { ["USERPROFILE", "HOME"] } else { ["HOME", "USERPROFILE"] };
-    var.iter().find_map(|v| std::env::var_os(v)).filter(|h| !h.is_empty()).map(PathBuf::from)
+    var.iter().find_map(std::env::var_os).filter(|h| !h.is_empty()).map(PathBuf::from)
 }
 
 /// The standard folders This PC lists, as (English name, folder), the ones that exist.
@@ -451,7 +451,7 @@ fn places(app: &mut WordApp, ui: &mut Ui, st: &mut PageState) {
     for (label, icon, place) in [("Recent", "clock", Some(Place::Recent)), ("This PC", "computer", Some(Place::ThisPc)), ("Browse", "open", None)] {
         let (r, resp) = ui.allocate_exact_size(vec2(210.0, 46.0), Sense::click());
         resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, ui.is_enabled(), tl!(label)));
-        let active = place.is_some_and(|p| p == st.place);
+        let active = place == Some(st.place);
         if active {
             ui.painter().rect_filled(r, 4.0, t.checked);
         } else if resp.hovered() {
@@ -670,7 +670,7 @@ fn folder_row(app: &mut WordApp, ui: &mut Ui, st: &PageState, path: &str, date: 
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, ui.is_enabled(), &name));
     let pin_rect = Rect::from_center_size(pos2(crate::rtl::trail_x(rtl, r, 22.0), r.center().y), vec2(26.0, 26.0));
     let pin = pinned.map(|on| {
-        let id = ui.id().with(("save_as_pin", path));
+        let id = ui.scope_id().with(("save_as_pin", path));
         let p = ui.interact(pin_rect, id, Sense::click());
         let label = if on { tl!("Unpin this folder") } else { tl!("Pin this folder") };
         p.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, label));
