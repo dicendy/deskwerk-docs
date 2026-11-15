@@ -26,7 +26,7 @@ pub enum FileDialogRequest {
     /// Pick one or more files (Add Font…); the answer lists every one picked.
     OpenMany { purpose: String },
     /// Pick a path to save to, given a suggested file name and, if it matters, the folder to
-    /// start in (Save as Word Template starts in the user templates folder, #2852).
+    /// start in (File › Save As's folders, the user templates folder for a template, #2852).
     Save { name: String, dir: Option<String> },
 }
 
@@ -396,6 +396,14 @@ impl WordApp {
     pub(crate) fn save_as(&mut self, after: AfterSave) -> Asked {
         let name = self.default_save_name();
         self.ask_file(FileDialogRequest::Save { name, dir: None }, AfterPick::SaveAs { after, document: self.session.document_id() })
+    }
+
+    /// File › Save As's Browse and folders: the system Save As dialog in `dir`, suggesting
+    /// `name` (else the usual name), then save there.
+    pub(crate) fn save_as_in(&mut self, dir: Option<String>, name: Option<String>) {
+        let name = name.unwrap_or_else(|| self.default_save_name());
+        let _ = self
+            .ask_file(FileDialogRequest::Save { name, dir }, AfterPick::SaveAs { after: AfterSave::Nothing, document: self.session.document_id() });
     }
 
     /// The user templates folder (#2852): the one File › Options names, else the app's own.

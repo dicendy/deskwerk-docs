@@ -298,6 +298,10 @@ pub struct UiState {
     /// Ribbon › Quick Access Toolbar) brings it back. Kept between runs.
     pub quick_access_toolbar: bool,
     pub recent: Vec<String>,
+    /// Folders documents were opened from or saved to, most recent first: File › Save As › Recent.
+    pub recent_folders: Vec<backstage::save_as::RecentFolder>,
+    /// Folders pinned on File › Save As, shown first there.
+    pub pinned_folders: Vec<String>,
     /// Symbols inserted from the Symbol dialog, most recent first (#321).
     pub recent_symbols: Vec<dialogs_insert::RecentSymbol>,
     /// Colours picked in the Colors dialog (More Colors…), most recent first (#606).
@@ -460,6 +464,8 @@ impl Default for UiState {
             ribbon_collapsed: false,
             quick_access_toolbar: true,
             recent: Vec::new(),
+            recent_folders: Vec::new(),
+            pinned_folders: Vec::new(),
             recent_symbols: Vec::new(),
             recent_colors: Vec::new(),
             recent_fonts: Vec::new(),

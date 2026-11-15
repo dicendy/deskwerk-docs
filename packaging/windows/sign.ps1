@@ -15,7 +15,7 @@
   timestamp server, ...). Optional overrides: WINDOWS_TIMESTAMP_URL, SIGNTOOL (path to signtool.exe).
 
 .EXAMPLE
-  pwsh packaging/windows/sign.ps1 dist/deskwerk-docs.exe dist/deskwerk-docs-0.15.2-windows-x64.msi
+  pwsh packaging/windows/sign.ps1 dist/deskwerk-docs.exe dist/deskwerk-docs-0.15.3-windows-x64.msi
 #>
 param(
   [Parameter(Mandatory = $true, ValueFromRemainingArguments = $true)]

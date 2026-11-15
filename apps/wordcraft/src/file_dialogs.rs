@@ -95,7 +95,7 @@ fn picker(dialog: rfd::AsyncFileDialog, req: &FileDialogRequest) -> Picking {
         FileDialogRequest::OpenMany { purpose } => Box::pin(async move { open_filters(dialog, &purpose).pick_files().await.unwrap_or_default() }),
         FileDialogRequest::Save { name, dir } => {
             let mut dialog = dialog.set_file_name(name.clone());
-            // Save as Word Template starts in the user templates folder (#2852).
+            // File › Save As's folders, and the user templates folder for a template (#2852).
             if let Some(dir) = dir.filter(|d| std::path::Path::new(d).is_dir()) {
                 dialog = dialog.set_directory(dir);
             }
@@ -200,53 +200,15 @@ fn on_path(program: &str) -> bool {
 }
 
 /// The file types Save As offers: every format the engine saves, with the suggested name's own
-/// format first. rfd makes a filter's first extension the dialog's default, which the Windows,
-/// macOS and Linux panels append to a file name the user typed without one; with no filter at
-/// all the name came back bare and the save failed, since the format is chosen by extension
-/// (#689).
+/// format first (#689); shared with File › Save As's file type list.
 fn save_exts(name: &str) -> Vec<String> {
-    let suggested = std::path::Path::new(name)
-        .extension()
-        .and_then(std::ffi::OsStr::to_str)
-        .map(str::to_ascii_lowercase)
-        .filter(|e| wordcraft_engine::io::SAVE_EXTS.contains(&e.as_str()))
-        .unwrap_or_else(|| "docx".to_string());
-    let mut exts: Vec<String> = Vec::with_capacity(wordcraft_engine::io::SAVE_EXTS.len());
-    exts.push(suggested.clone());
-    exts.extend(wordcraft_engine::io::SAVE_EXTS.iter().filter(|e| **e != suggested).map(|e| (*e).to_string()));
-    exts
+    wordcraft_ui_egui::backstage::save_as::save_exts(name)
 }
 
-/// The "Save as type" list (#1399): one named entry per format, the suggested one first (see
-/// [`save_exts`] for why the order matters).
-///
-/// rfd doesn't report which entry the user picked, so if they choose "PDF" but leave "name.docx"
-/// in the name box, the extension in the name wins, as the format is chosen by extension.
+/// The "Save as type" list (#1399): one named, translated entry per format, the suggested one
+/// first. rfd doesn't report which entry the user picked, so the extension in the name wins.
 fn save_filters(name: &str) -> Vec<(String, Vec<String>)> {
-    save_exts(name).into_iter().map(|e| (format!("{} (*.{e})", format_name(&e)), vec![e])).collect()
-}
-
-/// A readable name for a save format's extension.
-fn format_name(ext: &str) -> String {
-    match ext {
-        "docx" => "Word Document".into(),
-        "docm" => "Word Macro-Enabled Document".into(),
-        "dotx" => "Word Template".into(),
-        "dotm" => "Word Macro-Enabled Template".into(),
-        "pdf" => "PDF".into(),
-        "txt" => "Plain Text".into(),
-        "md" => "Markdown".into(),
-        "html" => "Web Page".into(),
-        "rtf" => "Rich Text Format".into(),
-        "odt" => "OpenDocument Text".into(),
-        "ott" => "OpenDocument Text Template".into(),
-        "fodt" => "Flat OpenDocument Text".into(),
-        "tex" => "LaTeX".into(),
-        "png" => "PNG Image".into(),
-        "json" => "JSON".into(),
-        "xml" => "XML".into(),
-        other => other.to_ascii_uppercase(),
-    }
+    wordcraft_ui_egui::backstage::save_as::save_filters(name)
 }
 
 #[cfg(test)]

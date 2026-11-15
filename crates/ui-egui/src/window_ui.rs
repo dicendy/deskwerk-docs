@@ -260,6 +260,8 @@ impl WordApp {
             ribbon_collapsed: _,
             quick_access_toolbar: _,
             recent: _,
+            recent_folders: _,
+            pinned_folders: _,
             recent_symbols: _,
             recent_colors: _,
             recent_fonts: _,

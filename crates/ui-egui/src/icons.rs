@@ -1393,6 +1393,17 @@ fn paint_file_and_tools(pen: &Pen, name: &str) -> bool {
             }
         }
 
+        // File › Save As's places (Recent, This PC): a clock and a monitor.
+        "clock" => {
+            pen.circle(10.0, 10.0, 7.5, c);
+            pen.line_c(&[(10.0, 5.5), (10.0, 10.0), (13.5, 12.0)], a);
+        }
+        "computer" => {
+            pen.rect(2.5, 3.5, 17.5, 13.5, c);
+            pen.frect(4.5, 5.5, 15.5, 11.5, a);
+            pen.line(&[(10.0, 13.5), (10.0, 16.5)]);
+            pen.line(&[(6.5, 16.5), (13.5, 16.5)]);
+        }
         // The built-in file browser (#576): a folder, a file and the home folder.
         "folder" => {
             pen.frect(2.5, 4.5, 8.5, 7.0, yellow);

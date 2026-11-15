@@ -423,7 +423,15 @@ pub fn tr(lang: Lang, s: &str) -> &str {
     if pseudo::on() {
         return I18N.t(craft_i18n::Lang::PSEUDO, s);
     }
-    lang.i18n().t(lang.lang, s)
+    let catalogs = lang.i18n();
+    // Rows still on their way to craft-i18n (`i18n/pending.tsv`); the catalog's own come first.
+    if lang != Lang::EN
+        && catalogs.get(lang.lang, "", s).is_none()
+        && let Some(t) = pending::get(lang.code(), s)
+    {
+        return t;
+    }
+    catalogs.t(lang.lang, s)
 }
 
 /// Left-to-right mark: it keeps what it touches from joining a right-to-left run next to it.
@@ -531,6 +539,7 @@ pub(crate) fn catalogs_embedded() -> bool {
 
 #[cfg(test)]
 mod audit;
+mod pending;
 #[cfg(test)]
 pub(crate) mod pseudo;
 #[cfg(test)]

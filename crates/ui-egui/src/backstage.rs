@@ -6,6 +6,8 @@ use serde_json::json;
 use crate::theme::{Tokens, medium, regular, semibold};
 use crate::{WordApp, icons};
 
+pub mod save_as;
+
 /// The side menu: page id, label and icon (#1714).
 const PAGES: [(&str, &str, &str); 11] = [
     ("home", "Home", "homeFolder"),
@@ -266,8 +268,8 @@ pub(crate) fn go_to_page(app: &mut WordApp, id: &str) {
     }
     match id {
         // A document without a file asks where to save in the system's Save As dialog straight
-        // away, as Ctrl+S does; the Save As page (Browse…, Save as Word Template…) is File › Save
-        // As. Showing that page here made Save look like a template picker instead of a save.
+        // away, as Ctrl+S does; the Save As page (its folders, Browse and file types) is File ›
+        // Save As. Showing that page here made Save look like a template picker instead of a save.
         // Once saved the Backstage closes; a failed write shows its reason on the Save As page.
         // In the browser a save is a download, so it saves right away.
         "save" if app.session.path.is_none() && app.services.download.is_none() => {
@@ -654,7 +656,7 @@ pub(crate) fn forget_open_error(ctx: &egui::Context) {
 
 /// The Save As page's write-failure message ([`WordApp::fail_save_as`]): this page's own
 /// render loop skips the status bar, so a failed write (no permission, disk full, a bad path)
-/// needs its own place to say why, or the page just sits there with a Browse… button and no clue.
+/// needs its own place to say why, or the page just sits there with no clue.
 pub(crate) fn save_as_error_id() -> egui::Id {
     egui::Id::unique("backstage_save_as_error")
 }
@@ -693,27 +695,10 @@ fn open_page(app: &mut WordApp, ui: &mut Ui) {
     open_list(app, ui);
 }
 
-/// Save As: Browse… asks where to save. It has no recent-documents list: clicking one of those
-/// opens it, which is not what Save As is for.
+/// Save As ([`save_as`]): places, folders to save in and a quick-save row. Its Recent lists
+/// folders, not documents: clicking a document would open it, which is not what Save As is for.
 fn save_as_page(app: &mut WordApp, ui: &mut Ui) {
-    heading(ui, "Save As");
-    let error = ui.ctx().data(|d| d.get_temp::<String>(save_as_error_id())).unwrap_or_default();
-    if !error.is_empty() {
-        ui.label(egui::RichText::new(&error).color(ui.visuals().error_fg_color));
-        ui.add_space(6.0);
-    }
-    if ui.button(egui::RichText::new(tl!("Browse…")).font(medium(14.0))).clicked() {
-        app.save_as_dialog();
-    }
-    // A Word template in the user templates folder, which File › New lists under Personal (#2852).
-    ui.add_space(8.0);
-    if ui
-        .button(egui::RichText::new(tl!("Save as Word Template…")).font(medium(14.0)))
-        .on_hover_text(tl!("Saves a .dotx template in your templates folder. It shows up in File › New under Personal."))
-        .clicked()
-    {
-        let _ = app.run("ui.saveAsTemplate", json!({}));
-    }
+    save_as::page(app, ui);
 }
 
 fn info_page(app: &mut WordApp, ui: &mut Ui) {
