@@ -5,25 +5,25 @@ name, app id (`eu.deskwerk.Docs`), binaries (`deskwerk-docs`, `deskwerk-docs-cli
 installers and settings folders are renamed. This file lists what still carries the upstream look
 or name, and why.
 
-## Art to replace
+## Art
 
-These icons are the original placeholder art from the upstream repository (a document page and pen
-on a blue tile, MIT OR Apache-2.0, see `ATTRIBUTION.md`). They are **not** ArtCraft trademarks, so
-shipping them is allowed, but Deskwerk should get its own icon:
+The app and document icons are the Deskwerk artwork (since 0.15.5), imported from the artwork
+export by `packaging/icons.sh <export-dir>`:
 
-- `assets/app-icon/wordcraft.svg` (the source; everything below is generated from it by
-  `packaging/icons.sh`)
-- `assets/app-icon/wordcraft-1024.png`
-- `assets/app-icon/wordcraft-macos-512.png` (macOS Dock icon, embedded by `apps/wordcraft`)
+- `assets/app-icon/wordcraft.ico` (Windows exe, MSI, shortcuts and Apps list; web favicon)
 - `assets/app-icon/wordcraft.icns` (copied into the bundle as `Deskwerk Docs.icns`)
-- `assets/app-icon/wordcraft.ico` (Windows exe and MSI icon, `cargo xtask ico`)
-- `assets/app-icon/hicolor/*/apps/eu.deskwerk.Docs.png` and
-  `assets/app-icon/hicolor/scalable/apps/eu.deskwerk.Docs.svg`
-- The app colours: accent `#3f5fe0` (`UPDATE_APP` in `crates/ui-egui/src/lib.rs`) and the
-  metainfo `<branding>` colours `#b9c7f5` / `#2b47b5`.
+- `assets/app-icon/wordcraft-1024.png`, `assets/app-icon/web/icon-192.png`, `icon-512.png` (web
+  manifest)
+- `assets/app-icon/wordcraft-macos-512.png` (macOS window/Dock icon, embedded by `apps/wordcraft`)
+- `assets/app-icon/hicolor/*/apps/eu.deskwerk.Docs.png` (Linux; 256 is also the Windows/Linux
+  window icon, 128 the update prompt's). There is no scalable SVG of the app icon.
+- `assets/app-icon/document.ico` / `document.icns` / `document.svg`: the document icon of the Word,
+  RTF and ODT types (Windows ProgIds, macOS `CFBundleTypeIconFile`).
 
-After replacing the SVG: run `packaging/icons.sh` and update the `ATTRIBUTION.md` rows
-(`cargo xtask assets` fails on any asset without a row).
+Still upstream's: the app colours, accent `#3f5fe0` (`UPDATE_APP` in `crates/ui-egui/src/lib.rs`)
+and the metainfo `<branding>` colours `#b9c7f5` / `#2b47b5`. Linux ships no MIME-type icons: the
+types are the system's (`application/vnd.openxmlformats-…`), and an icon for them would change how
+every .docx looks, whichever app opens it.
 
 ## macOS DMG layout
 
@@ -31,8 +31,8 @@ After replacing the SVG: run `packaging/icons.sh` and update the `ATTRIBUTION.md
   `WordCraft.app`. The volume and bundle are now `Deskwerk Docs` / `Deskwerk Docs.app`, so
   Finder falls back to default icon positions until it is regenerated with
   `packaging/macos/dmg/generate.py` (already updated) on a Mac.
-- `packaging/macos/dmg/background.svg` / `background.tiff` embed the app icon; regenerate them
-  with the new icon.
+- `packaging/macos/dmg/background.svg` / `background.tiff` still show the old WordCraft icon
+  (`packaging/macos/dmg/wordcraft-icon.svg`) and name; redraw them for the Deskwerk icon.
 
 ## Internal names kept on purpose
 
@@ -47,7 +47,7 @@ After replacing the SVG: run `packaging/icons.sh` and update the `ATTRIBUTION.md
   filter includes) and the log file name `wordcraft.log`.
 - `wordcraft://` resource URIs of the MCP server and `wordcraft:*` keys kept in saved documents.
 - File names `packaging/windows/wordcraft.wxs` and internal WiX ids (`WordcraftExe`, …), and the
-  icon source file names above.
+  icon file names above (`wordcraft.ico`, …).
 - The user spelling-dictionary folder (`…\WordCraft\dictionaries`, see
   `docs/spelling-dictionaries.md`): the name comes from craft-proof (storytold/craft-libs), not
   from this repository. Not verified here.

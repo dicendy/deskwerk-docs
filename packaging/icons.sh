@@ -1,62 +1,47 @@
 #!/usr/bin/env bash
-# Regenerate every app icon from assets/app-icon/wordcraft.svg.
+# Import the Deskwerk Docs icons from the artwork export into assets/app-icon/.
 #
-# Needs: resvg (brew install resvg / cargo install resvg). On macOS, iconutil also writes the
-# .icns. The outputs are committed, so builds and packaging never need these tools.
+# The Deskwerk artwork is drawn outside this repository and has no scalable SVG of the app icon;
+# its export directory holds the finished files:
+#   app.ico (16-256 px, 16 and 24 hand-drawn), app.icns, app-1024.png, app-macos-512.png,
+#   hicolor/<N>x<N>.png (N = 16 24 32 48 64 128 256 512), file.ico and file.svg (document icon).
+# The document .icns for macOS is not in the export: render file.svg to 1024 px and pack
+# 16-1024 px into assets/app-icon/document.icns (iconutil on macOS, or Pillow).
 #
-#   packaging/icons.sh
+# Needs: python3 with Pillow (for the web manifest icons). The outputs are committed, so builds
+# and packaging never need these tools.
+#
+#   packaging/icons.sh <export-dir>
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SRC="${1:?usage: packaging/icons.sh <export-dir>}"
 DIR="$ROOT/assets/app-icon"
-SVG="$DIR/wordcraft.svg"
 ID="eu.deskwerk.Docs"
-TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
 
-command -v resvg >/dev/null || { echo "error: resvg not found (brew install resvg)" >&2; exit 1; }
+for f in app.ico app.icns app-1024.png app-macos-512.png file.ico file.svg; do
+  [[ -f "$SRC/$f" ]] || { echo "error: $SRC/$f missing" >&2; exit 1; }
+done
 
-# The artwork is a full-bleed 512 tile (rx=112). Windows and Linux use it as is. macOS icons sit on
-# Apple's grid: an 824/1024 body with a transparent margin, so widen the viewBox to 512*1024/824.
-MAC="$TMP/mac.svg"
-sed 's/viewBox="0 0 512 512"/viewBox="-62.136 -62.136 636.272 636.272"/' "$SVG" >"$MAC"
-grep -q 'viewBox="-62.136' "$MAC" || { echo "error: expected viewBox=\"0 0 512 512\" in $SVG" >&2; exit 1; }
+cp "$SRC/app.ico" "$DIR/wordcraft.ico"           # Windows exe, MSI, shortcuts, web favicon
+cp "$SRC/app.icns" "$DIR/wordcraft.icns"         # macOS bundle (Deskwerk Docs.icns)
+cp "$SRC/app-1024.png" "$DIR/wordcraft-1024.png"
+cp "$SRC/app-macos-512.png" "$DIR/wordcraft-macos-512.png" # macOS window/Dock icon (apps/wordcraft)
+cp "$SRC/file.ico" "$DIR/document.ico"           # Windows document ProgIds
+cp "$SRC/file.svg" "$DIR/document.svg"           # source of document.icns
 
-render() {
-  local src="$1" size="$2" dst="$3"
-  resvg -w "$size" -h "$size" "$src" "$dst" </dev/null
-  return 0
-}
-
-render "$SVG" 1024 "$DIR/wordcraft-1024.png"
-# Runtime window/Dock icon on macOS (embedded by apps/wordcraft); other platforms use hicolor 256.
-render "$MAC" 512 "$DIR/wordcraft-macos-512.png"
-
-# Linux hicolor theme.
+# Linux hicolor theme (window icon on Linux/Windows: 256; update prompt: 128).
 for s in 16 24 32 48 64 128 256 512; do
   mkdir -p "$DIR/hicolor/${s}x${s}/apps"
-  render "$SVG" "$s" "$DIR/hicolor/${s}x${s}/apps/$ID.png"
+  cp "$SRC/hicolor/${s}x${s}.png" "$DIR/hicolor/${s}x${s}/apps/$ID.png"
 done
-mkdir -p "$DIR/hicolor/scalable/apps"
-cp "$SVG" "$DIR/hicolor/scalable/apps/$ID.svg"
 
-# Windows .ico.
-ICO_PNGS=()
-for s in 16 20 24 32 40 48 64 128 256; do
-  render "$SVG" "$s" "$TMP/ico-$s.png"
-  ICO_PNGS+=("$TMP/ico-$s.png")
-done
-(cd "$ROOT" && cargo run -q -p xtask -- ico "$DIR/wordcraft.ico" "${ICO_PNGS[@]}")
-
-# macOS .icns.
-if command -v iconutil >/dev/null; then
-  SET="$TMP/wordcraft.iconset"
-  mkdir -p "$SET"
-  for s in 16 32 128 256 512; do
-    render "$MAC" "$s" "$SET/icon_${s}x${s}.png"
-    render "$MAC" $((s * 2)) "$SET/icon_${s}x${s}@2x.png"
-  done
-  iconutil -c icns -o "$DIR/wordcraft.icns" "$SET"
-else
-  echo "warning: iconutil not found (macOS only); wordcraft.icns not regenerated" >&2
-fi
+# Web manifest icons (apps/wordcraft-web/manifest.webmanifest).
+mkdir -p "$DIR/web"
+python3 -I - "$DIR/wordcraft-1024.png" "$DIR/web" <<'EOF'
+import sys
+from PIL import Image
+im = Image.open(sys.argv[1]).convert("RGBA")
+for s in (192, 512):
+    im.resize((s, s), Image.Resampling.LANCZOS).save(f"{sys.argv[2]}/icon-{s}.png", optimize=True)
+EOF
 echo "icons written to $DIR"

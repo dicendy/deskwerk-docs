@@ -94,6 +94,8 @@ New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 Copy-Item (Join-Path $Bin 'deskwerk-docs.exe'), (Join-Path $Bin 'deskwerk-docs-cli.exe') $Stage
 
 & (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'deskwerk-docs.exe') (Join-Path $Stage 'deskwerk-docs-cli.exe')
+# The document icon of the Word, RTF and ODT ProgIds (wordcraft.wxs), installed next to the exe.
+Copy-Item (Join-Path $Root 'assets\app-icon\document.ico') (Join-Path $Stage 'deskwerk-docs-document.ico')
 
 # Required notices ship in every MSI, independently of optional craft-fonts.
 $AppNotices = Join-Path $Stage 'app-notices'

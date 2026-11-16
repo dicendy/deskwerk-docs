@@ -55,6 +55,9 @@
       <string>Editor</string>
       <key>LSHandlerRank</key>
       <string>Alternate</string>
+      <!-- Shown for these files when Deskwerk Docs opens them by default. -->
+      <key>CFBundleTypeIconFile</key>
+      <string>Deskwerk Docs Document</string>
       <key>LSItemContentTypes</key>
       <array>
         <string>org.openxmlformats.wordprocessingml.document</string>
@@ -62,6 +65,17 @@
         <string>com.microsoft.word.doc</string>
         <string>org.oasis-open.opendocument.text</string>
         <string>public.rtf</string>
+      </array>
+    </dict>
+    <dict>
+      <key>CFBundleTypeName</key>
+      <string>Text Document</string>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>LSHandlerRank</key>
+      <string>Alternate</string>
+      <key>LSItemContentTypes</key>
+      <array>
         <string>net.daringfireball.markdown</string>
         <string>public.html</string>
         <string>public.plain-text</string>
