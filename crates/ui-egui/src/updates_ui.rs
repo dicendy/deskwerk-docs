@@ -178,7 +178,7 @@ mod tests {
     /// command's own path) ends in the reason instead of a release to install (#5653).
     #[test]
     fn with_the_self_update_off_a_check_finds_nothing_and_says_why() {
-        let mut app = crate::WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut app = crate::WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
         app.set_startup_update_check(true);
         app.disable_self_update();
         assert!(!app.updates_rt.startup_check, "no check at start");

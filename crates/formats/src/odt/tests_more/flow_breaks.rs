@@ -2,14 +2,14 @@
 //! (`fo:break-after`), lines kept together (`fo:keep-together`), widow and orphan control
 //! (`fo:widows`, `fo:orphans`), hyphenation (`fo:hyphenate`), a table's alignment and width
 //! (`table:align`, `style:rel-width`) and its rows' heights (`style:row-height`,
-//! `style:min-row-height`), read into WordCraft's document and written back.
+//! `style:min-row-height`), read into Deskwerk Docs's document and written back.
 
 use crate::odt::tests::{NS_T, content_of, package};
 use crate::odt::{export, import};
-use wordcraft_doc::Align;
-use wordcraft_doc::props::HeightRule;
+use deskwerk_docs_doc::Align;
+use deskwerk_docs_doc::props::HeightRule;
 
-fn doc(styles: &str, body: &str) -> wordcraft_doc::Document {
+fn doc(styles: &str, body: &str) -> deskwerk_docs_doc::Document {
     let content = format!(
         r#"<office:document-content {NS_T}><office:automatic-styles>{styles}</office:automatic-styles><office:body><office:text>{body}</office:text></office:body></office:document-content>"#
     );
@@ -22,7 +22,7 @@ fn para_style(name: &str, para: &str, text: &str) -> String {
     )
 }
 
-fn paras(d: &wordcraft_doc::Document) -> Vec<&wordcraft_doc::props::ParaProps> {
+fn paras(d: &deskwerk_docs_doc::Document) -> Vec<&deskwerk_docs_doc::props::ParaProps> {
     d.body.iter().filter_map(|b| b.as_para()).map(|p| &p.props).collect()
 }
 
@@ -56,7 +56,7 @@ fn kept_lines_and_widow_control_are_read_and_written() {
 
 #[test]
 fn a_hyphenated_paragraph_makes_the_document_hyphenate() {
-    // Hyphenation is a paragraph's in ODF, the document's in WordCraft: the document hyphenates
+    // Hyphenation is a paragraph's in ODF, the document's in Deskwerk Docs: the document hyphenates
     // and the other paragraphs opt out.
     let d = doc(&para_style("P1", "", r#"fo:hyphenate="true""#), r#"<text:p text:style-name="P1">Hyphenated.</text:p><text:p>Not.</text:p>"#);
     assert!(d.settings.auto_hyphenation);
@@ -133,7 +133,7 @@ fn a_tables_own_space_above_and_below_is_kept() {
         styles,
         r#"<table:table table:style-name="T"><table:table-row><table:table-cell><text:p>Cell</text:p></table:table-cell></table:table-row></table:table><text:p>After.</text:p>"#,
     );
-    let space = |d: &wordcraft_doc::Document| {
+    let space = |d: &deskwerk_docs_doc::Document| {
         let t = d.body.iter().find_map(|b| b.as_table()).expect("a table");
         (t.props.space_before.map(|v| (v * 100.0).round() / 100.0), t.props.space_after.map(|v| (v * 100.0).round() / 100.0))
     };
@@ -171,7 +171,7 @@ fn a_row_that_keeps_together_says_so() {
         row("", "free"),
         row(r#" table:style-name="H""#, "kept and tall")
     );
-    let shape = |d: &wordcraft_doc::Document| {
+    let shape = |d: &deskwerk_docs_doc::Document| {
         d.body
             .iter()
             .find_map(|b| b.as_table())
@@ -197,7 +197,7 @@ fn a_rows_keep_together_defaults_to_the_default_style() {
         row(r#" table:style-name="H""#),
         row(r#" table:style-name="F""#)
     );
-    let keeps = |d: &wordcraft_doc::Document| {
+    let keeps = |d: &deskwerk_docs_doc::Document| {
         d.body.iter().find_map(|b| b.as_table()).map(|t| t.rows.iter().map(|r| r.props.cant_split).collect::<Vec<_>>()).unwrap_or_default()
     };
     let d = import(&package(&content, Some(styles))).unwrap();
@@ -217,12 +217,12 @@ fn a_row_free_to_break_stays_so_over_the_default_style() {
         row("")
     );
     let mut d = import(&package(&content, Some(styles))).unwrap();
-    let keeps = |d: &wordcraft_doc::Document| {
+    let keeps = |d: &deskwerk_docs_doc::Document| {
         d.body.iter().find_map(|b| b.as_table()).map(|t| t.rows.iter().map(|r| r.props.cant_split).collect::<Vec<_>>()).unwrap_or_default()
     };
     assert_eq!(keeps(&d), [false, true]);
-    if let Some(wordcraft_doc::Block::Table(t)) = d.body.get_mut(0).map(std::sync::Arc::make_mut)
-        && let Some(wordcraft_doc::Block::Para(p)) = t.rows[0].cells[0].blocks.get_mut(0).map(std::sync::Arc::make_mut)
+    if let Some(deskwerk_docs_doc::Block::Table(t)) = d.body.get_mut(0).map(std::sync::Arc::make_mut)
+        && let Some(deskwerk_docs_doc::Block::Para(p)) = t.rows[0].cells[0].blocks.get_mut(0).map(std::sync::Arc::make_mut)
     {
         p.text.push('!');
         if let Some(r) = p.runs.last_mut() {

@@ -1,4 +1,4 @@
-//! WordCraft document model.
+//! Deskwerk Docs document model.
 //!
 //! A [`Document`] holds the main story (`body`) and secondary stories (`parts`: headers,
 //! footers, notes, comments, text boxes). A story is a list of [`Block`]s: paragraphs and tables;
@@ -29,6 +29,7 @@ pub mod freeform;
 pub mod graphic;
 pub mod ime_text;
 pub mod kept;
+pub mod legacy;
 pub mod legacy_form;
 pub mod line_dash;
 pub mod link;

@@ -29,8 +29,8 @@ list (author, source, license) is in ATTRIBUTION.md.
   (craft-i18n language-data/en-us/hyphenation.pat) were trained from it and are released as CC0-1.0.
 - English spelling dictionaries (craft-i18n language-data/en-us, en-gb and en-ca: spelling.aff and
   spelling.dic) — the SCOWL rel-2026.02.25 Hunspell dictionaries en_US, en_GB-ise and en_CA from
-  https://wordlist.aspell.net, bundled unmodified. Their upstream notice (embedded too, for the
-  About window) is language-data/en-us/LICENCE-SCOWL.txt in craft-i18n. The word lists:
+  https://wordlist.aspell.net, bundled unmodified. Their upstream notice is
+  language-data/en-us/LICENCE-SCOWL.txt in craft-i18n. The word lists:
 
     Copyright 2000-2026 by Kevin Atkinson
 

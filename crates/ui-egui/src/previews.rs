@@ -4,10 +4,10 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use deskwerk_docs_doc::props::CharProps;
+use deskwerk_docs_doc::{Block, Document, Paragraph, Table, para_block};
 use egui::{Rect, Response, Sense, Stroke, TextureHandle, Ui, pos2, vec2};
 use serde_json::{Value, json};
-use wordcraft_doc::props::CharProps;
-use wordcraft_doc::{Block, Document, Paragraph, Table, para_block};
 
 use crate::WordApp;
 use crate::theme::{Tokens, regular};
@@ -184,15 +184,15 @@ impl Previews {
     /// one (宋体 for SimSun in Chinese, #505), like Word's.
     pub fn families(&mut self) -> Vec<String> {
         let lang = crate::i18n::current().code();
-        let generation = wordcraft_fonts::FontDb::global().generation();
+        let generation = deskwerk_docs_fonts::FontDb::global().generation();
         if self.families.as_ref().is_none_or(|(l, _)| *l != lang) || self.font_gen != generation {
             self.font_gen = generation;
-            let db = wordcraft_fonts::FontDb::global();
+            let db = deskwerk_docs_fonts::FontDb::global();
             let mut f: Vec<String> = db.families_in(lang).into_iter().filter(|f| !f.starts_with('.')).collect();
             // With the web font pack: Word's usual fonts (drawn in their stand-ins until the
             // computer's own are loaded) and the Google fonts the pack carries.
-            let pack = wordcraft_fonts::pack::list_families().into_iter();
-            for w in [wordcraft_doc::styles::BODY_FONT, wordcraft_doc::styles::HEADING_FONT].into_iter().chain(pack) {
+            let pack = deskwerk_docs_fonts::pack::list_families().into_iter();
+            for w in [deskwerk_docs_doc::styles::BODY_FONT, deskwerk_docs_doc::styles::HEADING_FONT].into_iter().chain(pack) {
                 if !f.iter().any(|x| x.eq_ignore_ascii_case(w)) {
                     f.push(w.to_string());
                 }
@@ -213,7 +213,7 @@ impl Previews {
     pub fn east_asian_families(&mut self) -> Vec<String> {
         self.families();
         if self.east_asian.is_none() {
-            let mut f: Vec<String> = wordcraft_fonts::FontDb::global()
+            let mut f: Vec<String> = deskwerk_docs_fonts::FontDb::global()
                 .east_asian_families()
                 .into_iter()
                 .filter(|f| !f.starts_with('.'))
@@ -261,7 +261,7 @@ impl Previews {
                 ui.painter().rect_filled(r, 3.0, t.hover);
             }
             // The atlas lock is never held while the Context's is, nor the other way round.
-            let generation = wordcraft_fonts::FontDb::global().generation();
+            let generation = deskwerk_docs_fonts::FontDb::global().generation();
             let hit = {
                 let mut fonts = atlas.lock();
                 if fonts.generation != generation {
@@ -299,7 +299,7 @@ impl Previews {
                 }
             }
             // An Office font the web font pack draws in a look-alike: a quiet mark and a note.
-            if wordcraft_fonts::pack::drawn_by_stand_in(name).is_some() {
+            if deskwerk_docs_fonts::pack::drawn_by_stand_in(name).is_some() {
                 crate::widgets::paint_stand_in_mark(ui, r, &t);
                 return resp.on_hover_text(crate::widgets::stand_in_note(name));
             }
@@ -356,7 +356,7 @@ pub fn math_texture(
     app: &mut WordApp,
     ctx: &egui::Context,
     key: &str,
-    nodes: &wordcraft_doc::math::Arg,
+    nodes: &deskwerk_docs_doc::math::Arg,
     display: bool,
     pt: f32,
     size: egui::Vec2,
@@ -381,15 +381,16 @@ pub fn math_texture(
     p.math.add(ctx, frame, &k, img)
 }
 
-fn math_image(nodes: &wordcraft_doc::math::Arg, display: bool, pt: f32, w: f32, h: f32, ppp: f32) -> Option<egui::ColorImage> {
-    use wordcraft_doc::math::{Math, to_linear};
+fn math_image(nodes: &deskwerk_docs_doc::math::Arg, display: bool, pt: f32, w: f32, h: f32, ppp: f32) -> Option<egui::ColorImage> {
+    use deskwerk_docs_doc::math::{Math, to_linear};
     let props = CharProps { size: Some(pt), ..Default::default() };
     let mut p = Paragraph::with_text("", props.clone());
-    p.props.align = Some(wordcraft_doc::props::Align::Center);
+    p.props.align = Some(deskwerk_docs_doc::props::Align::Center);
     p.props.space_before = Some(0.0);
     p.props.space_after = Some(0.0);
-    p.props.line_spacing = Some(wordcraft_doc::props::LineSpacing::Multiple(1.0));
-    let eq = wordcraft_doc::InlineObject::Equation { linear: to_linear(nodes), display, math: Math { nodes: nodes.clone(), ..Default::default() } };
+    p.props.line_spacing = Some(deskwerk_docs_doc::props::LineSpacing::Multiple(1.0));
+    let eq =
+        deskwerk_docs_doc::InlineObject::Equation { linear: to_linear(nodes), display, math: Math { nodes: nodes.clone(), ..Default::default() } };
     p.insert_object(0, eq, &props).ok()?;
     let mut d = Document::new();
     d.body = vec![para_block(p)];
@@ -399,20 +400,20 @@ fn math_image(nodes: &wordcraft_doc::math::Arg, display: bool, pt: f32, w: f32, 
     d.last_section.margin_right = 0.0;
     d.last_section.margin_top = 0.0;
     d.last_section.margin_bottom = 0.0;
-    let l = wordcraft_layout::layout(&d, &mut wordcraft_layout::LayoutCache::new(), &Default::default());
+    let l = deskwerk_docs_layout::layout(&d, &mut deskwerk_docs_layout::LayoutCache::new(), &Default::default());
     let page = l.pages.first()?;
     // Centre the equation's line in the tile.
     let mid = page
         .items
         .iter()
         .find_map(|it| match it {
-            wordcraft_layout::Placed::Lines { para, y, .. } => Some(y + para.height / 2.0),
+            deskwerk_docs_layout::Placed::Lines { para, y, .. } => Some(y + para.height / 2.0),
             _ => None,
         })
         .unwrap_or(h / 2.0);
-    let mut opts = wordcraft_render::RenderOptions::default();
+    let mut opts = deskwerk_docs_render::RenderOptions::default();
     opts.display.placeholders = true;
-    let img = wordcraft_render::render_area(&d, page, wordcraft_geom::Rect::new(0.0, mid - h / 2.0, w, h), ppp, &opts);
+    let img = deskwerk_docs_render::render_area(&d, page, deskwerk_docs_geom::Rect::new(0.0, mid - h / 2.0, w, h), ppp, &opts);
     let px = img.to_straight();
     let mut out = egui::ColorImage::from_rgba_unmultiplied([img.width as usize, img.height as usize], &px);
     // An ink mask, tinted with the theme's text colour when drawn, so the pictures read on dark tiles (#817).
@@ -438,17 +439,17 @@ pub fn ink_mask(img: &mut egui::ColorImage) {
 /// through the Font box grew memory by tens of megabytes. A name the font has no glyphs for (a
 /// symbol font's), or a font that can't be read, shows in the default face.
 pub fn font_entry_image(name: &str, ppp: f32) -> egui::ColorImage {
-    let db = wordcraft_fonts::FontDb::global();
+    let db = deskwerk_docs_fonts::FontDb::global();
     // An Office font that isn't installed is previewed in its stand-in once the pack has it.
     let face = db
         .preview_face(name)
-        .or_else(|| wordcraft_fonts::pack::preview_family(name).and_then(|s| db.preview_face(s)))
+        .or_else(|| deskwerk_docs_fonts::pack::preview_family(name).and_then(|s| db.preview_face(s)))
         .filter(|f| name.chars().filter(|c| !c.is_whitespace()).all(|c| f.covers(c)))
-        .unwrap_or_else(|| db.face(wordcraft_fonts::FALLBACK_FAMILY, "Regular"));
+        .unwrap_or_else(|| db.face(deskwerk_docs_fonts::FALLBACK_FAMILY, "Regular"));
     // Rendered taller than the row and cut back to the drawn text: faces with tall line metrics
     // (Arabic, CJK) put their baseline well below a Latin face's, and a fixed 22 pt strip showed
     // only the top of their names.
-    let img = wordcraft_render::render_text_line(&face, name, 13.0, 244.0, FONT_PREVIEW_RENDER_H, 2.0, ppp);
+    let img = deskwerk_docs_render::render_text_line(&face, name, 13.0, 244.0, FONT_PREVIEW_RENDER_H, 2.0, ppp);
     let img = egui::ColorImage::from_rgba_unmultiplied([img.width as usize, img.height as usize], &img.to_straight());
     center_rows_on_ink(&img, (FONT_PREVIEW_H * ppp).round() as usize)
 }
@@ -482,20 +483,20 @@ fn center_rows_on_ink(img: &egui::ColorImage, rows: usize) -> egui::ColorImage {
 pub fn font_sample(
     text: &str,
     props: &CharProps,
-    mark: Option<wordcraft_doc::props::VertAlign>,
+    mark: Option<deskwerk_docs_doc::props::VertAlign>,
     (w, h, ppp): (f32, f32, f32),
-    paper: wordcraft_doc::Rgb,
+    paper: deskwerk_docs_doc::Rgb,
     dark: bool,
 ) -> Option<egui::ColorImage> {
     let mut p = Paragraph::with_text(text, props.clone());
     if let Some(v) = mark {
         let tail = CharProps { vert_align: Some(v), ..props.clone() };
         p.text.push('2');
-        p.runs.push(wordcraft_doc::Run { len: 1, props: tail });
+        p.runs.push(deskwerk_docs_doc::Run { len: 1, props: tail });
     }
     p.props.space_before = Some(0.0);
     p.props.space_after = Some(0.0);
-    p.props.line_spacing = Some(wordcraft_doc::props::LineSpacing::Multiple(1.0));
+    p.props.line_spacing = Some(deskwerk_docs_doc::props::LineSpacing::Multiple(1.0));
     snippet_blocks(
         &Document::new(),
         vec![Block::Para(p)],
@@ -524,7 +525,7 @@ struct SnippetOptions {
     height: f32,
     pixels_per_point: f32,
     margin: f32,
-    paper: Option<wordcraft_doc::Rgb>,
+    paper: Option<deskwerk_docs_doc::Rgb>,
     dark: bool,
 }
 
@@ -540,14 +541,14 @@ fn snippet_blocks(base: &Document, blocks: Vec<Block>, options: SnippetOptions) 
     d.last_section.margin_right = margin;
     d.last_section.margin_top = margin;
     d.last_section.margin_bottom = 0.0;
-    let l = wordcraft_layout::layout(&d, &mut wordcraft_layout::LayoutCache::new(), &Default::default());
+    let l = deskwerk_docs_layout::layout(&d, &mut deskwerk_docs_layout::LayoutCache::new(), &Default::default());
     let page = l.pages.first()?;
     let mut opts = crate::canvas::screen_render_options();
     if let Some(p) = paper {
         opts.paper = p;
     }
     opts.dark = dark;
-    let img = wordcraft_render::render_area(&d, page, wordcraft_geom::Rect::new(0.0, 0.0, w + 2.0 * margin, h + margin), ppp, &opts);
+    let img = deskwerk_docs_render::render_area(&d, page, deskwerk_docs_geom::Rect::new(0.0, 0.0, w + 2.0 * margin, h + margin), ppp, &opts);
     let px = img.to_straight();
     Some(egui::ColorImage::from_rgba_unmultiplied([img.width as usize, img.height as usize], &px))
 }
@@ -641,7 +642,7 @@ pub fn style_gallery(app: &mut WordApp, ui: &mut Ui, state: &Value) {
             // Sample letters in the interface's script (`АаБбВвГг` in Russian).
             let mut p = Paragraph::with_text(tl!("AaBbCcDd"), CharProps::default()).styled(id);
             p.props.space_before = Some(0.0);
-            p.props.align = Some(wordcraft_doc::Align::Left);
+            p.props.align = Some(deskwerk_docs_doc::Align::Left);
             // Keep hanging indents (bullets) but start the first line at the tile's left edge.
             let first = doc.styles.resolve_para(&p.props).indent_first;
             p.props.indent_left = Some(if first.is_finite() { (-first).max(0.0) } else { 0.0 });
@@ -719,7 +720,7 @@ pub fn style_set_gallery(app: &mut WordApp, ui: &mut Ui) {
         }
         let key = format!("set:{name}:{ppp}:{}", crate::i18n::current().code());
         let tex = app.previews.get_or(ui.ctx(), &key, || {
-            let mut s = wordcraft_engine::Session::new(Document::new());
+            let mut s = deskwerk_docs_engine::Session::new(Document::new());
             let _ = s.run("design.styleSet", &json!({"name": name}));
             let blocks = vec![
                 Block::Para(Paragraph::with_text(crate::i18n::tc("preview", "Title"), CharProps::default()).styled("Title")),
@@ -808,9 +809,9 @@ fn font_preview_rows_are_centred_on_the_drawn_text() {
 fn font_preview_shows_the_whole_name_in_every_loaded_face() {
     let ppp = 2.0;
     let rows = (FONT_PREVIEW_H * ppp).round() as usize;
-    for family in wordcraft_fonts::FontDb::with_font_dirs(Vec::new()).families() {
-        let face = wordcraft_fonts::FontDb::global().face(&family, "Regular");
-        let tall = wordcraft_render::render_text_line(&face, &family, 13.0, 244.0, FONT_PREVIEW_RENDER_H, 2.0, ppp);
+    for family in deskwerk_docs_fonts::FontDb::with_font_dirs(Vec::new()).families() {
+        let face = deskwerk_docs_fonts::FontDb::global().face(&family, "Regular");
+        let tall = deskwerk_docs_render::render_text_line(&face, &family, 13.0, 244.0, FONT_PREVIEW_RENDER_H, 2.0, ppp);
         let tall = egui::ColorImage::from_rgba_unmultiplied([tall.width as usize, tall.height as usize], &tall.to_straight());
         let img = center_rows_on_ink(&tall, rows);
         let [w, h] = img.size;

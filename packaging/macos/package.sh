@@ -58,7 +58,7 @@ echo "==> Deskwerk Docs $VERSION for macOS ($ARCH), identity: $IDENTITY, notariz
 if [[ "$SKIP_BUILD" = 0 ]]; then
   args=()
   for t in "${TARGETS[@]}"; do args+=(--target "$t"); done
-  (cd "$ROOT" && cargo build --release --locked -p wordcraft -p wordcraft-cli "${args[@]}")
+  (cd "$ROOT" && cargo build --release --locked -p deskwerk-docs -p deskwerk-docs-cli "${args[@]}")
 fi
 
 rm -rf "$WORK"
@@ -117,13 +117,14 @@ echo "==> assembling $APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # Executable and icon carry the display name (CFBundleExecutable / CFBundleIconFile).
 cp "$WORK/bin/deskwerk-docs" "$APP/Contents/MacOS/Deskwerk Docs"
-cp "$ROOT/assets/app-icon/wordcraft.icns" "$APP/Contents/Resources/Deskwerk Docs.icns"
+cp "$ROOT/assets/app-icon/deskwerk-docs.icns" "$APP/Contents/Resources/Deskwerk Docs.icns"
 # Document icon of the Word, ODT and RTF types (CFBundleTypeIconFile in Info.plist).
 cp "$ROOT/assets/app-icon/document.icns" "$APP/Contents/Resources/Deskwerk Docs Document.icns"
-# Licences of the embedded craft-fonts fonts (only when built with CRAFT_FONTS_DIR).
+# The licence files (LICENSE-*, NOTICE, ATTRIBUTION.md), the font pack's licences and, when built
+# with CRAFT_FONTS_DIR, those of the embedded craft-fonts fonts.
 copy_docs "$APP/Contents/Resources"
 sed -e "s/@VERSION@/$VERSION/g" -e "s/@SHORT_VERSION@/$SHORT_VERSION/g" \
-  -e "s/@BUILD_SHA@/${WORDCRAFT_BUILD_SHA:-unknown}/g" \
+  -e "s/@BUILD_SHA@/${DESKWERK_DOCS_BUILD_SHA:-unknown}/g" \
   "$HERE/Info.plist.in" >"$APP/Contents/Info.plist"
 plutil -lint "$APP/Contents/Info.plist"
 printf 'APPL????' >"$APP/Contents/PkgInfo"

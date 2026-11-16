@@ -22,10 +22,10 @@ for f in app.ico app.icns app-1024.png app-macos-512.png file.ico file.svg; do
   [[ -f "$SRC/$f" ]] || { echo "error: $SRC/$f missing" >&2; exit 1; }
 done
 
-cp "$SRC/app.ico" "$DIR/wordcraft.ico"           # Windows exe, MSI, shortcuts, web favicon
-cp "$SRC/app.icns" "$DIR/wordcraft.icns"         # macOS bundle (Deskwerk Docs.icns)
-cp "$SRC/app-1024.png" "$DIR/wordcraft-1024.png"
-cp "$SRC/app-macos-512.png" "$DIR/wordcraft-macos-512.png" # macOS window/Dock icon (apps/wordcraft)
+cp "$SRC/app.ico" "$DIR/deskwerk-docs.ico"           # Windows exe, MSI, shortcuts, web favicon
+cp "$SRC/app.icns" "$DIR/deskwerk-docs.icns"         # macOS bundle (Deskwerk Docs.icns)
+cp "$SRC/app-1024.png" "$DIR/deskwerk-docs-1024.png"
+cp "$SRC/app-macos-512.png" "$DIR/deskwerk-docs-macos-512.png" # macOS window/Dock icon (apps/deskwerk-docs)
 cp "$SRC/file.ico" "$DIR/document.ico"           # Windows document ProgIds
 cp "$SRC/file.svg" "$DIR/document.svg"           # source of document.icns
 
@@ -35,9 +35,9 @@ for s in 16 24 32 48 64 128 256 512; do
   cp "$SRC/hicolor/${s}x${s}.png" "$DIR/hicolor/${s}x${s}/apps/$ID.png"
 done
 
-# Web manifest icons (apps/wordcraft-web/manifest.webmanifest).
+# Web manifest icons (apps/deskwerk-docs-web/manifest.webmanifest).
 mkdir -p "$DIR/web"
-python3 -I - "$DIR/wordcraft-1024.png" "$DIR/web" <<'EOF'
+python3 -I - "$DIR/deskwerk-docs-1024.png" "$DIR/web" <<'EOF'
 import sys
 from PIL import Image
 im = Image.open(sys.argv[1]).convert("RGBA")

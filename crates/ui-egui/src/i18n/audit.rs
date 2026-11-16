@@ -21,8 +21,8 @@ thread_local! {
 /// Remember the process-wide names drawn this frame could have come from.
 fn note_global_names() {
     GLOBAL_NAMES.with_borrow_mut(|seen| {
-        seen.extend(wordcraft_fonts::FontDb::global().families());
-        seen.extend(wordcraft_engine::proof::user_dictionary());
+        seen.extend(deskwerk_docs_fonts::FontDb::global().families());
+        seen.extend(deskwerk_docs_engine::proof::user_dictionary());
     });
 }
 
@@ -96,10 +96,10 @@ fn ribbon_controls(ctx: &egui::Context) -> Vec<egui::Pos2> {
 
 fn fresh_app(ctx: &egui::Context) -> WordApp {
     ctx.all_styles_mut(|s| s.interaction.tooltip_delay = 0.0);
-    let mut app = WordApp::new(wordcraft_engine::Session::new(wordcraft_engine::sample::sample_document()), Default::default());
+    let mut app = WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_engine::sample::sample_document()), Default::default());
     // Read Aloud holds each sentence instead of starting the system's speech engine: no sound on
     // machines that have one, and no worker thread failing at its own pace on machines that don't.
-    app.session.read_aloud.backend = wordcraft_engine::speech::Backend::Hold;
+    app.session.read_aloud.backend = deskwerk_docs_engine::speech::Backend::Hold;
     // Fonts install over the first frames.
     for _ in 0..2 {
         frame(ctx, &mut app);
@@ -149,45 +149,39 @@ impl<'a> Exempt<'a> {
         let mut names: std::collections::HashSet<String> = GLOBAL_NAMES.with_borrow(Clone::clone);
         names.extend(app.session.doc.styles.styles.iter().map(|s| s.name.clone()));
         // Fonts a document asks for, installed or not (Aptos is drawn with a substitute).
-        names.extend([wordcraft_doc::styles::BODY_FONT, wordcraft_doc::styles::HEADING_FONT].map(str::to_string));
+        names.extend([deskwerk_docs_doc::styles::BODY_FONT, deskwerk_docs_doc::styles::HEADING_FONT].map(str::to_string));
         // The selected SmartArt graphic's items (the Text Pane): document content.
-        if let Some(g) = wordcraft_engine::cmd::smart_art::selected_smart_art(&app.session) {
+        if let Some(g) = deskwerk_docs_engine::cmd::smart_art::selected_smart_art(&app.session) {
             names.extend(g.items.iter().map(|i| i.text.clone()));
         }
         // The accessibility checker's findings: like command messages, they answer scripts and
         // MCP too, so they stay English for now.
-        for i in wordcraft_engine::cmd::accessibility::check(&app.session.doc) {
+        for i in deskwerk_docs_engine::cmd::accessibility::check(&app.session.doc) {
             names.extend(["issue", "fix"].iter().filter_map(|k| i[*k].as_str()).map(str::to_string));
         }
         // The selected chart's data (Edit Data's grid): document content.
-        if let Some(c) = wordcraft_engine::cmd::chart::selected_chart(&app.session) {
+        if let Some(c) = deskwerk_docs_engine::cmd::chart::selected_chart(&app.session) {
             names.extend(c.categories.iter().cloned());
             names.extend(c.series.iter().map(|s| s.name.clone()));
         }
-        // About › Language data: the licences' own titles and texts, and the packs' names,
-        // licences and sources (File › Options › Language), as their authors wrote them.
-        for (title, text) in wordcraft_engine::packs::licence_texts() {
-            names.extend([title, text]);
-        }
-        for p in wordcraft_engine::packs::available() {
+        // The packs' names, licences and sources (File › Options › Language), as their authors
+        // wrote them.
+        for p in deskwerk_docs_engine::packs::available() {
             names.extend([format!("{} · {}", p.name, p.locale), p.source_link().to_string(), p.locale, p.name, p.licence, p.url]);
         }
-        for p in wordcraft_engine::packs::installed() {
+        for p in deskwerk_docs_engine::packs::installed() {
             names.extend([p.name.clone(), p.licence, format!("{} · {}", p.name, p.locale), p.locale]);
         }
         // Options › Language › Your languages: each row's language tag, and a pack's own name
         // beside it, as the index and the document wrote them.
-        let index = wordcraft_engine::packs::available();
-        for row in wordcraft_engine::packs::your_languages(&app.session) {
+        let index = deskwerk_docs_engine::packs::available();
+        for row in deskwerk_docs_engine::packs::your_languages(&app.session) {
             let tag = row.tags.first().cloned().or_else(|| row.pack.as_deref().map(crate::ribbon::tag_for_pack)).unwrap_or_default();
             if let Some(p) = row.pack.as_deref().and_then(|l| index.iter().find(|p| p.locale == l)) {
                 names.insert(format!("{} · {tag}", p.name));
             }
             names.extend(row.tags.iter().cloned());
             names.insert(tag);
-        }
-        for m in crate::credits::MODELS {
-            names.extend([m.company, m.model, m.version].map(str::to_string));
         }
         // The spelling/grammar suggestions popup (#3340): dictionary and grammar-rule words, not
         // interface text.
@@ -198,7 +192,7 @@ impl<'a> Exempt<'a> {
         if let Some(form) = &app.spelling_review {
             names.extend(form.content_text());
         }
-        Exempt { body: app.session.doc.plain_text(wordcraft_doc::StoryRef::Body), names, math: math_placeholders }
+        Exempt { body: app.session.doc.plain_text(deskwerk_docs_doc::StoryRef::Body), names, math: math_placeholders }
     }
 
     /// Whitelists text that is not interface wording: shortcuts and punctuation, status and Read
@@ -219,7 +213,7 @@ impl<'a> Exempt<'a> {
         let initials = plain.chars().count() == 2 && plain.chars().all(|c| c.is_ascii_uppercase());
         // Math tiles fall back to UnicodeMath syntax while their preview loads. These are
         // language-independent commands, and only names in the real symbol table qualify.
-        let math_symbol = plain.strip_prefix('\\').is_some_and(|name| wordcraft_doc::math_symbols::symbol(name).is_some());
+        let math_symbol = plain.strip_prefix('\\').is_some_and(|name| deskwerk_docs_doc::math_symbols::symbol(name).is_some());
         icon_lettering // drawn inside icons
             || initials // the account button
             || math_symbol
@@ -280,7 +274,7 @@ fn untranslated_interface_text() {
         let drawn = frame(&ctx, &mut app);
         record(&app, &format!("File › {page}"), drawn);
     }
-    for pane in wordcraft_engine::cmd::options::PANES {
+    for pane in deskwerk_docs_engine::cmd::options::PANES {
         let _ = app.run("ui.backstage", json!({"value": true, "page": "options", "pane": pane}));
         let drawn = frame(&ctx, &mut app);
         record(&app, &format!("File › Options › {pane}"), drawn);
@@ -305,9 +299,6 @@ fn untranslated_interface_text() {
         "tableProperties",
         "pasteSpecial",
         "about",
-        "contributors",
-        "models",
-        "languageData",
         "insertMergeField",
         "findRecipient",
         "mergeRecords",
@@ -422,7 +413,7 @@ fn untranslated_interface_text() {
 /// a command gives for being off (#2678) and the equation gallery's labels (shown in menus the
 /// audit doesn't open one by one). Numbered style names go through a template.
 fn report_catalog_gaps(mut keys: std::collections::BTreeSet<String>) {
-    use wordcraft_engine::math_gallery::{BUILT_INS, STRUCTURES, SYMBOL_SETS};
+    use deskwerk_docs_engine::math_gallery::{BUILT_INS, STRUCTURES, SYMBOL_SETS};
     if super::CRAFT_I18N.is_empty() {
         eprintln!("missing-translation report skipped: built without craft-i18n (set CRAFT_I18N_DIR to a craft-i18n checkout)");
         return;
@@ -437,8 +428,8 @@ fn report_catalog_gaps(mut keys: std::collections::BTreeSet<String>) {
     keys.extend(disabled_reasons());
     // Reasons the UI itself gives (`widgets.rs::tooltip`), which the engine's checks never reach.
     keys.insert("Open a document first".to_string());
-    for doc in [wordcraft_doc::Document::new(), wordcraft_engine::sample::sample_document()] {
-        let session = wordcraft_engine::Session::new(doc);
+    for doc in [deskwerk_docs_doc::Document::new(), deskwerk_docs_engine::sample::sample_document()] {
+        let session = deskwerk_docs_engine::Session::new(doc);
         for spec in session.registry.all() {
             keys.extend(std::iter::once(spec.label).chain(spec.location.split(" › ")).filter(|s| !s.is_empty()).map(String::from));
             keys.extend((spec.enabled)(&session).map(String::from));
@@ -751,8 +742,6 @@ fn the_arabic_interface_is_mirrored_and_never_panics() {
         "enclose",
         "pasteSpecial",
         "about",
-        "contributors",
-        "models",
         "insertMergeField",
         "findRecipient",
         "fieldCode",

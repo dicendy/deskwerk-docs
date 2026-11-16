@@ -1,6 +1,6 @@
+use deskwerk_docs_geom::Unit;
 use egui_kittest::kittest::{NodeT, Queryable};
 use serde_json::json;
-use wordcraft_geom::Unit;
 
 use super::{decimal, length, parse_length, unit};
 
@@ -20,7 +20,7 @@ fn unknown_settings_keys_load_in_linear_time() {
 }
 
 fn app() -> WordApp {
-    WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default())
+    WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_doc::Document::new()), Services::default())
 }
 
 fn nav_harness(language: &str, percent: u16) -> egui_kittest::Harness<'static, WordApp> {
@@ -67,7 +67,7 @@ fn options_nav_labels_stay_inside_their_rows() {
             for selected in ["general", "accessibility"] {
                 h.state_mut().run("file.options", json!({"pane": selected})).unwrap();
                 h.run_steps(4);
-                for id in wordcraft_engine::cmd::options::PANES {
+                for id in deskwerk_docs_engine::cmd::options::PANES {
                     let label = crate::i18n::tr(crate::i18n::Lang::from_pref(language), super::pane_label(id));
                     let node =
                         h.query_all_by_label(label).find(|n| n.accesskit_node().toggled().is_some()).expect("pane has its full accessible name");
@@ -164,7 +164,7 @@ fn options_survive_a_restart_and_junk_in_ui_json() {
     assert_eq!(b.session.initials, "VK");
     assert_eq!((b.ui.recent_count, b.ui.print_backgrounds), (30, true));
     assert_eq!(b.ui.status_count, StatusCount::CharactersNoSpaces, "#2797: what the status bar counts");
-    assert!(wordcraft_engine::proof::user_dictionary().contains(&"zqxoptionsword".to_string()));
+    assert!(deskwerk_docs_engine::proof::user_dictionary().contains(&"zqxoptionsword".to_string()));
 
     let junk = br#"{"theme": "dark", "recentCount": "lots", "printBackgrounds": 7, "optionsPane": ["x"], "dark": true,
             "statusCount": "paragraphs",
@@ -189,11 +189,11 @@ fn the_dictionaries_folder_survives_a_restart() {
     let mut a = app();
     a.run("file.options", json!({"dictionariesFolder": dir.to_string_lossy()})).unwrap();
     let saved = serde_json::to_vec(&a.prefs()).unwrap();
-    wordcraft_engine::proof::hunspell::set_dictionary_dir(None);
+    deskwerk_docs_engine::proof::hunspell::set_dictionary_dir(None);
     let mut b = app();
     b.apply_prefs(UiState::from_json(&saved).unwrap());
     assert_eq!(b.session.prefs.dictionaries_folder.as_deref(), Some(dir.to_string_lossy().as_ref()));
-    assert_eq!(wordcraft_engine::proof::hunspell::search_dirs(None).first(), Some(&dir), "searched first");
+    assert_eq!(deskwerk_docs_engine::proof::hunspell::search_dirs(None).first(), Some(&dir), "searched first");
 }
 
 /// #1792: Check spelling as you type is saved with the other proofing choices, so after a
@@ -322,7 +322,7 @@ fn save_privacy_checkboxes_set_the_privacy_options() {
 fn animation_effects_is_an_accessibility_option() {
     use crate::theme::Animations;
     let services = Services { animations_enabled: Some(Box::new(|| Some(false))), ..Default::default() };
-    let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), services);
+    let mut a = WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_doc::Document::new()), services);
     a.run("file.options", json!({"pane": "accessibility"})).unwrap();
     let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
         |ui, app: &mut WordApp| {
@@ -431,7 +431,7 @@ fn length_fields_follow_the_region() {
     let mut a = app();
     a.run("file.options", json!({"region": "pl-PL"})).unwrap();
     a.run("file.new", json!({})).unwrap();
-    assert_eq!(wordcraft_geom::paper_name(a.session.doc.last_section.page_w, a.session.doc.last_section.page_h), Some("A4"));
+    assert_eq!(deskwerk_docs_geom::paper_name(a.session.doc.last_section.page_w, a.session.doc.last_section.page_h), Some("A4"));
     let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
         |ui, app: &mut WordApp| {
             let ctx = ui.ctx().clone();

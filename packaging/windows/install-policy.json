@@ -4,9 +4,9 @@
   "installDirKey": "Software\\DeskwerkDocs",
   "upgradeCode": "78337589-0956-416B-B1C6-FA48562A3C8C",
   "sources": [
-    "wordcraft.wxs"
+    "deskwerk-docs.wxs"
   ],
-  "icon": "assets/app-icon/wordcraft.ico",
+  "icon": "assets/app-icon/deskwerk-docs.ico",
   "localization": [],
   "extensions": [
     "UI",
@@ -22,7 +22,7 @@
       "-1",
       "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\deskwerk-docs.exe",
       "",
-      "[#WordcraftExe]"
+      "[#DeskwerkDocsExe]"
     ],
     [
       "-1",
@@ -46,7 +46,7 @@
       "-1",
       "Software\\DeskwerkDocs\\Capabilities",
       "ApplicationIcon",
-      "\"[#WordcraftExe]\",0"
+      "\"[#DeskwerkDocsExe]\",0"
     ],
     [
       "-1",
@@ -58,13 +58,13 @@
       "-1",
       "Software\\Classes\\Applications\\deskwerk-docs.exe\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
       "Software\\Classes\\DeskwerkDocs.Document\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
@@ -88,7 +88,7 @@
       "-1",
       "Software\\Classes\\DeskwerkDocs.DocumentMacroEnabled\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
@@ -112,7 +112,7 @@
       "-1",
       "Software\\Classes\\DeskwerkDocs.Template\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
@@ -136,7 +136,7 @@
       "-1",
       "Software\\Classes\\DeskwerkDocs.TemplateMacroEnabled\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
@@ -160,7 +160,7 @@
       "-1",
       "Software\\Classes\\DeskwerkDocs.LegacyDocument\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
@@ -184,7 +184,7 @@
       "-1",
       "Software\\Classes\\DeskwerkDocs.LegacyTemplate\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
@@ -208,7 +208,7 @@
       "-1",
       "Software\\Classes\\DeskwerkDocs.RichText\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
@@ -232,7 +232,7 @@
       "-1",
       "Software\\Classes\\DeskwerkDocs.OpenDocumentText\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
@@ -256,7 +256,7 @@
       "-1",
       "Software\\Classes\\DeskwerkDocs.Markdown\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",
@@ -274,7 +274,7 @@
       "-1",
       "Software\\Classes\\DeskwerkDocs.PlainText\\shell\\open\\command",
       "",
-      "\"[#WordcraftExe]\" \"%1\""
+      "\"[#DeskwerkDocsExe]\" \"%1\""
     ],
     [
       "-1",

@@ -29,11 +29,11 @@ use std::collections::HashMap;
 use std::io::{Cursor, Read, Write};
 use std::sync::Arc;
 
+use deskwerk_docs_doc::props::{Borders, VAlign};
+use deskwerk_docs_doc::section::{Columns, SectionStart};
+use deskwerk_docs_doc::{Align, Document, RevisionKind, Rgb, SectionProps};
 use quick_xml::XmlVersion;
 use quick_xml::events::{BytesStart, Event};
-use wordcraft_doc::props::{Borders, VAlign};
-use wordcraft_doc::section::{Columns, SectionStart};
-use wordcraft_doc::{Align, Document, RevisionKind, Rgb, SectionProps};
 
 use crate::model::{self, Cell, FBlock, FComment, FTable, Flow, Fmt, Inline, Kind, ListInfo, Meta, Para, RevMark, make_img, mime_of};
 

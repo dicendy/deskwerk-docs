@@ -4,8 +4,8 @@
 
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use wordcraft_doc::para::{InlineObject, OBJ};
-use wordcraft_doc::{Document, StoryRef};
+use deskwerk_docs_doc::para::{InlineObject, OBJ};
+use deskwerk_docs_doc::{Document, StoryRef};
 
 /// Longest quoted anchor text (characters).
 const MAX_QUOTE: usize = 200;
@@ -58,7 +58,7 @@ pub fn notes(doc: &Document) -> Vec<Note> {
         let Some(p) = doc.para(StoryRef::Body, &path) else { continue };
         let mut objects = p.objects.iter();
         for c in p.text.chars() {
-            wordcraft_doc::work::steps(1);
+            deskwerk_docs_doc::work::steps(1);
             if c == OBJ {
                 match objects.next() {
                     Some(InlineObject::CommentStart { id }) => {

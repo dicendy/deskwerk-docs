@@ -4,10 +4,10 @@ use super::{Borders, Cell, FTable};
 
 /// Give each edge two cells share the line either cell draws: LibreOffice gives a shared edge to
 /// one of them only (the left cell's right side is `none`, the right cell's left side draws it),
-/// while WordCraft's cells each draw their own four sides. The cell below is the one in the next
+/// while Deskwerk Docs's cells each draw their own four sides. The cell below is the one in the next
 /// row starting at the same column.
 pub(in crate::odt) fn share_edges(rows: &mut [Vec<Cell>]) {
-    let visible = |b: Option<wordcraft_doc::props::Border>| b.filter(|b| b.is_visible());
+    let visible = |b: Option<deskwerk_docs_doc::props::Border>| b.filter(|b| b.is_visible());
     for r in 0..rows.len() {
         let starts: Vec<usize> = rows
             .get(r)

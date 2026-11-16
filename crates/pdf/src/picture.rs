@@ -3,7 +3,7 @@ use super::paint::{append_path, norm};
 use super::{
     Arc, Fill, FillRule, Image, LineCap, LineJoin, NormalizedF32, Path, PathBuilder, Picture, PlacedItem, Rect, Size, Stroke, Surface, Transform, rgb,
 };
-use wordcraft_doc::picfx::PicFx;
+use deskwerk_docs_doc::picfx::PicFx;
 
 /// Largest picture side we embed (pixels).
 const MAX_IMAGE_SIDE: u32 = 30_000;
@@ -17,7 +17,7 @@ pub(crate) struct Vector {
 
 /// Parses a metafile and embeds its bitmaps. None when the picture has no usable size.
 pub(crate) fn build_vector(bytes: &[u8]) -> Option<Vector> {
-    let mut pic = wordcraft_metafile::parse(bytes).ok()?;
+    let mut pic = deskwerk_docs_metafile::parse(bytes).ok()?;
     if !pic.has_size() {
         return None;
     }
@@ -78,7 +78,7 @@ pub(crate) fn vector_picture(ex: &mut Exporter, s: &mut Surface, v: &Vector, r: 
                 s.pop();
             }
             PlacedItem::Text { index, tf } => {
-                if let Some(wordcraft_metafile::Item::Text(t)) = v.pic.items.get(index) {
+                if let Some(deskwerk_docs_metafile::Item::Text(t)) = v.pic.items.get(index) {
                     ex.vector_text(s, t, tf);
                 }
             }
@@ -108,10 +108,10 @@ fn path_from(b: &kurbo::BezPath) -> Option<Path> {
 /// fails here only because it has corrections.
 pub(crate) fn load_image(data: &Arc<Vec<u8>>, fx: PicFx) -> Option<Image> {
     // The shared probe also charges what the decoder holds beside its output (#3644).
-    if !wordcraft_geom::picture::probe(data).is_ok_and(|p| p.fits(wordcraft_geom::MAX_DECODED_BYTES)) {
+    if !deskwerk_docs_geom::picture::probe(data).is_ok_and(|p| p.fits(deskwerk_docs_geom::MAX_DECODED_BYTES)) {
         return None;
     }
-    load_image_within(data, fx, wordcraft_geom::MAX_DECODED_BYTES)
+    load_image_within(data, fx, deskwerk_docs_geom::MAX_DECODED_BYTES)
 }
 
 /// [`load_image`] with an explicit RGBA byte budget (a small one in tests).
@@ -134,7 +134,7 @@ pub(crate) fn load_image_within(data: &Arc<Vec<u8>>, fx: PicFx, budget: u64) -> 
         let (w, h) = d.dimensions();
         (w, h, u64::from(d.color_type().bytes_per_pixel()))
     };
-    if !wordcraft_geom::decode_peak_fits(hw, hh, native, budget) {
+    if !deskwerk_docs_geom::decode_peak_fits(hw, hh, native, budget) {
         return None;
     }
     let dec = reader()?.decode().ok()?;

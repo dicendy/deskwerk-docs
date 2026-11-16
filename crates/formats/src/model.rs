@@ -4,14 +4,14 @@
 
 use std::sync::Arc;
 
-use wordcraft_doc::numbering::{AbstractNum, Level, ListKind, Num, levels_for};
-use wordcraft_doc::para::{InlineObject, OBJ, PAGE_BREAK, RubyAlign, Run, ruby_raise};
-use wordcraft_doc::props::{
+use deskwerk_docs_doc::numbering::{AbstractNum, Level, ListKind, Num, levels_for};
+use deskwerk_docs_doc::para::{InlineObject, OBJ, PAGE_BREAK, RubyAlign, Run, ruby_raise};
+use deskwerk_docs_doc::props::{
     Border, BorderStyle, Borders, CellProps, CharProps, NumRef, ParaProps, PropChange, RowProps, TextColor, Underline, VAlign, VMerge, VertAlign,
 };
-use wordcraft_doc::section::NumFormat;
-use wordcraft_doc::styles::{Style, StyleKind};
-use wordcraft_doc::{Align, Block, Blocks, Document, Paragraph, Revision, RevisionKind, Rgb, Table, para_block};
+use deskwerk_docs_doc::section::NumFormat;
+use deskwerk_docs_doc::styles::{Style, StyleKind};
+use deskwerk_docs_doc::{Align, Block, Blocks, Document, Paragraph, Revision, RevisionKind, Rgb, Table, para_block};
 
 mod color;
 mod from_doc;
@@ -50,10 +50,10 @@ mod tests {
     /// result they hold, from the document or from a flow with fields; ODT keeps it.
     #[test]
     fn ask_and_set_fields_export_no_text() {
-        let mut doc = wordcraft_doc::Document::from_text("Before after");
-        if let Ok(p) = doc.para_mut(wordcraft_doc::StoryRef::Body, &wordcraft_doc::Path::top(0)) {
+        let mut doc = deskwerk_docs_doc::Document::from_text("Before after");
+        if let Ok(p) = doc.para_mut(deskwerk_docs_doc::StoryRef::Body, &deskwerk_docs_doc::Path::top(0)) {
             for instr in ["SET name other", "ASK other \"Prompt\""] {
-                let field = wordcraft_doc::para::InlineObject::Field {
+                let field = deskwerk_docs_doc::para::InlineObject::Field {
                     instr: instr.into(),
                     result: "SECRETVALUE".into(),
                     locked: false,

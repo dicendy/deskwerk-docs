@@ -1,9 +1,9 @@
 //! Built-in sample documents and templates (original text, generated in code).
 
+use deskwerk_docs_doc::para::InlineObject;
+use deskwerk_docs_doc::props::{Align, Border, BorderStyle, Borders, CharProps, NumRef, Rgb, TabAlign, TabLeader, TabStop, TextColor};
+use deskwerk_docs_doc::{Block, Document, ListKind, Paragraph, PartKind, Table, para_block};
 use std::sync::Arc;
-use wordcraft_doc::para::InlineObject;
-use wordcraft_doc::props::{Align, Border, BorderStyle, Borders, CharProps, NumRef, Rgb, TabAlign, TabLeader, TabStop, TextColor};
-use wordcraft_doc::{Block, Document, ListKind, Paragraph, PartKind, Table, para_block};
 
 fn para(text: &str) -> Paragraph {
     Paragraph::with_text(text, CharProps::default())
@@ -217,7 +217,7 @@ mod tests {
         assert_eq!(sample_document().word_count(), 361);
         for d in [sample_document(), letter(), resume(), report()] {
             assert!(d.word_count() > 5);
-            let l = wordcraft_layout::layout(&d, &mut wordcraft_layout::LayoutCache::new(), &Default::default());
+            let l = deskwerk_docs_layout::layout(&d, &mut deskwerk_docs_layout::LayoutCache::new(), &Default::default());
             assert!(!l.pages.is_empty());
         }
     }

@@ -7,10 +7,10 @@
 //! embeds in PDFs like any other. Where it is kept between runs is [`FontDb::load_user_fonts`]'s
 //! folder (desktop); without one it lasts for the session (the web shell stores it itself).
 
+use deskwerk_docs_doc::Document;
+use deskwerk_docs_fonts::{FontDb, UserFont};
+use deskwerk_docs_layout::DocLayout;
 use serde_json::{Value, json};
-use wordcraft_doc::Document;
-use wordcraft_fonts::{FontDb, UserFont};
-use wordcraft_layout::DocLayout;
 
 use crate::cmd::insert::base64_decode;
 use crate::{CmdError, CmdResult, CommandSpec, Session, p};
@@ -47,7 +47,7 @@ fn font_json(f: &UserFont) -> Value {
 #[cfg(not(target_arch = "wasm32"))]
 fn read_font_file(path: &str) -> Result<Vec<u8>, CmdError> {
     // Through `io`, which keeps automation inside its read root (#769).
-    crate::io::read_file_capped(path, wordcraft_fonts::MAX_FONT_FILE_BYTES as u64, "font file").map_err(CmdError::Failed)
+    crate::io::read_file_capped(path, deskwerk_docs_fonts::MAX_FONT_FILE_BYTES as u64, "font file").map_err(CmdError::Failed)
 }
 
 /// Adding or removing a font writes to the user font folder: automation confined to a write root
@@ -67,8 +67,8 @@ fn add(s: &mut Session, v: &Value) -> CmdResult {
     }
     let (name, bytes) = if let Some(d) = p::str(v, "data") {
         // Base64 is a third larger than the file: refuse before decoding an oversized one.
-        if d.len() / 4 * 3 > wordcraft_fonts::MAX_FONT_FILE_BYTES + 3 {
-            return Err(CmdError::Failed(format!("the font file is larger than {} MB", wordcraft_fonts::MAX_FONT_FILE_BYTES >> 20)));
+        if d.len() / 4 * 3 > deskwerk_docs_fonts::MAX_FONT_FILE_BYTES + 3 {
+            return Err(CmdError::Failed(format!("the font file is larger than {} MB", deskwerk_docs_fonts::MAX_FONT_FILE_BYTES >> 20)));
         }
         let bytes = base64_decode(d).ok_or_else(|| CmdError::Params("bad base64 data".into()))?;
         (p::str(v, "name").unwrap_or("font").to_string(), bytes)
@@ -141,25 +141,25 @@ pub struct MissingFont {
 /// The family text set in `font` is drawn in when `font` isn't installed (None when it is), as
 /// layout picks it for `doc`.
 pub fn shown_as(doc: &Document, font: &str) -> Option<String> {
-    wordcraft_layout::para::substitute_face(doc, font).map(|f| f.get().family.clone())
+    deskwerk_docs_layout::para::substitute_face(doc, font).map(|f| f.get().family.clone())
 }
 
 /// The family Chinese, Japanese and Korean text is drawn in when its East Asian font `font_ea`
 /// isn't installed (None when it is), the run's font being `font`, as layout picks it for `doc`.
 pub fn east_asian_shown_as(doc: &Document, font_ea: &str, font: &str) -> Option<String> {
-    wordcraft_layout::para::east_asian_substitute_face(doc, font_ea, font).map(|f| f.get().family.clone())
+    deskwerk_docs_layout::para::east_asian_substitute_face(doc, font_ea, font).map(|f| f.get().family.clone())
 }
 
 /// Whether text in `font` drawn in `substitute` is worth a warning: the substitute measures
 /// differently, so line breaks can move, and the font isn't a symbol font (drawn as its
 /// Unicode equivalents on purpose, which layout leaves out of [`missing_fonts`] too), nor an
 /// Office font the web font pack draws in its chosen stand-in (Fira Sans for Trebuchet MS:
-/// shown with a quieter mark of its own, [`wordcraft_fonts::pack::drawn_by_stand_in`]). Decides
+/// shown with a quieter mark of its own, [`deskwerk_docs_fonts::pack::drawn_by_stand_in`]). Decides
 /// [`MissingFont::metric_compatible`], which the font box and the status bar both read.
 pub fn warns(font: &str, substitute: &str) -> bool {
-    !wordcraft_doc::symbol_fonts::is_symbol_font(font)
-        && !wordcraft_fonts::word::metric_compatible(font, substitute)
-        && !(wordcraft_fonts::pack::enabled() && wordcraft_fonts::pack::stands_in(font, substitute))
+    !deskwerk_docs_doc::symbol_fonts::is_symbol_font(font)
+        && !deskwerk_docs_fonts::word::metric_compatible(font, substitute)
+        && !(deskwerk_docs_fonts::pack::enabled() && deskwerk_docs_fonts::pack::stands_in(font, substitute))
 }
 
 /// The fonts `doc`'s laid-out text asks for that aren't installed, from what layout drew
@@ -189,7 +189,7 @@ pub fn missing_fonts(doc: &Document, layout: &DocLayout) -> Vec<MissingFont> {
 /// A font name as [`missing_fonts`] lists it: as layout records it (at most 256 characters),
 /// trimmed.
 fn shown_name(font: &str) -> &str {
-    wordcraft_layout::para::reported_font_name(font).trim()
+    deskwerk_docs_layout::para::reported_font_name(font).trim()
 }
 
 /// The key a font name is listed under in [`missing_fonts`]: two names with the same key are
@@ -230,8 +230,8 @@ mod tests {
 
     #[test]
     fn confined_automation_changes_only_a_font_store_inside_its_write_root() {
-        let root = std::env::temp_dir().join(format!("wordcraft-font-store-{}", std::process::id()));
-        let outside = std::env::temp_dir().join(format!("wordcraft-font-store-out-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("deskwerk-docs-font-store-{}", std::process::id()));
+        let outside = std::env::temp_dir().join(format!("deskwerk-docs-font-store-out-{}", std::process::id()));
         std::fs::create_dir_all(&root).unwrap();
         std::fs::create_dir_all(&outside).unwrap();
         let write = crate::file_access::AutomationRoots::new(None, Some(&root)).unwrap();

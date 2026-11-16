@@ -12,8 +12,8 @@ use egui::{Sense, Ui, vec2};
 use serde::Serialize;
 use serde_json::{Value, json};
 
-use wordcraft_engine::Password;
-use wordcraft_engine::cmd::mailings::{FilterOp, FilterRule, SortKey};
+use deskwerk_docs_engine::Password;
+use deskwerk_docs_engine::cmd::mailings::{FilterOp, FilterRule, SortKey};
 
 use crate::WordApp;
 use crate::options::MeasureExt;
@@ -184,7 +184,7 @@ pub enum Dialog {
         /// Why OK didn't apply (the margins don't fit the paper).
         message: String,
         /// Vertical alignment (`layout.verticalAlign`, applied only if changed).
-        valign: wordcraft_doc::section::PageVAlign,
+        valign: deskwerk_docs_doc::section::PageVAlign,
         /// Headers and footers: different odd and even pages (the document's) and a different
         /// first page (the section's), applied only if changed (#1230).
         odd_even: bool,
@@ -313,10 +313,8 @@ pub enum Dialog {
         #[serde(skip)]
         note: String,
     },
-    /// Tabs: 0 About, 1 Contributors, 2 Models.
-    About {
-        tab: u8,
-    },
+    /// The About window: the app's name and a Close button.
+    About,
     /// Confirm before deleting a recovery copy.
     DiscardRecovery {
         id: String,
@@ -532,7 +530,7 @@ impl Dialog {
             Dialog::Refs(d) => d.name(),
             Dialog::Icons { .. } => "icons",
             Dialog::PasteSpecial { .. } => "pasteSpecial",
-            Dialog::About { .. } => "about",
+            Dialog::About => "about",
             Dialog::SaveChanges { .. } => "saveChanges",
             Dialog::DiscardRecovery { .. } => "discardRecovery",
             Dialog::RecipientList { .. } => "recipientList",
@@ -648,10 +646,11 @@ impl Dialog {
                 let tab = if name == "asianTypography" { 2 } else { 0 };
                 let s = &app.session;
                 let story = s.sel.focus.story;
-                let of = |props: &wordcraft_doc::props::ParaProps| paragraph_dialog(&s.doc.styles.resolve_para(props), tab);
+                let of = |props: &deskwerk_docs_doc::props::ParaProps| paragraph_dialog(&s.doc.styles.resolve_para(props), tab);
                 // Every selected paragraph as the dialog would show it: what they all share is
                 // shown, and what OK compares with; the rest shows blank (#1346).
-                let mut each = wordcraft_engine::cmd::selected_paths(s).into_iter().filter_map(|path| s.doc.para(story, &path)).map(|p| of(&p.props));
+                let mut each =
+                    deskwerk_docs_engine::cmd::selected_paths(s).into_iter().filter_map(|path| s.doc.para(story, &path)).map(|p| of(&p.props));
                 let mut d = each.next().or_else(|| s.doc.para_at(&s.sel.focus).map(|p| of(&p.props)))?;
                 let fields = para_fields(&d);
                 let mut shared = fields.clone();
@@ -708,8 +707,8 @@ impl Dialog {
             },
             "insertTable" => Dialog::InsertTable { rows: 2, cols: 5 },
             "pageSetup" => {
-                let sp = wordcraft_engine::cmd::page::sect(&app.session);
-                use wordcraft_doc::section::DocGridType;
+                let sp = deskwerk_docs_engine::cmd::page::sect(&app.session);
+                use deskwerk_docs_doc::section::DocGridType;
                 let kind = match sp.doc_grid.map(|g| g.kind) {
                     Some(DocGridType::Lines) => 1,
                     Some(DocGridType::LinesAndChars) => 2,
@@ -746,7 +745,7 @@ impl Dialog {
             "zoom" => Dialog::Zoom { percent: (app.session.view.zoom * 100.0).round() },
             "watermark" => Dialog::Watermark { text: "CONFIDENTIAL".into(), diagonal: true },
             "phonetic" => {
-                let v = wordcraft_engine::cmd::phonetic::state(&app.session);
+                let v = deskwerk_docs_engine::cmd::phonetic::state(&app.session);
                 let f = |k: &str| v.get(k).and_then(Value::as_f64).unwrap_or(0.0) as f32;
                 let s = |k: &str| v.get(k).and_then(Value::as_str).unwrap_or("").to_string();
                 Dialog::Phonetic {
@@ -775,7 +774,7 @@ impl Dialog {
             }
             "enclose" => {
                 // The selection's text and its enclosure, if it has one.
-                let t = wordcraft_engine::cmd::format::enclose_target(&app.session).ok();
+                let t = deskwerk_docs_engine::cmd::format::enclose_target(&app.session).ok();
                 let cur = t.as_ref().and_then(|t| t.current.clone());
                 Dialog::Enclose {
                     style: cur.as_ref().map_or("shrink", |e| e.style.name()).into(),
@@ -785,10 +784,7 @@ impl Dialog {
             }
             "pasteSpecial" => Dialog::paste_special(app, &json!({})),
             "renameDocument" => Dialog::RenameDocument { name: app.title_stem(), message: String::new(), focus: true },
-            "about" => Dialog::About { tab: 0 },
-            "contributors" => Dialog::About { tab: 1 },
-            "models" => Dialog::About { tab: 2 },
-            "languageData" => Dialog::About { tab: 3 },
+            "about" => Dialog::About,
             // The current list to edit, or a new one to type.
             "recipientList" | "newRecipientList" => {
                 let m = &app.session.merge;
@@ -820,7 +816,7 @@ impl Dialog {
             },
             "fieldCode" => Dialog::FieldCode { code: String::new(), edit: false, message: String::new() },
             "editFieldCode" => {
-                let field = wordcraft_engine::cmd::fields::selected(&app.session).into_iter().next()?;
+                let field = deskwerk_docs_engine::cmd::fields::selected(&app.session).into_iter().next()?;
                 Dialog::FieldCode { code: field.instr, edit: true, message: String::new() }
             }
             "encryptPassword" => Dialog::EncryptPassword { password: Password::default(), confirm: Password::default(), message: String::new() },
@@ -863,9 +859,9 @@ impl Dialog {
         })
     }
 
-    /// Paste Special for a clipboard payload (`text`, `html`, `rtf`; empty = WordCraft's own copy).
+    /// Paste Special for a clipboard payload (`text`, `html`, `rtf`; empty = Deskwerk Docs's own copy).
     pub fn paste_special(app: &WordApp, payload: &Value) -> Dialog {
-        let formats: Vec<String> = wordcraft_engine::cmd::paste::available(&app.session, payload).into_iter().map(str::to_string).collect();
+        let formats: Vec<String> = deskwerk_docs_engine::cmd::paste::available(&app.session, payload).into_iter().map(str::to_string).collect();
         let mut kept = json!({});
         for k in ["text", "html", "rtf", "picture"] {
             if let Some(t) = payload.get(k).and_then(Value::as_str) {
@@ -879,13 +875,13 @@ impl Dialog {
     pub fn modify_style(app: &WordApp, id: &str) -> Option<Dialog> {
         let st = app.session.doc.styles.get(id)?;
         let rc = app.session.doc.styles.resolve_char(
-            if st.kind == wordcraft_doc::StyleKind::Paragraph { Some(id) } else { None },
-            &wordcraft_doc::CharProps {
-                style: if st.kind == wordcraft_doc::StyleKind::Character { Some(id.into()) } else { None },
+            if st.kind == deskwerk_docs_doc::StyleKind::Paragraph { Some(id) } else { None },
+            &deskwerk_docs_doc::CharProps {
+                style: if st.kind == deskwerk_docs_doc::StyleKind::Character { Some(id.into()) } else { None },
                 ..Default::default()
             },
         );
-        let rp = app.session.doc.styles.resolve_para(&wordcraft_doc::ParaProps { style: Some(id.into()), ..Default::default() });
+        let rp = app.session.doc.styles.resolve_para(&deskwerk_docs_doc::ParaProps { style: Some(id.into()), ..Default::default() });
         Some(Dialog::ModifyStyle {
             back: false,
             resume: None,
@@ -896,8 +892,8 @@ impl Dialog {
             bold: rc.bold,
             italic: rc.italic,
             color: match rc.color {
-                wordcraft_doc::TextColor::Rgb(c) => c.hex(),
-                wordcraft_doc::TextColor::Auto => "auto".into(),
+                deskwerk_docs_doc::TextColor::Rgb(c) => c.hex(),
+                deskwerk_docs_doc::TextColor::Auto => "auto".into(),
             },
             before: rp.space_before,
             after: rp.space_after,

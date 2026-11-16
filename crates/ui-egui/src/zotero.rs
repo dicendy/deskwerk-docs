@@ -3,14 +3,14 @@
 //! {"button": n}` to answer a question Zotero is asking (agents; people click the dialog).
 //!
 //! A command runs on a background thread that holds the socket to Zotero. Each call Zotero makes
-//! is handed to the UI thread, answered against the session by [`wordcraft_zotero::Bridge`] in
+//! is handed to the UI thread, answered against the session by [`deskwerk_docs_zotero::Bridge`] in
 //! [`poll`], and the answer goes back to the thread. Zotero's questions (`Document_displayAlert`)
 //! become a dialog; the thread waits until the user answers.
 
 use std::sync::mpsc::{Receiver, Sender};
 
+use deskwerk_docs_zotero::{Bridge, Call, Command, Host};
 use serde_json::{Value, json};
-use wordcraft_zotero::{Bridge, Call, Command, Host};
 
 use crate::WordApp;
 
@@ -31,10 +31,10 @@ struct Alert {
 #[derive(Default)]
 pub struct ZoteroLink {
     /// Where Zotero listens (default `127.0.0.1:23116`).
-    pub options: wordcraft_zotero::client::Options,
+    pub options: deskwerk_docs_zotero::client::Options,
     bridge: Bridge,
     calls: Option<Receiver<Pending>>,
-    done: Option<Receiver<Result<wordcraft_zotero::Outcome, String>>>,
+    done: Option<Receiver<Result<deskwerk_docs_zotero::Outcome, String>>>,
     alert: Option<Alert>,
     /// The command in flight.
     pub busy: Option<Command>,
@@ -111,7 +111,7 @@ fn start(app: &mut WordApp, cmd: Command, ctx: Option<egui::Context>) -> Result<
     let wake = ctx.clone();
     let opts = app.zotero.options.clone();
     let spawned = std::thread::Builder::new().name("zotero".into()).spawn(move || {
-        let r = wordcraft_zotero::client::run_command(&opts, cmd, &mut |call| {
+        let r = deskwerk_docs_zotero::client::run_command(&opts, cmd, &mut |call| {
             let (tx, rx) = channel();
             if call_tx.send(Pending { call: call.clone(), reply: tx }).is_err() {
                 return Err("Deskwerk Docs closed the document".into());
@@ -272,10 +272,10 @@ pub fn show_alert(app: &mut WordApp, ctx: &egui::Context) {
 mod tests {
     use std::net::TcpListener;
 
+    use deskwerk_docs_doc::{Document, StoryRef};
+    use deskwerk_docs_engine::Session;
+    use deskwerk_docs_zotero::wire;
     use serde_json::{Value, json};
-    use wordcraft_doc::{Document, StoryRef};
-    use wordcraft_engine::Session;
-    use wordcraft_zotero::wire;
 
     use crate::{Services, WordApp};
 
@@ -319,7 +319,7 @@ mod tests {
             json!(["Document_complete", [1]]),
         ]);
         let mut app = WordApp::new(Session::new(Document::from_text("Cite: ")), Services::default());
-        app.session.sel = wordcraft_engine::Selection::caret(wordcraft_doc::Pos::body(0, 6));
+        app.session.sel = deskwerk_docs_engine::Selection::caret(deskwerk_docs_doc::Pos::body(0, 6));
         app.zotero.options.addr = addr;
         let ctx = egui::Context::default();
         app.ctx = Some(ctx.clone());

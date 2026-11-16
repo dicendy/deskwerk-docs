@@ -1,12 +1,12 @@
 //! Paragraph formatting, lists and styles (Home › Paragraph, Home › Styles).
 
+use deskwerk_docs_doc::collate::{SortKey, sort_key};
+use deskwerk_docs_doc::numbering::ListKind;
+use deskwerk_docs_doc::props::{Align, Border, BorderStyle, Borders, LineSpacing, NumRef, ParaProps, Rgb, TabAlign, TabLeader, TabStop};
+use deskwerk_docs_doc::styles::{Style, StyleKind};
+use deskwerk_docs_doc::{Block, CharProps, Pos};
 use serde_json::{Value, json};
 use std::sync::Arc;
-use wordcraft_doc::collate::{SortKey, sort_key};
-use wordcraft_doc::numbering::ListKind;
-use wordcraft_doc::props::{Align, Border, BorderStyle, Borders, LineSpacing, NumRef, ParaProps, Rgb, TabAlign, TabLeader, TabStop};
-use wordcraft_doc::styles::{Style, StyleKind};
-use wordcraft_doc::{Block, CharProps, Pos};
 
 use super::sel_result;
 use crate::{CmdError, CmdResult, CommandSpec, Session, p};

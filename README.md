@@ -20,9 +20,9 @@
 </p>
 
 > [!NOTE]
-> Deskwerk Docs is a modified version of WordCraft by the ArtCraft team
-> (https://github.com/storytold/wordcraft), used under MIT OR Apache-2.0. It is not affiliated
-> with or endorsed by the ArtCraft team.
+> Deskwerk Docs is a modified version of an open-source word processor, used under MIT OR
+> Apache-2.0. The upstream project, its authors and the required notices are named in
+> [NOTICE](NOTICE) and [ATTRIBUTION.md](ATTRIBUTION.md).
 
 <p align="center">
   <img src="docs/images/hero.png" alt="The Home tab of the ribbon open over a two-page document titled The Open Studio Handbook. The Navigation pane on the left lists the document's headings, the Styles gallery shows live previews of Normal, Heading 1, Title and Subtitle, and a word in the first paragraph is selected." width="100%">
@@ -38,13 +38,13 @@
   <a href="#architecture">Architecture</a> ·
   <a href="#roadmap">Roadmap</a> ·
   <a href="#downloads">Downloads</a> ·
-  <a href="#license-and-credits">License and credits</a>
+  <a href="#license">License</a>
 </p>
 
 ## A tour
 
 Every screenshot below is the app itself (taken before the rename), rendered offscreen by its own UI test harness
-(`cargo run -p wordcraft-ui-egui --example ui_shot`).
+(`cargo run -p deskwerk-docs-ui-egui --example ui_shot`).
 
 <table>
 <tr>
@@ -53,7 +53,7 @@ Every screenshot below is the app itself (taken before the rename), rendered off
 </tr>
 <tr>
 <td width="50%" valign="top"><img src="docs/images/design.png" alt="The Design tab showing style-set previews; the document is set in a serif theme with plum headings underlined by thin rules and a pale diagonal DRAFT watermark behind the text" width="100%"><p align="center"><sub><b>Design.</b> Themes, style sets, paragraph spacing, watermarks, page colour and borders.</sub></p></td>
-<td width="50%" valign="top"><img src="docs/images/dark.png" alt="WordCraft in dark mode with the Insert tab open and formatting marks shown: pilcrows at paragraph ends and dots for spaces" width="100%"><p align="center"><sub><b>Dark mode</b> with formatting marks, and the Insert tab: tables, pictures, shapes, links, headers, footers, fields and symbols.</sub></p></td>
+<td width="50%" valign="top"><img src="docs/images/dark.png" alt="Deskwerk Docs in dark mode with the Insert tab open and formatting marks shown: pilcrows at paragraph ends and dots for spaces" width="100%"><p align="center"><sub><b>Dark mode</b> with formatting marks, and the Insert tab: tables, pictures, shapes, links, headers, footers, fields and symbols.</sub></p></td>
 </tr>
 <tr>
 <td colspan="2"><img src="docs/images/layout.png" alt="The Layout tab at 80% zoom: the first paragraph opens with a three-line drop cap E, a dark blue circle sits beside the second section with its paragraph wrapping around it and hyphenating art-ist at the line end, every line is numbered in the left margin and a thin blue border surrounds the page" width="100%"><p align="center"><sub><b>Layout.</b> Drop caps, text wrapping around pictures and shapes, automatic hyphenation, line numbers and page borders.</sub></p></td>
@@ -108,8 +108,8 @@ The honest picture, area by area, is in [ROADMAP.md](ROADMAP.md), the
 ```sh
 git clone https://github.com/dicendy/deskwerk-docs
 cd deskwerk-docs
-cargo run --release -p wordcraft -- --sample        # the desktop app with the sample document
-cargo run --release -p wordcraft -- report.docx     # open a document
+cargo run --release -p deskwerk-docs -- --sample        # the desktop app with the sample document
+cargo run --release -p deskwerk-docs -- report.docx     # open a document
 ```
 
 The interface translations and the spelling and hyphenation data come from
@@ -122,7 +122,7 @@ Russian hyphenate (by rule):
 ```sh
 git clone https://github.com/storytold/craft-i18n ../craft-i18n
 git -C ../craft-i18n checkout "$(cat craft-i18n.rev)"
-CRAFT_I18N_DIR="$PWD/../craft-i18n" cargo run --release -p wordcraft -- --sample
+CRAFT_I18N_DIR="$PWD/../craft-i18n" cargo run --release -p deskwerk-docs -- --sample
 ```
 
 Command line:
@@ -136,7 +136,7 @@ deskwerk-docs-cli run --template sample \
 deskwerk-docs-cli run --script job.json                 # the same from a file: commands, then save to docx and pdf
 ```
 
-Web: `cd apps/wordcraft-web && trunk serve`, then open <http://127.0.0.1:8771/?sample>.
+Web: `cd apps/deskwerk-docs-web && trunk serve`, then open <http://127.0.0.1:8771/?sample>.
 
 ## For agents: CLI and MCP
 
@@ -157,35 +157,35 @@ play it back (`tools.recordMacro`, `tools.macros`).
 
 ## Logs
 
-The desktop app writes its log records to standard error and to `logs/wordcraft.log` next to its
+The desktop app writes its log records to standard error and to `logs/deskwerk-docs.log` next to its
 preferences: on Linux `$XDG_CONFIG_HOME/deskwerk-docs/logs/` (by default `~/.config/deskwerk-docs/logs/`),
 on macOS `~/Library/Application Support/Deskwerk Docs/logs/`, on Windows `%APPDATA%\Deskwerk Docs\logs\`.
 A start from a desktop menu or the Dock has no terminal, so this file is what to attach to a bug
 report: unreadable parts of a .docx, pictures or fonts a PDF export had to leave out and panics the
-command guard recovered from land there. Each launch moves the previous log to `wordcraft.1.log`
-(and that one to `wordcraft.2.log`), so the log of a run that crashed survives the next start; a
-log stops growing at 16 MiB. `--version` writes no file, and runs with `WORDCRAFT_NO_PREFS` (agents'
+command guard recovered from land there. Each launch moves the previous log to `deskwerk-docs.1.log`
+(and that one to `deskwerk-docs.2.log`), so the log of a run that crashed survives the next start; a
+log stops growing at 16 MiB. `--version` writes no file, and runs with `DESKWERK_DOCS_NO_PREFS` (agents'
 test runs) log to standard error only. Document text is never logged; a panic message leaves out
 the text it quotes.
 
 By default Deskwerk Docs' own crates log at `info` and everything else at `warn`. `RUST_LOG` replaces
 that with env_logger-style directives, for example `RUST_LOG=debug`,
-`RUST_LOG=warn,wordcraft_docx=trace` or `RUST_LOG=info,wgpu_core=warn`; a directive ending in `*`
-covers every target starting with it (`wordcraft*=debug`). The logger is
-`apps/wordcraft/src/logging.rs`.
+`RUST_LOG=warn,deskwerk_docs_docx=trace` or `RUST_LOG=info,wgpu_core=warn`; a directive ending in `*`
+covers every target starting with it (`deskwerk_docs*=debug`). The logger is
+`apps/deskwerk-docs/src/logging.rs`.
 
 ## Architecture
 
 | Layer | Crate | Job |
 |---|---|---|
-| L0 | `wordcraft-geom` | units and measurements |
-| L1 | `wordcraft-doc`, `wordcraft-fonts`, `wordcraft-proof` ([`craft-proof`](https://github.com/storytold/craft-libs/tree/main/crates/proof) from craft-libs) | document model and editing; fonts and shaping; spelling, grammar, hyphenation (data: craft-i18n `language-data/`, `CRAFT_I18N_DIR`) |
-| L2 | `wordcraft-layout`, `wordcraft-docx`, `wordcraft-formats` | line breaking, pagination, tables, notes, hit testing; OOXML; ODT/RTF/HTML/Markdown/TXT |
-| L3 | `wordcraft-render`, `wordcraft-pdf` | rasteriser (vello_cpu); PDF ([craft-pdf](docs/shared-pdf.md), Krilla) |
-| L4 | `wordcraft-engine` | session, undo, 422 commands, document feature catalog |
-| L5 | `wordcraft-mcp` | MCP server |
-| L6 | `wordcraft-ui-egui` | the word processor front end (swappable) |
-| apps | `wordcraft`, `deskwerk-docs-cli`, `wordcraft-web` | desktop, command line, browser |
+| L0 | `deskwerk-docs-geom` | units and measurements |
+| L1 | `deskwerk-docs-doc`, `deskwerk-docs-fonts`, `deskwerk-docs-proof` ([`craft-proof`](https://github.com/storytold/craft-libs/tree/main/crates/proof) from craft-libs) | document model and editing; fonts and shaping; spelling, grammar, hyphenation (data: craft-i18n `language-data/`, `CRAFT_I18N_DIR`) |
+| L2 | `deskwerk-docs-layout`, `deskwerk-docs-docx`, `deskwerk-docs-formats` | line breaking, pagination, tables, notes, hit testing; OOXML; ODT/RTF/HTML/Markdown/TXT |
+| L3 | `deskwerk-docs-render`, `deskwerk-docs-pdf` | rasteriser (vello_cpu); PDF ([craft-pdf](docs/shared-pdf.md), Krilla) |
+| L4 | `deskwerk-docs-engine` | session, undo, 422 commands, document feature catalog |
+| L5 | `deskwerk-docs-mcp` | MCP server |
+| L6 | `deskwerk-docs-ui-egui` | the word processor front end (swappable) |
+| apps | `deskwerk-docs`, `deskwerk-docs-cli`, `deskwerk-docs-web` | desktop, command line, browser |
 
 `cargo xtask ci` runs formatting, clippy, ~800 tests, the asset-attribution check, the layering
 check and the wasm build. Contributor and agent instructions: [AGENTS.md](AGENTS.md).
@@ -284,34 +284,11 @@ winit (the windowing library) supports dragging files into the window only on X1
 native Wayland backend instead (for example for sharper text with fractional scaling, at the cost
 of file drag-and-drop), choose **File › Options › Advanced › Linux display server › Wayland**; it
 applies the next time Deskwerk Docs starts, and **X11 (XWayland)** or **Automatic** switches back. The
-`WORDCRAFT_WAYLAND` environment variable overrides the setting: `1` for native Wayland, `0` for
+`DESKWERK_DOCS_WAYLAND` environment variable overrides the setting: `1` for native Wayland, `0` for
 XWayland:
 
 ```sh
-WORDCRAFT_WAYLAND=1 deskwerk-docs
-```
-
-**Arch Linux (AUR).** Community members maintain three AUR packages of upstream WordCraft (not
-Deskwerk Docs); this fork doesn't publish to the AUR itself. Install one of them:
-| Package | What it installs | Choose it when |
-|---|---|---|
-| [`wordcraft-bin`](https://aur.archlinux.org/packages/wordcraft-bin) | The release tarball above, prebuilt (x86_64, aarch64) | You want the latest release without compiling (quickest) |
-| [`wordcraft`](https://aur.archlinux.org/packages/wordcraft) | The latest release, built from source with `cargo` | You prefer to build releases yourself |
-| [`wordcraft-git`](https://aur.archlinux.org/packages/wordcraft-git) | The current `main` branch, built from source | You want unreleased changes and accept an occasional broken build |
-For example `yay -S wordcraft-bin` or `paru -S wordcraft-bin`.
-
-#### Community packages
-
-These packages are maintained by community members and package upstream WordCraft, not Deskwerk Docs.
-
-On Gentoo, the [::snakebyte overlay](https://github.com/switch87/snakebyte-overlay) packages the
-Linux release as `app-office/wordcraft-bin` (prebuilt) and `app-office/wordcraft` (built from source):
-
-```sh
-eselect repository add snakebyte git https://github.com/switch87/snakebyte-overlay.git
-emaint sync -r snakebyte
-echo 'app-office/wordcraft-bin ~amd64' >> /etc/portage/package.accept_keywords/wordcraft
-emerge --ask app-office/wordcraft-bin
+DESKWERK_DOCS_WAYLAND=1 deskwerk-docs
 ```
 
 ### FreeBSD
@@ -326,11 +303,11 @@ emerge --ask app-office/wordcraft-bin
 |---|---|---|
 | Static site | `deskwerk-docs-web-<ver>.zip` | Runs in a modern browser; host it on any static server |
 
-## License and credits
+## License
 
 Deskwerk Docs is dual-licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.
-Copyright (c) 2026 Deskwerk contributors. Based on WordCraft, Copyright (c) 2026 ArtCraft Team and the
-WordCraft contributors. Required notices are in [NOTICE](NOTICE).
+Copyright (c) 2026 Deskwerk contributors. The upstream copyright and the required notices are in
+[NOTICE](NOTICE) and the licence files.
 
 Bundled fonts, icons, images and other assets keep their own open licenses; each one is listed
 with its author, source and license in [ATTRIBUTION.md](ATTRIBUTION.md).
@@ -340,8 +317,8 @@ Hyphenator II word list. Polish spelling reads the Hunspell `pl_PL` dictionary i
 do Russian, Portuguese, Czech, Italian, Croatian and Turkish spelling (how to install them:
 [docs/spelling-dictionaries.md](docs/spelling-dictionaries.md)), and
 Polish hyphenation the TeX patterns by Hanna Kołodziejska, Bogusław Jackowski and Marek Ryćko (MIT
-option). The sample documents and templates are original text written for WordCraft.
+option). The sample documents and templates are original text written for Deskwerk Docs.
 
-Deskwerk Docs is a modified version of [WordCraft](https://github.com/storytold/wordcraft) by the
-ArtCraft team. It is not affiliated with or endorsed by the ArtCraft team, and carries none of the
-ArtCraft names, wordmarks or logos.
+Deskwerk Docs is a modified version of the upstream project named in [NOTICE](NOTICE). It is not
+affiliated with or endorsed by the upstream authors, and carries none of their names, wordmarks or
+logos.

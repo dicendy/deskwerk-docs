@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate background.tiff and dmg-layout.DS_Store for the macOS DMG window (see README.md here).
 
-Needs resvg on PATH and:
+Renders with Chromium through Playwright; run it in the pinned Playwright image (README.md):
     pip install 'pillow>=12' ds_store==1.3.3 mac_alias==2.2.3
 
 Runs on any OS, no Mac needed. Both outputs come from this script alone, so they carry nothing
@@ -12,8 +12,7 @@ from the machine that made them: no local paths, user or disk names, dates or vo
 
 import datetime
 import os
-import shutil
-import subprocess
+import pathlib
 import sys
 import tempfile
 
@@ -28,7 +27,7 @@ VOLUME = "Deskwerk Docs"
 WIDTH, HEIGHT = 660, 400  # window content, pt; the background's 1x size
 TITLE_BAR = 32
 ICON_SIZE = 128
-PALETTE = 16  # colours in background.tiff
+PALETTE = 64  # colours in background.tiff: the flat fills plus the app icon's shading
 ICONS = {"Deskwerk Docs.app": (326, 205), "Applications": (574, 205)}
 # A fixed date for the alias and the colour profile. Finder never matches it against the image
 # (each build is a new volume): it finds the background by volume name and path.
@@ -36,13 +35,20 @@ FIXED_DATE = datetime.datetime(2026, 10, 8, tzinfo=datetime.timezone.utc)
 
 
 def render(svg, width, out):
-    # The SVG's text is already outlined and no fonts are loaded, so every machine draws the
-    # same pixels.
-    subprocess.run(
-        ["resvg", "--skip-system-fonts", "-w", str(width), svg, out],
-        check=True,
-    )
+    # The SVG's text is already outlined, so no fonts are involved. The app icon is linked from
+    # assets/app-icon, which Chromium loads because the SVG is opened as a page.
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": WIDTH, "height": HEIGHT}, device_scale_factor=width // WIDTH)
+        page.goto(pathlib.Path(svg).as_uri())
+        page.wait_for_load_state("load")
+        page.screenshot(path=out, clip={"x": 0, "y": 0, "width": WIDTH, "height": HEIGHT})
+        browser.close()
     with Image.open(out) as im:
+        if im.size != (width, width * HEIGHT // WIDTH):
+            sys.exit(f"error: rendered {im.size}, expected {width} wide")
         return im.convert("RGB")
 
 
@@ -68,7 +74,7 @@ def write_tiff(svg, out):
             quantize(render(svg, WIDTH * s, os.path.join(tmp, f"{s}x.png"))) for s in (1, 2)
         )
     two.encoderinfo = {"dpi": (144, 144)}  # the rest as the first page
-    # Opaque 16-colour palette, Deflate: the artwork is three inks plus antialiasing, and a palette
+    # Opaque 64-colour palette, Deflate: flat fills, antialiasing and the app icon, and a palette
     # keeps the file under ~100 KB (repository assets must stay small). As PhotoCraft's.
     one.save(
         out,
@@ -148,8 +154,6 @@ def write_ds_store(out):
 
 
 def main():
-    if not shutil.which("resvg"):
-        sys.exit("error: resvg not found (brew install resvg / cargo install resvg --locked)")
     write_tiff(os.path.join(HERE, "background.svg"), os.path.join(HERE, "background.tiff"))
     write_ds_store(os.path.join(HERE, "dmg-layout.DS_Store"))
 

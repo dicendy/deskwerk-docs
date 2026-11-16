@@ -71,18 +71,18 @@ pub fn is_template(ext: &str) -> bool {
 /// without one; with no filter the name came back bare and the save failed, #689), then Word's
 /// document and the rest in [`PAGE_FORMATS`] order.
 pub fn save_exts(name: &str) -> Vec<String> {
-    let all = || PAGE_FORMATS.iter().chain(DIALOG_ONLY_FORMATS.iter()).map(|(e, _)| *e).filter(|e| wordcraft_engine::io::SAVE_EXTS.contains(e));
+    let all = || PAGE_FORMATS.iter().chain(DIALOG_ONLY_FORMATS.iter()).map(|(e, _)| *e).filter(|e| deskwerk_docs_engine::io::SAVE_EXTS.contains(e));
     let suggested = Path::new(name)
         .extension()
         .and_then(std::ffi::OsStr::to_str)
         .map(str::to_ascii_lowercase)
-        .filter(|e| wordcraft_engine::io::SAVE_EXTS.contains(&e.as_str()))
+        .filter(|e| deskwerk_docs_engine::io::SAVE_EXTS.contains(&e.as_str()))
         .unwrap_or_else(|| "docx".to_string());
     let mut exts = vec![suggested.clone()];
     exts.extend(all().filter(|e| *e != suggested).map(str::to_string));
     // A format the engine saves that has no label here still gets an entry.
     let unlabelled: Vec<String> =
-        wordcraft_engine::io::SAVE_EXTS.iter().filter(|e| !exts.iter().any(|x| x == *e)).map(|e| (*e).to_string()).collect();
+        deskwerk_docs_engine::io::SAVE_EXTS.iter().filter(|e| !exts.iter().any(|x| x == *e)).map(|e| (*e).to_string()).collect();
     exts.extend(unlabelled);
     exts
 }
@@ -208,13 +208,13 @@ pub(crate) fn date_group(day: Option<i64>, today: i64) -> DateGroup {
 /// The local day (days since 1970-01-01) of Unix time `secs`.
 fn local_day(secs: i64) -> i64 {
     let unix = u64::try_from(secs.max(0)).unwrap_or(0);
-    wordcraft_engine::cmd::local_civil(unix, wordcraft_engine::cmd::local_offset_secs(unix)).4
+    deskwerk_docs_engine::cmd::local_civil(unix, deskwerk_docs_engine::cmd::local_offset_secs(unix)).4
 }
 
 /// A folder's date on its row: the time today and yesterday, the date before.
 fn shown_date(secs: i64, group: DateGroup) -> String {
     let unix = u64::try_from(secs.max(0)).unwrap_or(0);
-    let (y, m, d, (h, min, _), _) = wordcraft_engine::cmd::local_civil(unix, wordcraft_engine::cmd::local_offset_secs(unix));
+    let (y, m, d, (h, min, _), _) = deskwerk_docs_engine::cmd::local_civil(unix, deskwerk_docs_engine::cmd::local_offset_secs(unix));
     match group {
         DateGroup::Today | DateGroup::Yesterday => format!("{h:02}:{min:02}"),
         _ => format!("{y:04}-{m:02}-{d:02}"),
@@ -637,7 +637,7 @@ fn recent_list(app: &mut WordApp, ui: &mut Ui, st: &PageState) {
         ui.label(egui::RichText::new(tl!("Folders you open documents from or save them to show up here.")).color(t.text_dim));
         return;
     }
-    let today = local_day(i64::try_from(wordcraft_engine::cmd::now_unix()).unwrap_or(i64::MAX));
+    let today = local_day(i64::try_from(deskwerk_docs_engine::cmd::now_unix()).unwrap_or(i64::MAX));
     let mut last = None;
     for row in rows {
         let group = if row.pinned { DateGroup::Pinned } else { date_group(row.used.map(local_day), today) };

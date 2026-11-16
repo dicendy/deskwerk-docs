@@ -2,10 +2,10 @@
 //! written back the way Word writes them, and kept through save and reopen, for inline
 //! (`wp:inline`) and floating (`wp:anchor`) pictures.
 
-use wordcraft_doc::line_dash::LineDash;
-use wordcraft_doc::para::{Float, PicOutline, Wrap};
-use wordcraft_doc::props::{CharProps, Rgb};
-use wordcraft_doc::{Document, InlineObject, Paragraph, para_block};
+use deskwerk_docs_doc::line_dash::LineDash;
+use deskwerk_docs_doc::para::{Float, PicOutline, Wrap};
+use deskwerk_docs_doc::props::{CharProps, Rgb};
+use deskwerk_docs_doc::{Document, InlineObject, Paragraph, para_block};
 
 const NS: &str = r#"xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture""#;
 
@@ -107,7 +107,7 @@ fn expected() -> Vec<(Wrap, Option<PicOutline>)> {
 /// floating; `a:noFill` and a missing `a:ln` are no outline.
 #[test]
 fn word_picture_outlines_are_read() {
-    let d = wordcraft_docx::read(&word_document()).expect("read");
+    let d = deskwerk_docs_docx::read(&word_document()).expect("read");
     assert_eq!(outlines(&d), expected());
 }
 
@@ -115,18 +115,18 @@ fn word_picture_outlines_are_read() {
 /// without one gets no `a:ln`; reopened, every outline is the same.
 #[test]
 fn picture_outlines_are_written_as_word_writes_them_and_round_trip() {
-    let d = wordcraft_docx::read(&word_document()).expect("read");
-    let bytes = wordcraft_docx::write(&d).expect("write");
+    let d = deskwerk_docs_docx::read(&word_document()).expect("read");
+    let bytes = deskwerk_docs_docx::write(&d).expect("write");
     let xml = document_xml(&bytes);
     for ln in [RED_1PT_DASH, GREEN_3PT_DOT, BLUE_SOLID] {
         assert!(xml.contains(&format!(r#"<a:avLst/></a:prstGeom>{ln}</pic:spPr>"#)), "{ln} in {xml}");
     }
     assert!(xml.contains(r#"<a:ln w="9525"><a:solidFill><a:srgbClr val="7030A0"/></a:solidFill></a:ln>"#), "{xml}");
     assert_eq!(xml.matches("<a:ln").count(), 4, "no outline for the pictures without one: {xml}");
-    let again = wordcraft_docx::read(&bytes).expect("read again");
+    let again = deskwerk_docs_docx::read(&bytes).expect("read again");
     assert_eq!(outlines(&again), expected());
     // And a second save writes the same outlines.
-    assert_eq!(document_xml(&wordcraft_docx::write(&again).expect("write again")).matches("<a:ln").count(), 4);
+    assert_eq!(document_xml(&deskwerk_docs_docx::write(&again).expect("write again")).matches("<a:ln").count(), 4);
 }
 
 /// An outline set in the editor's model (any width, colour and dash, a custom dash too) survives
@@ -158,13 +158,13 @@ fn model_picture_outlines_round_trip() {
         p.insert_object(end, picture(Float { wrap, outline: outline.clone(), ..Default::default() }), &CharProps::default()).unwrap();
     }
     d.body = vec![para_block(p)];
-    let bytes = wordcraft_docx::write(&d).expect("write");
+    let bytes = deskwerk_docs_docx::write(&d).expect("write");
     let xml = document_xml(&bytes);
     assert!(xml.contains(r#"<a:ln w="3175"><a:solidFill><a:srgbClr val="123456"/></a:solidFill></a:ln>"#), "{xml}");
     assert!(xml.contains(r#"<a:ln w="76200"><a:solidFill><a:srgbClr val="000000"/></a:solidFill><a:prstDash val="lgDashDotDot"/></a:ln>"#), "{xml}");
     assert!(xml.contains(r#"<a:custDash><a:ds d="300000" sp="100000"/><a:ds d="100000" sp="100000"/></a:custDash>"#), "{xml}");
     assert_eq!(xml.matches("<a:ln").count(), 3, "{xml}");
-    let r = wordcraft_docx::read(&bytes).expect("read");
+    let r = deskwerk_docs_docx::read(&bytes).expect("read");
     let got: Vec<Option<PicOutline>> = outlines(&r).into_iter().map(|(_, o)| o).collect();
     assert_eq!(got, lines);
 }
@@ -214,17 +214,17 @@ fn effect_extent_makes_room_for_the_outline() {
         p.insert_object(end, picture(Float { wrap, outline: outline.clone(), ..Default::default() }), &CharProps::default()).unwrap();
     }
     d.body = vec![para_block(p)];
-    let bytes = wordcraft_docx::write(&d).expect("write");
+    let bytes = deskwerk_docs_docx::write(&d).expect("write");
     // 3175, 76200 and 28575 EMU wide.
     assert_eq!(effect_extents(&document_xml(&bytes)), vec![[1588; 4], [38100; 4], [14288; 4], [0; 4]]);
     // Reopened and saved again, the same.
-    let again = wordcraft_docx::read(&bytes).expect("read");
-    let xml = document_xml(&wordcraft_docx::write(&again).expect("write again"));
+    let again = deskwerk_docs_docx::read(&bytes).expect("read");
+    let xml = document_xml(&deskwerk_docs_docx::write(&again).expect("write again"));
     assert_eq!(effect_extents(&xml), vec![[1588; 4], [38100; 4], [14288; 4], [0; 4]]);
 
     // Word's file: 6350 recorded on the inline pictures, 19050 on the floating ones.
-    let d = wordcraft_docx::read(&word_document()).expect("read");
-    let xml = document_xml(&wordcraft_docx::write(&d).expect("write"));
+    let d = deskwerk_docs_docx::read(&word_document()).expect("read");
+    let xml = document_xml(&deskwerk_docs_docx::write(&d).expect("write"));
     assert_eq!(
         effect_extents(&xml),
         vec![
@@ -243,7 +243,7 @@ fn effect_extent_makes_room_for_the_outline() {
 fn outline_without_recorded_room_is_given_it() {
     let bare = |id: u32, ln: &str| inline(id, ln).replace(r#"<wp:effectExtent l="6350" t="6350" r="6350" b="6350"/>"#, "");
     let zero = |id: u32, ln: &str| inline(id, ln).replace(r#"l="6350" t="6350" r="6350" b="6350""#, r#"l="0" t="0" r="0" b="0""#);
-    let d = wordcraft_docx::read(&docx(&[bare(1, BLUE_SOLID), zero(2, GREEN_3PT_DOT)].concat())).expect("read");
+    let d = deskwerk_docs_docx::read(&docx(&[bare(1, BLUE_SOLID), zero(2, GREEN_3PT_DOT)].concat())).expect("read");
     let p = d.body.iter().find_map(|b| b.as_para()).expect("a paragraph");
     let extents: Vec<[f32; 4]> = p
         .objects
@@ -254,6 +254,6 @@ fn outline_without_recorded_room_is_given_it() {
         })
         .collect();
     assert_eq!(extents, vec![[2.25; 4], [1.5; 4]]);
-    let xml = document_xml(&wordcraft_docx::write(&d).expect("write"));
+    let xml = document_xml(&deskwerk_docs_docx::write(&d).expect("write"));
     assert_eq!(effect_extents(&xml), vec![[28575; 4], [19050; 4]]);
 }

@@ -2,7 +2,7 @@
 
 1. Bump the version on `main`: `cargo xtask version set 0.2.0` (the one source of truth is
    `[workspace.package] version`; the app shows it in `--version` and About, with the commit from
-   `WORDCRAFT_BUILD_SHA`).
+   `DESKWERK_DOCS_BUILD_SHA`).
 2. Tag the commit `v<version>` and push the tag. `.github/workflows/release.yml` builds the files
    below with the scripts in `packaging/` and drafts a GitHub Release `Deskwerk Docs v<version>`
    with `SHA256SUMS.txt`; review and publish it.
@@ -20,6 +20,3 @@ with a `targets` choice) and what CI does not build: [`packaging/RELEASING.md`](
 Local packaging: `packaging/macos/package.sh --arch universal`, `packaging/windows/package.ps1`,
 `packaging/linux/package.sh` (then `packaging/linux/flatpak-bundle.sh` for the Flatpak),
 `packaging/web/package.sh`, `packaging/freebsd/package.sh`.
-
-`contributors/contributors.json` is bundled as committed; upstream's release-time refresh (a
-`credits` job) is not part of this workflow.

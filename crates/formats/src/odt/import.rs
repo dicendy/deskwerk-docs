@@ -208,10 +208,10 @@ fn custom_char_styles(blocks: &mut [FBlock], styles: &Styles, para_ids: &[String
 fn add_char_styles(doc: &mut Document, found: &[(String, String)], defs: &[(String, Option<String>, model::Fmt, [bool; 4])]) {
     for ((_, id), (name, parent, fmt, off)) in found.iter().zip(defs) {
         let based_on = parent.as_ref().and_then(|p| found.iter().find(|(o, _)| o == p).map(|(_, id)| id.clone())).filter(|b| b != id);
-        Arc::make_mut(&mut doc.styles).upsert(wordcraft_doc::styles::Style {
+        Arc::make_mut(&mut doc.styles).upsert(deskwerk_docs_doc::styles::Style {
             id: id.clone(),
             name: name.clone(),
-            kind: wordcraft_doc::styles::StyleKind::Character,
+            kind: deskwerk_docs_doc::styles::StyleKind::Character,
             based_on,
             chr: turned_off(model::char_props(fmt), *off),
             ..Default::default()
@@ -244,7 +244,7 @@ fn custom_styles(blocks: &mut [FBlock], styles: &Styles, odt: Vec<String>) -> (V
             odt.push(n);
             defs.push(def);
         }
-        // A custom style, or an index style WordCraft has under its own id (TOC 1…).
+        // A custom style, or an index style Deskwerk Docs has under its own id (TOC 1…).
         if (odt.contains(&name) || super::writer::generating_style(&name).is_some())
             && let Some(x) = p.extra.as_mut()
         {
@@ -255,7 +255,7 @@ fn custom_styles(blocks: &mut [FBlock], styles: &Styles, odt: Vec<String>) -> (V
 }
 
 /// Add the custom styles `named` (ODF names `odt`, parents first) to the document: each with its
-/// name, the style it is based on and its own formatting. A style WordCraft has under the same id
+/// name, the style it is based on and its own formatting. A style Deskwerk Docs has under the same id
 /// takes the file's definition.
 fn add_custom_styles(doc: &mut Document, named: &[super::styles::NamedStyle], odt: &[String], tabs_from_indent: bool) {
     use super::styles::{Parent, style_id};
@@ -272,7 +272,7 @@ fn add_custom_styles(doc: &mut Document, named: &[super::styles::NamedStyle], od
         };
         let look = &def.look;
         let sp = &look.spacing;
-        let para = wordcraft_doc::props::ParaProps {
+        let para = deskwerk_docs_doc::props::ParaProps {
             space_before: sp.before,
             space_after: sp.after,
             line_spacing: sp.line,
@@ -299,10 +299,10 @@ fn add_custom_styles(doc: &mut Document, named: &[super::styles::NamedStyle], od
             ..Default::default()
         };
         let name = super::writer::generating_style(name).map_or_else(|| def.name.clone(), |(_, n)| n);
-        let style = wordcraft_doc::styles::Style {
+        let style = deskwerk_docs_doc::styles::Style {
             id: id.clone(),
             name,
-            kind: wordcraft_doc::styles::StyleKind::Paragraph,
+            kind: deskwerk_docs_doc::styles::StyleKind::Paragraph,
             based_on: (based_on != id).then_some(based_on),
             para,
             chr: turned_off(model::char_props(&look.fmt), def.off),
@@ -315,7 +315,7 @@ fn add_custom_styles(doc: &mut Document, named: &[super::styles::NamedStyle], od
 /// `chr` with what a style turns off (`off`: bold, italic, underline, strike-through) said so:
 /// otherwise the style it is based on would show through (LibreOffice's agenda dates, not bold
 /// under bold titles).
-fn turned_off(mut chr: wordcraft_doc::props::CharProps, off: [bool; 4]) -> wordcraft_doc::props::CharProps {
+fn turned_off(mut chr: deskwerk_docs_doc::props::CharProps, off: [bool; 4]) -> deskwerk_docs_doc::props::CharProps {
     let [bold, italic, underline, strike] = off;
     if bold {
         chr.bold = Some(false);
@@ -324,7 +324,7 @@ fn turned_off(mut chr: wordcraft_doc::props::CharProps, off: [bool; 4]) -> wordc
         chr.italic = Some(false);
     }
     if underline {
-        chr.underline = Some(wordcraft_doc::props::Underline::None);
+        chr.underline = Some(deskwerk_docs_doc::props::Underline::None);
     }
     if strike {
         chr.strike = Some(false);
@@ -333,7 +333,7 @@ fn turned_off(mut chr: wordcraft_doc::props::CharProps, off: [bool; 4]) -> wordc
 }
 
 /// Give the document's style for paragraph kind `kind` the look the file gives its own: its text
-/// formatting, spacing, alignment and keep with next replace WordCraft's (a heading the file
+/// formatting, spacing, alignment and keep with next replace Deskwerk Docs's (a heading the file
 /// leaves black isn't blue). Its outline level and other settings stay.
 fn apply_look(doc: &mut Document, kind: model::Kind, look: &super::styles::ParaLook) {
     let id = match kind {
@@ -360,8 +360,8 @@ fn apply_look(doc: &mut Document, kind: model::Kind, look: &super::styles::ParaL
 /// levels carry the outline's formats, each linked to its heading style, which numbers its
 /// paragraphs through it, as Word's numbered headings do. Levels without a number are left so.
 fn number_headings(doc: &mut Document, levels: &[super::styles::ListLevel]) {
-    use wordcraft_doc::numbering::{AbstractNum, ListKind, Num, levels_for};
-    use wordcraft_doc::props::NumRef;
+    use deskwerk_docs_doc::numbering::{AbstractNum, ListKind, Num, levels_for};
+    use deskwerk_docs_doc::props::NumRef;
     let numbered: Vec<bool> = (0..6).map(|i| levels.get(i).is_some_and(|l| l.ordered)).collect();
     if !numbered.contains(&true) {
         return;
@@ -382,7 +382,7 @@ fn number_headings(doc: &mut Document, levels: &[super::styles::ListLevel]) {
                 level.start = src.start;
             }
             None => {
-                level.format = wordcraft_doc::section::NumFormat::None;
+                level.format = deskwerk_docs_doc::section::NumFormat::None;
                 level.text = String::new();
             }
         }
@@ -632,7 +632,7 @@ struct Parsed {
     /// The document's default font size, points.
     size: Option<f32>,
     /// The document's default text colour.
-    color: Option<wordcraft_doc::props::Rgb>,
+    color: Option<deskwerk_docs_doc::props::Rgb>,
     /// The custom paragraph styles the paragraphs use, parents included, parents first.
     named: Vec<super::styles::NamedStyle>,
     /// Their ODF names, alongside.
@@ -654,7 +654,7 @@ struct Parsed {
     /// Widow and orphan control the document states for every paragraph, if it does.
     widows: Option<bool>,
     /// The document's default Asian and complex-script fonts and languages.
-    scripts: wordcraft_doc::props::CharProps,
+    scripts: deskwerk_docs_doc::props::CharProps,
     /// The default tab interval, points.
     default_tab: Option<f32>,
     /// Tab stops are measured from the indent (LibreOffice's `TabsRelativeToIndent`).
@@ -665,10 +665,10 @@ struct Parsed {
     /// Some paragraph hyphenates: the document hyphenates (see [`hyphenation`]).
     hyphenate: bool,
     /// Custom document properties (`meta:user-defined`) and user fields.
-    custom: Vec<wordcraft_doc::CustomProp>,
+    custom: Vec<deskwerk_docs_doc::CustomProp>,
     /// The bibliography sources the citations carry.
-    sources: Vec<wordcraft_doc::Source>,
-    /// The package's parts WordCraft doesn't read itself (macros…), kept for the next save.
+    sources: Vec<deskwerk_docs_doc::Source>,
+    /// The package's parts Deskwerk Docs doesn't read itself (macros…), kept for the next save.
     kept: super::parts::Kept,
     /// Hidden form controls, kept for the next save.
     hidden_controls: Vec<String>,
@@ -676,7 +676,7 @@ struct Parsed {
     page_image: Option<(Vec<u8>, &'static str)>,
 }
 
-/// Hyphenation is a paragraph's in ODF (`fo:hyphenate`) and the document's in WordCraft (as in
+/// Hyphenation is a paragraph's in ODF (`fo:hyphenate`) and the document's in Deskwerk Docs (as in
 /// Word): when any paragraph of `blocks` hyphenates (its `suppress_hyphens` read as
 /// `Some(false)`), the document does, and every other paragraph opts out; otherwise nothing is
 /// marked. Whether the document hyphenates.
@@ -697,7 +697,7 @@ fn hyphenation(blocks: &mut [FBlock]) -> bool {
 /// The content of a package that has none: an empty text.
 const EMPTY_CONTENT: &str = r#"<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:text><text:p/></office:text></office:body></office:document-content>"#;
 
-/// The page size of a page layout that states none: WordCraft's default page's.
+/// The page size of a page layout that states none: Deskwerk Docs's default page's.
 fn default_paper() -> (f32, f32) {
     let d = SectionProps::default();
     (d.page_w, d.page_h)
@@ -706,7 +706,7 @@ fn default_paper() -> (f32, f32) {
 /// [`parse_full`], plus what the document holds outside the flow. A page layout that states no
 /// size (§20.215 `fo:page-width` is optional) is `paper` (width, height) in size.
 fn parse_tracked(bytes: &[u8], paper: (f32, f32)) -> Result<Parsed, String> {
-    wordcraft_doc::zip_guard::check(bytes, crate::MAX_ZIP_ENTRIES).map_err(|e| format!("ODT: {e}"))?;
+    deskwerk_docs_doc::zip_guard::check(bytes, crate::MAX_ZIP_ENTRIES).map_err(|e| format!("ODT: {e}"))?;
     let mut z = zip::ZipArchive::new(Cursor::new(bytes)).map_err(|e| format!("ODT: not a valid package ({e})"))?;
     if let Some(mt) = read_entry(&mut z, "mimetype") {
         let mt = String::from_utf8_lossy(&mt);
@@ -928,7 +928,7 @@ pub fn import_on(bytes: &[u8], page: &SectionProps) -> Result<Document, String> 
         Arc::make_mut(&mut doc.styles).default_chr.size = size;
     }
     if let Some(c) = color {
-        Arc::make_mut(&mut doc.styles).default_chr.color = Some(wordcraft_doc::props::TextColor::Rgb(c));
+        Arc::make_mut(&mut doc.styles).default_chr.color = Some(deskwerk_docs_doc::props::TextColor::Rgb(c));
     }
     Arc::make_mut(&mut doc.styles).default_chr.kern = kern.then_some(1.0);
     Arc::make_mut(&mut doc.styles).default_chr.overlay(&scripts);
@@ -937,14 +937,14 @@ pub fn import_on(bytes: &[u8], page: &SectionProps) -> Result<Document, String> 
     }
     doc.settings.page_color = page_doc.page_color;
     // Laid out with the standard's rules, its tab stops measured as the file says.
-    doc.settings.odf = Some(wordcraft_doc::OdfLayout { tabs_from_indent });
+    doc.settings.odf = Some(deskwerk_docs_doc::OdfLayout { tabs_from_indent });
     doc.settings.sum_paragraph_spacing = sum_spacing;
     // The page background picture (Design › Page Color › Fill Effects › Picture).
     if let Some((bytes, fill)) = page_image
         && let Some(ext) = model::sniff_image(&bytes)
     {
         let media = doc.add_media(bytes, ext);
-        doc.settings.page_picture = Some(wordcraft_doc::PagePicture { media, fill_type: fill.to_string(), title: String::new() });
+        doc.settings.page_picture = Some(deskwerk_docs_doc::PagePicture { media, fill_type: fill.to_string(), title: String::new() });
     }
     if let Some((fmt, props)) = page_doc.notes[0] {
         (doc.settings.footnote_format, doc.settings.footnote_pr) = (fmt, props);
@@ -975,7 +975,7 @@ pub fn import_on(bytes: &[u8], page: &SectionProps) -> Result<Document, String> 
     }
     // The markup kept for paragraphs nothing changed while reading, filed for the writer.
     if doc.kept.get().is_none() {
-        doc.kept = wordcraft_doc::kept::Kept::new(Default::default());
+        doc.kept = deskwerk_docs_doc::kept::Kept::new(Default::default());
     }
     if let Some(k) = doc.kept.get_mut() {
         k.format = "odt".into();
@@ -988,7 +988,7 @@ pub fn import_on(bytes: &[u8], page: &SectionProps) -> Result<Document, String> 
         k.section_masters = section_masters;
     }
     doc.seal_kept();
-    let (fp, pages) = (wordcraft_doc::kept::styles_fingerprint(&doc), wordcraft_doc::kept::pages_fingerprint(&doc));
+    let (fp, pages) = (deskwerk_docs_doc::kept::styles_fingerprint(&doc), deskwerk_docs_doc::kept::pages_fingerprint(&doc));
     if let Some(k) = doc.kept.get_mut() {
         (k.styles_fp, k.pages_fp) = (Some(fp), Some(pages));
     }
@@ -1010,23 +1010,23 @@ pub(super) struct Pages {
     pub(super) doc: PageDoc,
 }
 
-/// Page settings that are the document's in WordCraft (and Word): the page colour (the first
+/// Page settings that are the document's in Deskwerk Docs (and Word): the page colour (the first
 /// page style's background), footnote and endnote numbering (`text:notes-configuration`).
 #[derive(Clone, Default)]
 pub(super) struct PageDoc {
-    pub(super) page_color: Option<wordcraft_doc::props::Rgb>,
+    pub(super) page_color: Option<deskwerk_docs_doc::props::Rgb>,
     /// The first page style's background picture (§17.3 `style:background-image`): its package
-    /// path and WordCraft's fill for its repeat (tiled, stretched, or centred at its size).
+    /// path and Deskwerk Docs's fill for its repeat (tiled, stretched, or centred at its size).
     pub(super) page_image: Option<(String, &'static str)>,
     /// Footnotes', then endnotes', number format and options.
-    pub(super) notes: [Option<(wordcraft_doc::section::NumFormat, wordcraft_doc::section::NoteProps)>; 2],
+    pub(super) notes: [Option<(deskwerk_docs_doc::section::NumFormat, deskwerk_docs_doc::section::NoteProps)>; 2],
 }
 
 /// A `text:notes-configuration` (ODF 1.3 §16.29): which notes it is for (endnotes: true), their
 /// number format, first number (ODF counts from 0), restart, and footnotes at the page's foot
 /// or the document's end.
-fn notes_config(a: &Attrs) -> (bool, wordcraft_doc::section::NumFormat, wordcraft_doc::section::NoteProps) {
-    use wordcraft_doc::section::{MAX_NOTE_START, NotePos, NoteProps, NoteRestart};
+fn notes_config(a: &Attrs) -> (bool, deskwerk_docs_doc::section::NumFormat, deskwerk_docs_doc::section::NoteProps) {
+    use deskwerk_docs_doc::section::{MAX_NOTE_START, NotePos, NoteProps, NoteRestart};
     let endnote = get(a, "text:note-class").is_some_and(|c| c.trim() == "endnote");
     let fmt = super::styles::num_format(get(a, "style:num-format").unwrap_or("1"));
     let num_start =
@@ -1046,8 +1046,8 @@ fn notes_config(a: &Attrs) -> (bool, wordcraft_doc::section::NumFormat, wordcraf
 
 /// A `text:linenumbering-configuration` (ODF 1.3 §16.31) that numbers lines: every how many,
 /// how far from the text, restarting on each page or not.
-fn line_numbering(a: &Attrs) -> Option<wordcraft_doc::section::LineNumbering> {
-    use wordcraft_doc::section::{LineNumberRestart, LineNumbering};
+fn line_numbering(a: &Attrs) -> Option<deskwerk_docs_doc::section::LineNumbering> {
+    use deskwerk_docs_doc::section::{LineNumberRestart, LineNumbering};
     // On unless it says otherwise (§19.845).
     if get(a, "text:number-lines").is_some_and(|v| v.trim() == "false") {
         return None;
@@ -1142,7 +1142,7 @@ fn read_pages(xml: &[u8], paper: (f32, f32)) -> Pages {
                 }
             }
             // A page background picture (§17.3, in `style:page-layout-properties`): §20.249
-            // `style:repeat` (repeat is the default) as WordCraft's tile, stretch, or centre.
+            // `style:repeat` (repeat is the default) as Deskwerk Docs's tile, stretch, or centre.
             "background-image" if q.starts_with("style:") => {
                 if let (Some(l), Some(href)) =
                     (cur.as_ref().and_then(|n| layouts.get_mut(n)), get(&a, "xlink:href").map(str::trim).filter(|h| !h.is_empty() && h.len() <= 1024))
@@ -1329,21 +1329,21 @@ fn apply_layout(a: &Attrs, sec: &mut SectionProps) {
     let side = |s: &str| {
         let b = get(a, &format!("fo:border-{s}")).or_else(|| get(a, "fo:border")).and_then(super::styles::parse_border)?;
         let pad = get(a, &format!("fo:padding-{s}")).or_else(|| get(a, "fo:padding")).and_then(length).filter(|v| v.is_finite());
-        (b.style != wordcraft_doc::props::BorderStyle::None)
+        (b.style != deskwerk_docs_doc::props::BorderStyle::None)
             // Any distance on the page (Word's 31 pt limit is for its own measure, from the edge).
-            .then(|| wordcraft_doc::props::Border { space: pad.map_or(0.0, |p| p.clamp(0.0, 1584.0)), ..b })
+            .then(|| deskwerk_docs_doc::props::Border { space: pad.map_or(0.0, |p| p.clamp(0.0, 1584.0)), ..b })
     };
-    // ODF's border is at the margin, the text inside its padding; WordCraft measures the border
+    // ODF's border is at the margin, the text inside its padding; Deskwerk Docs measures the border
     // from the page edge and the text margin from the edge too.
     let limit = sec.page_w.max(sec.page_h);
-    let inset = |b: Option<wordcraft_doc::props::Border>, margin: &mut f32| {
+    let inset = |b: Option<deskwerk_docs_doc::props::Border>, margin: &mut f32| {
         b.map(|b| {
             let edge = *margin;
             *margin = (edge + b.width + b.space).min(limit);
-            wordcraft_doc::props::Border { space: edge, ..b }
+            deskwerk_docs_doc::props::Border { space: edge, ..b }
         })
     };
-    let borders = wordcraft_doc::props::Borders {
+    let borders = deskwerk_docs_doc::props::Borders {
         top: inset(side("top"), &mut sec.margin_top),
         bottom: inset(side("bottom"), &mut sec.margin_bottom),
         left: inset(side("left"), &mut sec.margin_left),

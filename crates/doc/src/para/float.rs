@@ -273,12 +273,12 @@ fn is_zero_u32(v: &u32) -> bool {
 
 impl Float {
     /// The rotation and flips, the angle normalised to `0..360` (a NaN angle is no rotation).
-    pub fn spin(&self) -> wordcraft_geom::Spin {
-        wordcraft_geom::Spin::new(self.rot, self.flip_h, self.flip_v)
+    pub fn spin(&self) -> deskwerk_docs_geom::Spin {
+        deskwerk_docs_geom::Spin::new(self.rot, self.flip_h, self.flip_v)
     }
     /// Set the rotation and flips (the angle normalised).
-    pub fn set_spin(&mut self, s: wordcraft_geom::Spin) {
-        self.rot = wordcraft_geom::normalize_degrees(s.deg);
+    pub fn set_spin(&mut self, s: deskwerk_docs_geom::Spin) {
+        self.rot = deskwerk_docs_geom::normalize_degrees(s.deg);
         self.flip_h = s.flip_h;
         self.flip_v = s.flip_v;
         self.bare_turn = false;
@@ -287,7 +287,7 @@ impl Float {
     /// rotated object takes beyond its frame (zero unrotated; negative where the turned object
     /// is narrower than its frame, as a wide picture turned 90° is).
     pub fn spin_pad(&self, w: f32, h: f32) -> (f32, f32) {
-        let (w, h) = (wordcraft_geom::finite(w).clamp(0.0, 4000.0), wordcraft_geom::finite(h).clamp(0.0, 4000.0));
+        let (w, h) = (deskwerk_docs_geom::finite(w).clamp(0.0, 4000.0), deskwerk_docs_geom::finite(h).clamp(0.0, 4000.0));
         let (bw, bh) = self.spin().extent(w, h);
         ((bw - w) / 2.0, (bh - h) / 2.0)
     }
@@ -304,8 +304,8 @@ impl Float {
         if !self.is_bare_turn() {
             return self.spin_pad(w, h);
         }
-        let (w, h) = (wordcraft_geom::finite(w).clamp(0.0, 4000.0), wordcraft_geom::finite(h).clamp(0.0, 4000.0));
-        let deg = wordcraft_geom::normalize_degrees(self.rot);
+        let (w, h) = (deskwerk_docs_geom::finite(w).clamp(0.0, 4000.0), deskwerk_docs_geom::finite(h).clamp(0.0, 4000.0));
+        let deg = deskwerk_docs_geom::normalize_degrees(self.rot);
         if modern && ((45.0..135.0).contains(&deg) || (225.0..315.0).contains(&deg)) { ((h - w) / 2.0, (w - h) / 2.0) } else { (0.0, 0.0) }
     }
     /// The effect extents, finite and clamped (left, top, right, bottom), each at least half a

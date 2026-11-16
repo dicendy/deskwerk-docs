@@ -1,8 +1,8 @@
 use super::select::{obj_size, selected, with_obj};
 use super::{CmdError, CmdResult, InlineObject, Rgb, Session, Value, Wrap, p};
-use wordcraft_doc::line_dash::LineDash;
-use wordcraft_doc::para::{Float, MAX_OUTLINE_WIDTH, PicOutline};
-use wordcraft_doc::picfx::PicFx;
+use deskwerk_docs_doc::line_dash::LineDash;
+use deskwerk_docs_doc::para::{Float, MAX_OUTLINE_WIDTH, PicOutline};
+use deskwerk_docs_doc::picfx::PicFx;
 
 /// `picture.crop`: the crop, and optionally the new display size, as one edit. With a size, a
 /// floating picture positioned by offsets moves by what the crop on its left/top side on the page
@@ -56,10 +56,10 @@ pub struct OriginalSize {
 pub fn original_size(s: &Session, media: &str) -> Option<OriginalSize> {
     let key = s.originals.get(media).map_or(media, String::as_str);
     let bytes = s.doc.media.get(key).or_else(|| s.doc.media.get(media))?;
-    if let Some((pw, ph)) = wordcraft_render::image_size(bytes) {
+    if let Some((pw, ph)) = deskwerk_docs_render::image_size(bytes) {
         return Some(OriginalSize { w: pw as f32 * 0.75, h: ph as f32 * 0.75, pixels: Some((pw, ph)) });
     }
-    let (w, h, _) = wordcraft_render::metafile_size(bytes)?;
+    let (w, h, _) = deskwerk_docs_render::metafile_size(bytes)?;
     Some(OriginalSize { w, h, pixels: None })
 }
 
@@ -191,8 +191,8 @@ pub(super) fn adjust_media(
 ) -> CmdResult {
     let bytes = s.doc.media.get(base).cloned().ok_or_else(|| CmdError::Failed("picture data missing".into()))?;
     // Within the budget pictures are drawn within, checked from the header first (#3644, #3647).
-    let img = wordcraft_geom::picture::decode(&bytes, wordcraft_geom::MAX_DECODED_BYTES).map_err(|e| match e {
-        wordcraft_geom::picture::Refusal::TooLarge { .. } => too_large(),
+    let img = deskwerk_docs_geom::picture::decode(&bytes, deskwerk_docs_geom::MAX_DECODED_BYTES).map_err(|e| match e {
+        deskwerk_docs_geom::picture::Refusal::TooLarge { .. } => too_large(),
         e => CmdError::Failed(format!("can't decode the picture: {e}")),
     })?;
     let out = f(img)?;
@@ -227,7 +227,7 @@ fn too_large() -> CmdError {
 /// A `w` × `h` bitmap of `fill` for an edit to draw on, refused when the picture it makes would be
 /// too large to draw (two RGBA buffers within the decode budget), before it is allocated (#3611).
 fn canvas(w: u32, h: u32, fill: [u8; 4]) -> Result<image::RgbaImage, CmdError> {
-    if !wordcraft_geom::decode_fits(w, h, wordcraft_geom::MAX_DECODED_BYTES) {
+    if !deskwerk_docs_geom::decode_fits(w, h, deskwerk_docs_geom::MAX_DECODED_BYTES) {
         return Err(too_large());
     }
     Ok(image::RgbaImage::from_pixel(w, h, image::Rgba(fill)))

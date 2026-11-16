@@ -10,13 +10,13 @@
 
 use std::sync::Arc;
 
+use deskwerk_docs_doc::props::VMerge;
+use deskwerk_docs_doc::props::{CellProps, CharProps, ParaProps, PropChange, RowProps, TableProps};
+use deskwerk_docs_doc::section::SectionProps;
+use deskwerk_docs_doc::table::{Cell, Row, Table};
+use deskwerk_docs_doc::{Block, Blocks, Document, Paragraph, Path, Revision, RevisionKind, StoryRef};
 use serde::Serialize;
 use serde_json::{Value, json};
-use wordcraft_doc::props::VMerge;
-use wordcraft_doc::props::{CellProps, CharProps, ParaProps, PropChange, RowProps, TableProps};
-use wordcraft_doc::section::SectionProps;
-use wordcraft_doc::table::{Cell, Row, Table};
-use wordcraft_doc::{Block, Blocks, Document, Paragraph, Path, Revision, RevisionKind, StoryRef};
 
 use crate::Session;
 

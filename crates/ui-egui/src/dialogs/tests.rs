@@ -1,7 +1,7 @@
 use super::*;
-use wordcraft_doc::Pos;
-use wordcraft_doc::props::Align;
-use wordcraft_engine::Session;
+use deskwerk_docs_doc::Pos;
+use deskwerk_docs_doc::props::Align;
+use deskwerk_docs_engine::Session;
 
 /// #3931: hovering Insert › Table's grid asks the page for a preview of that table (rows by
 /// columns) and changes nothing; leaving the grid drops it; a click inserts the table with no
@@ -9,7 +9,7 @@ use wordcraft_engine::Session;
 #[test]
 fn the_table_grid_previews_the_hovered_table_until_the_click() {
     use egui_kittest::kittest::Queryable;
-    let a = WordApp::new(Session::new(wordcraft_doc::Document::from_text("Lanterns")), crate::Services::default());
+    let a = WordApp::new(Session::new(deskwerk_docs_doc::Document::from_text("Lanterns")), crate::Services::default());
     let mut h = egui_kittest::Harness::builder().with_size(vec2(400.0, 400.0)).build_ui_state(|ui, app: &mut WordApp| table_grid_picker(ui, app), a);
     h.run_steps(2);
     let spacing = h.ctx.global_style().spacing.clone();
@@ -202,16 +202,16 @@ fn the_macros_button_opens_a_dialog_that_runs_deletes_and_records() {
 }
 
 fn body_of(app: &WordApp) -> String {
-    app.session.doc.plain_text(wordcraft_doc::StoryRef::Body)
+    app.session.doc.plain_text(deskwerk_docs_doc::StoryRef::Body)
 }
 
 fn app_with(text: &str) -> WordApp {
-    let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+    let mut app = WordApp::new(Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
     let _ = app.run("document.setText", json!({"text": text}));
     app
 }
 
-fn props(app: &WordApp) -> wordcraft_doc::props::ParaProps {
+fn props(app: &WordApp) -> deskwerk_docs_doc::props::ParaProps {
     app.session.doc.para_at(&app.session.sel.focus).map(|p| p.props.clone()).unwrap_or_default()
 }
 
@@ -432,8 +432,8 @@ fn ok_edit(app: &mut WordApp, edit: impl FnOnce(&mut Dialog)) {
 }
 
 /// The `i`th paragraph's own formatting.
-fn para_props(app: &WordApp, i: usize) -> wordcraft_doc::props::ParaProps {
-    app.session.doc.para(wordcraft_doc::StoryRef::Body, &wordcraft_doc::Path::top(i)).map(|p| p.props.clone()).unwrap_or_default()
+fn para_props(app: &WordApp, i: usize) -> deskwerk_docs_doc::props::ParaProps {
+    app.session.doc.para(deskwerk_docs_doc::StoryRef::Body, &deskwerk_docs_doc::Path::top(i)).map(|p| p.props.clone()).unwrap_or_default()
 }
 
 /// Three paragraphs, the first centred, indented, 30 pt after, kept with the next and with a
@@ -468,7 +468,7 @@ fn paragraph_dialog_leaves_what_the_selected_paragraphs_differ_in() {
     });
     assert_eq!(app.session.undo_depth(), depth + 1, "one undo step");
     for (i, was) in was.iter().enumerate() {
-        assert_eq!(para_props(&app, i), wordcraft_doc::props::ParaProps { space_before: Some(6.0), ..was.clone() }, "paragraph {i}");
+        assert_eq!(para_props(&app, i), deskwerk_docs_doc::props::ParaProps { space_before: Some(6.0), ..was.clone() }, "paragraph {i}");
     }
     let _ = app.run("edit.undo", json!({}));
     assert_eq!((0..3).map(|i| para_props(&app, i)).collect::<Vec<_>>(), was, "undo takes all of it back");
@@ -524,7 +524,7 @@ fn merge_records_dialog_checks_the_range_before_merging() {
     assert!(h.state().dialog.is_none(), "nothing to ask about: the merge opens beside");
     assert_ne!(h.state().session.document_id(), source, "the merge is a new document");
     h.state_mut().run("view.switchWindows", json!({"id": source})).unwrap();
-    assert!(h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body).contains("unsaved"), "the unsaved document is still open");
+    assert!(h.state().session.doc.plain_text(deskwerk_docs_doc::StoryRef::Body).contains("unsaved"), "the unsaved document is still open");
 }
 
 #[test]
@@ -570,7 +570,7 @@ fn paragraph_dialog_sets_a_mixed_check_box_for_all() {
     assert_eq!(p.iter().map(|p| p.keep_next).collect::<Vec<_>>(), [Some(true); 3]);
     assert_eq!(p.iter().map(|p| p.align).collect::<Vec<_>>(), [Some(Align::Center), None, None], "alignment untouched");
     assert_eq!(p.iter().map(|p| p.space_after).collect::<Vec<_>>(), [Some(30.0), None, None], "spacing untouched");
-    assert_eq!(p[0].line_spacing, Some(wordcraft_doc::props::LineSpacing::Multiple(6.0)), "line spacing untouched");
+    assert_eq!(p[0].line_spacing, Some(deskwerk_docs_doc::props::LineSpacing::Multiple(6.0)), "line spacing untouched");
 }
 
 #[test]
@@ -621,7 +621,7 @@ fn paragraph_dialog_ok_keeps_what_it_shows() {
 
 #[test]
 fn paragraph_dialog_keeps_fixed_line_spacing() {
-    use wordcraft_doc::props::LineSpacing;
+    use deskwerk_docs_doc::props::LineSpacing;
     for (cmd, rule) in [(json!({"exactly": 24}), LineSpacing::Exactly(24.0)), (json!({"atLeast": 24}), LineSpacing::AtLeast(24.0))] {
         // OK without changes, and OK after changing only Keep with next (#467).
         let mut app = app_with("Example");
@@ -774,17 +774,17 @@ fn font_dialog_ok_keeps_what_the_user_left_alone() {
         *size = "14".into();
     }
     apply_font(&mut app, &d);
-    let c = app.session.doc.para_at(&wordcraft_doc::Pos::body(0, 0)).map(|p| p.props_of_char(0).clone()).unwrap_or_default();
+    let c = app.session.doc.para_at(&deskwerk_docs_doc::Pos::body(0, 0)).map(|p| p.props_of_char(0).clone()).unwrap_or_default();
     assert_eq!(c.size, Some(14.0));
     assert_eq!((c.small_caps, c.caps, c.hidden, c.spacing), (Some(true), Some(true), Some(true), Some(2.0)));
-    assert_eq!(c.underline, Some(wordcraft_doc::props::Underline::Double));
+    assert_eq!(c.underline, Some(deskwerk_docs_doc::props::Underline::Double));
     // A field the user does change still applies.
     let Some(mut d) = Dialog::open("font", &mut app) else { panic!("no font dialog") };
     if let Dialog::Font { small_caps, .. } = &mut d {
         *small_caps = false;
     }
     apply_font(&mut app, &d);
-    let c = app.session.doc.para_at(&wordcraft_doc::Pos::body(0, 0)).map(|p| p.props_of_char(0).clone()).unwrap_or_default();
+    let c = app.session.doc.para_at(&deskwerk_docs_doc::Pos::body(0, 0)).map(|p| p.props_of_char(0).clone()).unwrap_or_default();
     assert_eq!((c.small_caps, c.caps, c.size), (Some(false), Some(true), Some(14.0)));
 }
 
@@ -845,7 +845,7 @@ fn modify_style_font_box_finds_the_family() {
         app,
     );
     h.run_steps(3);
-    h.get(By::new().role(egui::accesskit::Role::TextInput).value(wordcraft_doc::styles::BODY_FONT)).focus();
+    h.get(By::new().role(egui::accesskit::Role::TextInput).value(deskwerk_docs_doc::styles::BODY_FONT)).focus();
     h.step();
     let key = |key, modifiers| egui::Event::Key { key, physical_key: None, pressed: true, repeat: false, modifiers };
     h.event(key(egui::Key::A, egui::Modifiers::COMMAND));
@@ -856,8 +856,8 @@ fn modify_style_font_box_finds_the_family() {
     h.event(key(egui::Key::Enter, egui::Modifiers::NONE));
     h.run_steps(2);
     assert!(h.state().dialog.is_none(), "Enter pressed OK");
-    let rc = h.state().session.doc.styles.resolve_char(Some("Normal"), &wordcraft_doc::CharProps::default());
-    assert_eq!(rc.font, wordcraft_doc::styles::HEADING_FONT);
+    let rc = h.state().session.doc.styles.resolve_char(Some("Normal"), &deskwerk_docs_doc::CharProps::default());
+    assert_eq!(rc.font, deskwerk_docs_doc::styles::HEADING_FONT);
 }
 
 /// A dialog was pinned by its anchor, so dragging its title bar did nothing (#732).
@@ -963,7 +963,7 @@ fn replace_all_with_regex_groups_from_the_dialog() {
         h.run_steps(2);
         h.get_by_label("Replace All").click();
         h.run_steps(2);
-        assert_eq!(h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body), want, "{with}");
+        assert_eq!(h.state().session.doc.plain_text(deskwerk_docs_doc::StoryRef::Body), want, "{with}");
     }
 }
 
@@ -1129,10 +1129,10 @@ fn page_setup_rtl_large_margin_can_be_edited_again_after_blur() {
 #[test]
 fn page_setup_reads_the_paper_size() {
     let mut app = app_with("Page");
-    let sect = |app: &WordApp| wordcraft_engine::cmd::page::sect(&app.session);
+    let sect = |app: &WordApp| deskwerk_docs_engine::cmd::page::sect(&app.session);
     let ((w, h), entry) = opened_paper(&mut app);
     assert!((w - sect(&app).page_w).abs() < 0.01 && (h - sect(&app).page_h).abs() < 0.01, "{w}×{h}");
-    assert_eq!(entry, wordcraft_geom::paper_name(w, h));
+    assert_eq!(entry, deskwerk_docs_geom::paper_name(w, h));
     assert!(entry.is_some(), "a new document has a named size");
     let _ = app.run("layout.size", json!({"name": "A4"}));
     let _ = app.run("layout.orientation", json!({"value": "landscape"}));
@@ -1152,7 +1152,7 @@ fn page_setup_applies_a_custom_paper_size() {
     let ppu = crate::options::unit().pt_per_unit();
     let size_steps = |app: &WordApp| app.session.undo_labels().iter().filter(|l| l.as_str() == "Size").count();
     let sect = |app: &WordApp| {
-        let s = wordcraft_engine::cmd::page::sect(&app.session);
+        let s = deskwerk_docs_engine::cmd::page::sect(&app.session);
         (s.page_w.round(), s.page_h.round(), s.landscape)
     };
     // OK on an unchanged dialog leaves the size alone.
@@ -1225,7 +1225,7 @@ fn page_setup_paper_widgets_work_together() {
     assert_eq!(combo(&h).as_deref(), Some("A4"));
     h.get_by_label("OK").click();
     h.run_steps(3);
-    let sect = wordcraft_engine::cmd::page::sect(&h.state().session);
+    let sect = deskwerk_docs_engine::cmd::page::sect(&h.state().session);
     assert_eq!(((sect.page_w * 100.0).round() / 100.0, (sect.page_h * 100.0).round() / 100.0, sect.landscape), (841.89, 595.28, true));
 
     // Portrait A4 again; a width wider than the height turns it to Landscape, Custom size.
@@ -1262,7 +1262,7 @@ fn page_setup_refuses_margins_that_dont_fit_and_applies_smaller_ones_first() {
     use egui_kittest::kittest::Queryable;
     let ppu = crate::options::unit().pt_per_unit();
     let mut h = app_harness(app_with("Page"));
-    let before = wordcraft_engine::cmd::page::sect(&h.state().session);
+    let before = deskwerk_docs_engine::cmd::page::sect(&h.state().session);
     let undo = h.state().session.undo_depth();
     h.state_mut().run("ui.dialog", json!({"name": "pageSetup"})).unwrap();
     h.run_steps(2);
@@ -1276,7 +1276,7 @@ fn page_setup_refuses_margins_that_dont_fit_and_applies_smaller_ones_first() {
         matches!(&h.state().dialog, Some(Dialog::PageSetup { message, .. }) if message.contains("margins don't fit")),
         "stays open with a message"
     );
-    assert_eq!((wordcraft_engine::cmd::page::sect(&h.state().session), h.state().session.undo_depth()), (before, undo), "nothing applied");
+    assert_eq!((deskwerk_docs_engine::cmd::page::sect(&h.state().session), h.state().session.undo_depth()), (before, undo), "nothing applied");
 
     if let Some(Dialog::PageSetup { top, bottom, left, right, .. }) = h.state_mut().dialog.as_mut() {
         (*top, *bottom, *left, *right) = (18.0 / ppu, 18.0 / ppu, 18.0 / ppu, 18.0 / ppu);
@@ -1285,7 +1285,7 @@ fn page_setup_refuses_margins_that_dont_fit_and_applies_smaller_ones_first() {
     h.get_by_label("OK").click();
     h.run_steps(3);
     assert!(h.state().dialog.is_none());
-    let s = wordcraft_engine::cmd::page::sect(&h.state().session);
+    let s = deskwerk_docs_engine::cmd::page::sect(&h.state().session);
     assert_eq!((s.page_w.round(), s.page_h.round(), s.margin_left.round(), s.margin_top.round()), (100.0, 500.0, 18.0, 18.0));
 }
 
@@ -1309,7 +1309,7 @@ fn page_setup_ok(h: &mut egui_kittest::Harness<'_, WordApp>, (w, ht): (f32, f32)
 /// size first; the margins first; margins of 0 in between), and Undo restores the section.
 #[test]
 fn page_setup_ok_is_one_undo_step() {
-    let sect = |h: &egui_kittest::Harness<'_, WordApp>| wordcraft_engine::cmd::page::sect(&h.state().session);
+    let sect = |h: &egui_kittest::Harness<'_, WordApp>| deskwerk_docs_engine::cmd::page::sect(&h.state().session);
     // Size first, then orientation and margins.
     let mut h = app_harness(app_with("Page"));
     let (before, depth) = (sect(&h), h.state().session.undo_depth());
@@ -1373,8 +1373,8 @@ fn more_paper_sizes_opens_page_setup() {
 /// #1320: Page Setup shows the section's vertical alignment, and OK applies a change.
 #[test]
 fn page_setup_dialog_sets_vertical_alignment() {
+    use deskwerk_docs_doc::section::PageVAlign;
     use egui_kittest::kittest::Queryable;
-    use wordcraft_doc::section::PageVAlign;
     let mut app = app_with("Some text");
     let _ = app.run("layout.verticalAlign", json!({"value": "bottom"}));
     app.dialog = Dialog::open("pageSetup", &mut app);
@@ -1400,7 +1400,7 @@ fn page_setup_dialog_sets_vertical_alignment() {
     for _ in 0..4 {
         h.step();
     }
-    assert_eq!(wordcraft_engine::cmd::page::sect(&h.state().session).valign, PageVAlign::Justify);
+    assert_eq!(deskwerk_docs_engine::cmd::page::sect(&h.state().session).valign, PageVAlign::Justify);
 }
 
 /// #1230: Page Setup's Different first page check box gives the title page no page number
@@ -1438,7 +1438,7 @@ fn page_setup_different_first_page_leaves_the_title_page_unnumbered() {
         h.step();
     }
     let s = &mut h.state_mut().session;
-    assert!(wordcraft_engine::cmd::page::sect(s).title_page);
+    assert!(deskwerk_docs_engine::cmd::page::sect(s).title_page);
     assert!(!s.doc.settings.even_odd_headers, "left as it was");
     assert_eq!(s.undo_depth(), depth + 1);
     let pages = &s.layout().pages;
@@ -1452,11 +1452,11 @@ fn page_setup_different_first_page_leaves_the_title_page_unnumbered() {
 #[test]
 fn text_pane_tab_demotes_and_shift_tab_promotes_the_focused_item() {
     use egui_kittest::kittest::Queryable;
-    let mut app = WordApp::new(Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+    let mut app = WordApp::new(Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
     app.run("insert.smartArt", json!({"layout": "hierarchy"})).unwrap();
     app.run("smartArt.textPane", json!({"value": true})).unwrap();
     let levels = |app: &WordApp| {
-        wordcraft_engine::cmd::smart_art::selected_smart_art(&app.session).map(|g| g.items.iter().map(|i| i.level).collect::<Vec<u8>>())
+        deskwerk_docs_engine::cmd::smart_art::selected_smart_art(&app.session).map(|g| g.items.iter().map(|i| i.level).collect::<Vec<u8>>())
     };
     assert_eq!(levels(&app), Some([0, 1, 2, 1, 2, 2].to_vec()), "Lead, Design, Sketches, Build, Code, Tests");
     let mut h = app_harness(app);
@@ -1706,8 +1706,8 @@ fn custom_property_rename_keeps_bookmark_link_through_docx() {
         assert_eq!(changed[0].name, name);
         assert_eq!(changed.len(), 1);
         assert_eq!(changed[0].link_target.as_deref(), linked.then_some("OriginalBookmark"));
-        let bytes = wordcraft_engine::io::save_bytes("linked.docx", &h.state().session.doc).unwrap();
-        let reopened = wordcraft_engine::io::open_bytes("linked.docx", &bytes).unwrap();
+        let bytes = deskwerk_docs_engine::io::save_bytes("linked.docx", &h.state().session.doc).unwrap();
+        let reopened = deskwerk_docs_engine::io::open_bytes("linked.docx", &bytes).unwrap();
         assert_eq!(reopened.custom_props, changed);
         h.state_mut().session.run("edit.undo", &json!({})).unwrap();
         assert_eq!(h.state().session.doc.custom_props, original);
@@ -1748,9 +1748,9 @@ fn the_custom_properties_dialog_cancel_changes_nothing_and_refuses_bad_names() {
     assert!(h.query_by_label("Property names are 1–255 characters.").is_some(), "a whitespace name shows the message");
     assert!(h.query_by_label("Status = draft").is_some(), "nothing was added");
     // The Name box caps typing at Word's limit.
-    set_text_field(&mut h, "Name:", &"x".repeat(wordcraft_engine::cmd::file::MAX_CUSTOM_NAME + 20));
+    set_text_field(&mut h, "Name:", &"x".repeat(deskwerk_docs_engine::cmd::file::MAX_CUSTOM_NAME + 20));
     let typed = h.get_by_role_and_label(egui::accesskit::Role::TextInput, "Name:").value().unwrap_or_default();
-    assert_eq!(typed.chars().count(), wordcraft_engine::cmd::file::MAX_CUSTOM_NAME, "the Name box stops at the limit");
+    assert_eq!(typed.chars().count(), deskwerk_docs_engine::cmd::file::MAX_CUSTOM_NAME, "the Name box stops at the limit");
     // A valid entry, so Cancel has something to discard.
     set_text_field(&mut h, "Name:", "Reviewer");
     set_text_field(&mut h, "Value:", "Ada");
@@ -1784,7 +1784,12 @@ fn the_custom_properties_dialog_leaves_imported_non_text_properties_alone() {
     use egui_kittest::kittest::Queryable;
     let mut app = app_with("Report body");
     let _ = app.run("file.properties", json!({"custom": {"Status": "draft"}}));
-    app.session.doc.custom_props.push(wordcraft_doc::CustomProp { name: "Count".into(), kind: "i4".into(), value: "7".into(), ..Default::default() });
+    app.session.doc.custom_props.push(deskwerk_docs_doc::CustomProp {
+        name: "Count".into(),
+        kind: "i4".into(),
+        value: "7".into(),
+        ..Default::default()
+    });
     let _ = app.run("ui.backstage", json!({"value": true, "page": "info"}));
     let mut h = egui_kittest::Harness::builder().with_size(vec2(1440.0, 900.0)).build_ui_state(
         |ui, app: &mut WordApp| {
@@ -1840,7 +1845,7 @@ fn the_custom_properties_dialog_leaves_imported_non_text_properties_alone() {
 fn modal_dialogs_block_the_window_behind_them() {
     use egui_kittest::kittest::Queryable;
     let picks = std::rc::Rc::new(std::cell::Cell::new(0));
-    let mut a = WordApp::new(Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+    let mut a = WordApp::new(Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
     let counted = picks.clone();
     a.services.pick_open = Some(Box::new(move |_| {
         counted.set(counted.get() + 1);
@@ -1848,7 +1853,7 @@ fn modal_dialogs_block_the_window_behind_them() {
     }));
     let mut h = app_harness(a);
     h.run_steps(6);
-    let body = |h: &egui_kittest::Harness<WordApp>| h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body);
+    let body = |h: &egui_kittest::Harness<WordApp>| h.state().session.doc.plain_text(deskwerk_docs_doc::StoryRef::Body);
     let open = |h: &mut egui_kittest::Harness<WordApp>, name: &str| {
         let d = Dialog::open(name, h.state_mut());
         assert!(d.is_some(), "{name}");
@@ -1892,7 +1897,7 @@ fn a_press_beside_a_modal_dialog_nudges_it() {
     use crate::theme::Animations;
     use egui_kittest::kittest::Queryable;
     for animations in [Animations::On, Animations::Off] {
-        let mut a = WordApp::new(Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
         a.ui.animations = animations;
         a.dialog = Dialog::open("font", &mut a);
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).with_step_dt(1.0 / 60.0).build_ui_state(
@@ -1973,7 +1978,7 @@ fn the_shake_comes_back_to_rest() {
 /// Which dialogs leave the window working (#3859, Word for Mac 16.114.1).
 #[test]
 fn find_symbol_mark_entry_cross_reference_and_merge_fields_are_modeless() {
-    let mut a = WordApp::new(Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+    let mut a = WordApp::new(Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
     for (name, modal) in [
         ("find", false),
         ("replace", false),
@@ -1999,7 +2004,7 @@ fn find_symbol_mark_entry_cross_reference_and_merge_fields_are_modeless() {
 #[test]
 fn a_modal_dialog_takes_the_keyboard_from_a_button_behind_it() {
     use egui_kittest::kittest::Queryable;
-    let mut h = app_harness(WordApp::new(Session::new(wordcraft_doc::Document::new()), crate::Services::default()));
+    let mut h = app_harness(WordApp::new(Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default()));
     h.run_steps(6);
     h.get_by_label("File").focus();
     h.run_steps(2);
@@ -2018,7 +2023,7 @@ fn a_modal_dialog_takes_the_keyboard_from_a_button_behind_it() {
 /// so its items can't act behind the dialog.
 #[test]
 fn a_modal_dialog_closes_the_context_menu() {
-    let mut h = app_harness(WordApp::new(Session::new(wordcraft_doc::Document::from_text("Kilns")), crate::Services::default()));
+    let mut h = app_harness(WordApp::new(Session::new(deskwerk_docs_doc::Document::from_text("Kilns")), crate::Services::default()));
     h.run_steps(6);
     h.state_mut().run("ui.contextMenu", serde_json::json!({})).unwrap();
     h.run_steps(2);
@@ -2034,7 +2039,7 @@ fn a_modal_dialog_closes_the_context_menu() {
 #[test]
 fn the_page_waits_for_the_keyboard_until_a_modal_dialog_closes() {
     use egui_kittest::kittest::Queryable;
-    let mut h = app_harness(WordApp::new(Session::new(wordcraft_doc::Document::new()), crate::Services::default()));
+    let mut h = app_harness(WordApp::new(Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default()));
     h.run_steps(6);
     let font = Dialog::open("font", h.state_mut());
     h.state_mut().dialog = font;
@@ -2053,15 +2058,15 @@ fn the_page_waits_for_the_keyboard_until_a_modal_dialog_closes() {
     h.run_steps(3);
     h.event(egui::Event::Text("!".into()));
     h.run_steps(2);
-    assert_eq!(h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body), "!", "the page has it after the dialog");
+    assert_eq!(h.state().session.doc.plain_text(deskwerk_docs_doc::StoryRef::Body), "!", "the page has it after the dialog");
 }
 
 #[test]
 fn font_sample_props_map_each_field_to_its_property() {
     use super::font::font_sample_props;
-    use wordcraft_doc::props::Underline;
+    use deskwerk_docs_doc::props::Underline;
     let mut app = app_with("Example");
-    let white = wordcraft_doc::Rgb(255, 255, 255);
+    let white = deskwerk_docs_doc::Rgb(255, 255, 255);
     let mut p = |fx: (bool, bool, bool, bool), sc: (bool, bool, bool)| font_sample_props(&mut app, white, "Serif", "12", "", fx, sc, 1.5);
     let q = p((true, false, false, true), (true, false, false));
     assert_eq!((q.bold, q.italic, q.strike), (Some(true), Some(false), Some(true)));

@@ -1,8 +1,8 @@
 //! Title bar (Quick Access Toolbar, title, search, account) and status bar.
 
+use deskwerk_docs_doc::{PartKind, StoryRef};
 use egui::{Align2, Rect, Sense, Stroke, Ui, pos2, vec2};
 use serde_json::json;
-use wordcraft_doc::{PartKind, StoryRef};
 
 use crate::theme::{Tokens, TypeRung, fit_text, paint_text, regular, semibold, text_width};
 use crate::{StatusCount, StatusCounts, WordApp, icons};
@@ -16,7 +16,7 @@ pub(crate) fn dictionary_problem(lang: &str, unreadable: &Option<(std::path::Pat
         )),
         (None, Some(name)) => Some(crate::i18n::fmt(
             tl!(
-                "No spelling dictionary for {language} is installed, so it isn't checked. Deskwerk Docs looks for the Hunspell dictionary {name} in the WORDCRAFT_DICTIONARIES folder and in the usual system locations."
+                "No spelling dictionary for {language} is installed, so it isn't checked. Deskwerk Docs looks for the Hunspell dictionary {name} in the DESKWERK_DOCS_DICTIONARIES folder and in the usual system locations."
             ),
             &[("language", lang), ("name", name)],
         )),
@@ -610,7 +610,7 @@ pub enum Screen {
 }
 
 impl Screen {
-    pub fn of(v: &wordcraft_engine::ViewState) -> Self {
+    pub fn of(v: &deskwerk_docs_engine::ViewState) -> Self {
         if v.focus_mode {
             Screen::Focus
         } else if v.full_screen_view {
@@ -887,8 +887,8 @@ pub fn status_bar(app: &mut WordApp, ui: &mut Ui) {
                         let mode = app.session.view.mode;
                         let read = app.session.view.read_mode;
                         for (icon, id, name, on) in [
-                            ("webLayout", "view.webLayout", tl!("Web Layout"), mode == wordcraft_layout::ViewMode::Web),
-                            ("printLayout", "view.printLayout", tl!("Print Layout"), mode == wordcraft_layout::ViewMode::Print && !read),
+                            ("webLayout", "view.webLayout", tl!("Web Layout"), mode == deskwerk_docs_layout::ViewMode::Web),
+                            ("printLayout", "view.printLayout", tl!("Print Layout"), mode == deskwerk_docs_layout::ViewMode::Print && !read),
                             ("readMode", "view.readMode", tl!("Read Mode"), read),
                         ] {
                             let (r, resp) = ui.allocate_exact_size(vec2(22.0, 20.0), Sense::click());
@@ -971,23 +971,23 @@ fn small_icon(ui: &mut Ui, icon: &str, tip: &str) -> bool {
 
 /// [`WordApp::cached_missing_fonts`]: the list, and the warnings by font key.
 pub type MissingFontsCache =
-    (std::sync::Arc<Vec<wordcraft_engine::cmd::font::MissingFont>>, std::sync::Arc<std::collections::HashMap<String, String>>);
+    (std::sync::Arc<Vec<deskwerk_docs_engine::cmd::font::MissingFont>>, std::sync::Arc<std::collections::HashMap<String, String>>);
 
 /// [`WordApp::missing_fonts`]: the layout the list was read from, and the list.
-pub type MissingFontsMemo = (std::sync::Weak<wordcraft_layout::DocLayout>, MissingFontsCache);
+pub type MissingFontsMemo = (std::sync::Weak<deskwerk_docs_layout::DocLayout>, MissingFontsCache);
 
 impl WordApp {
-    /// [`wordcraft_engine::cmd::font::missing_fonts`] for `layout`, and the font box's warnings
-    /// by [`font_key`](wordcraft_engine::cmd::font::font_key) (the layout-changing ones, with the
+    /// [`deskwerk_docs_engine::cmd::font::missing_fonts`] for `layout`, and the font box's warnings
+    /// by [`font_key`](deskwerk_docs_engine::cmd::font::font_key) (the layout-changing ones, with the
     /// faces drawn instead), read again only when the document is laid out again (adding or
     /// removing a font lays it out again).
-    pub fn cached_missing_fonts(&mut self, layout: &std::sync::Arc<wordcraft_layout::DocLayout>) -> MissingFontsCache {
+    pub fn cached_missing_fonts(&mut self, layout: &std::sync::Arc<deskwerk_docs_layout::DocLayout>) -> MissingFontsCache {
         if !self.missing_fonts.0.upgrade().is_some_and(|seen| std::sync::Arc::ptr_eq(&seen, layout)) {
-            let found = wordcraft_engine::cmd::font::missing_fonts(&self.session.doc, layout);
+            let found = deskwerk_docs_engine::cmd::font::missing_fonts(&self.session.doc, layout);
             let warnings = found
                 .iter()
                 .filter(|f| !f.metric_compatible)
-                .map(|f| (wordcraft_engine::cmd::font::font_key(&f.font), f.shown_as.join(", ")))
+                .map(|f| (deskwerk_docs_engine::cmd::font::font_key(&f.font), f.shown_as.join(", ")))
                 .collect();
             self.missing_fonts = (std::sync::Arc::downgrade(layout), (std::sync::Arc::new(found), std::sync::Arc::new(warnings)));
         }
@@ -1001,14 +1001,14 @@ impl WordApp {
     /// of a line), the substitute layout will draw it in is named instead.
     pub fn font_box_warning(&mut self, font: &str) -> Option<String> {
         let ahead = self.session.sel.is_collapsed();
-        self.font_box_warning_or(font, ahead, |doc| wordcraft_engine::cmd::font::shown_as(doc, font))
+        self.font_box_warning_or(font, ahead, |doc| deskwerk_docs_engine::cmd::font::shown_as(doc, font))
     }
 
     /// The Font dialog's font box's warning for `font`, the font OK applies: from the status
     /// bar's list, else the substitute layout will draw it in, whatever is selected, as no text
     /// may show the font yet.
     pub fn font_dialog_warning(&mut self, font: &str) -> Option<String> {
-        self.font_box_warning_or(font, true, |doc| wordcraft_engine::cmd::font::shown_as(doc, font))
+        self.font_box_warning_or(font, true, |doc| deskwerk_docs_engine::cmd::font::shown_as(doc, font))
     }
 
     /// The Font dialog's Asian text font box's warning for `font_ea` (the Latin text font being
@@ -1018,15 +1018,20 @@ impl WordApp {
     /// in. Whatever is selected: selected Latin text shows no East Asian font, but text typed or
     /// pasted into it would be in it.
     pub fn east_asian_font_box_warning(&mut self, font_ea: &str, font: &str) -> Option<String> {
-        let shown = wordcraft_engine::cmd::font::east_asian_shown_as(&self.session.doc, font_ea, font)?;
-        wordcraft_engine::cmd::font::warns(font_ea, &shown).then_some(shown)
+        let shown = deskwerk_docs_engine::cmd::font::east_asian_shown_as(&self.session.doc, font_ea, font)?;
+        deskwerk_docs_engine::cmd::font::warns(font_ea, &shown).then_some(shown)
     }
 
     /// The font box's warning for `font`: from the status bar's list, else, when the box shows
     /// a font to come (`ahead`), the family `unshown` says its text will be drawn in.
-    fn font_box_warning_or(&mut self, font: &str, ahead: bool, unshown: impl FnOnce(&wordcraft_doc::Document) -> Option<String>) -> Option<String> {
+    fn font_box_warning_or(
+        &mut self,
+        font: &str,
+        ahead: bool,
+        unshown: impl FnOnce(&deskwerk_docs_doc::Document) -> Option<String>,
+    ) -> Option<String> {
         let layout = self.session.layout();
-        let key = wordcraft_engine::cmd::font::font_key(font);
+        let key = deskwerk_docs_engine::cmd::font::font_key(font);
         if let Some(w) = self.cached_missing_fonts(&layout).1.get(&key) {
             return Some(w.clone());
         }
@@ -1034,7 +1039,7 @@ impl WordApp {
         // no shown text yet, so the list can't have it: name the family it will be drawn in. A
         // ribbon box over a selection shows the selected text's font, which the list covers.
         let shown = ahead.then(|| unshown(&self.session.doc)).flatten()?;
-        wordcraft_engine::cmd::font::warns(font, &shown).then_some(shown)
+        deskwerk_docs_engine::cmd::font::warns(font, &shown).then_some(shown)
     }
 
     /// The document's counts, recomputed only when the document (or the count option) changes:
@@ -1049,8 +1054,8 @@ impl WordApp {
                 key,
                 StatusCounts {
                     words: self.session.word_count(),
-                    chars: wordcraft_doc::count_chars(&text),
-                    chars_no_spaces: wordcraft_doc::count_chars_no_spaces(&text),
+                    chars: deskwerk_docs_doc::count_chars(&text),
+                    chars_no_spaces: deskwerk_docs_doc::count_chars_no_spaces(&text),
                 },
             );
         }

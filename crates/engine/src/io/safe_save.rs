@@ -3,7 +3,7 @@
 //!
 //! When the folder refuses the temporary file (macOS privacy protection, #2138, or a read-only
 //! folder), an existing destination is never written in place: it is left exactly as it was and
-//! the error says to use Save As to another folder or to give WordCraft access to this one. Only
+//! the error says to use Save As to another folder or to give Deskwerk Docs access to this one. Only
 //! a destination that doesn't exist yet, so has no previous version to lose, is created directly;
 //! a failed direct write removes it again.
 use std::fs::{self, File, OpenOptions};
@@ -123,7 +123,7 @@ fn guided(e: io::Error, why: &str) -> io::Error {
     io::Error::new(e.kind(), Guided(format!("{e}. {why} Use Save As to save the document in another folder, or {access}, then save again.")))
 }
 
-/// A permission error on macOS usually means its privacy protection keeps WordCraft out of the
+/// A permission error on macOS usually means its privacy protection keeps Deskwerk Docs out of the
 /// folder; say where to allow it (errors from [`guided`] already do).
 fn explain(e: io::Error) -> io::Error {
     let worded = e.get_ref().is_some_and(|inner| inner.is::<Guided>());
@@ -155,7 +155,7 @@ impl Temporary {
         // A short name also works beside a destination already at the filename-length limit.
         for _ in 0..128 {
             let id = NEXT.fetch_add(1, Ordering::Relaxed);
-            let path = destination.with_file_name(format!(".wordcraft-save-{}-{id}.tmp", std::process::id()));
+            let path = destination.with_file_name(format!(".deskwerk-docs-save-{}-{id}.tmp", std::process::id()));
             let mut options = OpenOptions::new();
             options.write(true).create_new(true);
             #[cfg(unix)]
@@ -207,7 +207,7 @@ mod tests {
         fn new() -> Self {
             static NEXT: AtomicU64 = AtomicU64::new(0);
             let path =
-                std::env::temp_dir().join(format!("wordcraft-save-owner-test-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
+                std::env::temp_dir().join(format!("deskwerk-docs-save-owner-test-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
             fs::create_dir(&path).unwrap();
             Self(path)
         }

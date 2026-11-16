@@ -1,8 +1,8 @@
-# WordCraft architecture
+# Deskwerk Docs architecture
 
-> **Last reviewed:** 2026-10-28 · **Last updated:** 2026-11-05 · **Change:** trivial (the hostile-parameter test now has a sibling for `file.*`, `insert.picture` and `insert.textFromFile`; previously trivial: craft-proof's row says what a build without the Language data keeps: English spelling from an installed Hunspell English or the built-in list, rule hyphenation for Bulgarian, Turkish and Russian; previously minor: proofing moved out: `wordcraft-proof` is craft-libs' `craft-proof`, its Language data craft-i18n's `language-data/` embedded from `CRAFT_I18N_DIR`; previously major: crate and layer inventory, source counts, proofing languages and module boundaries re-measured from this checkout; previously minor: `proof` is per language: English and Polish; previously major: first committed version; `plan/architecture.md` is local-only) · **Target:** Microsoft Word (Microsoft 365) for Mac 16.113.4
+> **Last reviewed:** 2026-10-28 · **Last updated:** 2026-11-05 · **Change:** trivial (the hostile-parameter test now has a sibling for `file.*`, `insert.picture` and `insert.textFromFile`; previously trivial: craft-proof's row says what a build without the Language data keeps: English spelling from an installed Hunspell English or the built-in list, rule hyphenation for Bulgarian, Turkish and Russian; previously minor: proofing moved out: `deskwerk-docs-proof` is craft-libs' `craft-proof`, its Language data craft-i18n's `language-data/` embedded from `CRAFT_I18N_DIR`; previously major: crate and layer inventory, source counts, proofing languages and module boundaries re-measured from this checkout; previously minor: `proof` is per language: English and Polish; previously major: first committed version; `plan/architecture.md` is local-only) · **Target:** Microsoft Word (Microsoft 365) for Mac 16.113.4
 
-How WordCraft is built today. The longer design notes in
+How Deskwerk Docs is built today. The longer design notes in
 `plan/architecture.md` are gitignored and local to the original author's machine; this file is the
 committed, current summary. Rules for working in the code are in [`AGENTS.md`](../AGENTS.md).
 
@@ -22,7 +22,7 @@ crate name links to its source tree.
 | L1 | [`doc`](../crates/doc/src) | 23,719 | Document model: stories, paragraphs, runs, tables, sections, styles, numbering, fields, notes, comments, revisions and equations; edit primitives and bidi |
 | L1 | [`fonts`](../crates/fonts/src) | 7,088 | Font database, metrics, outlines, HarfRust shaping, Word font substitution and OpenType MATH |
 | L1 | [`metafile`](../crates/metafile/src) | 3,614 | Shared Windows Metafile parsing and drawing primitives used by format readers and renderers |
-| L1 (external) | [`craft-proof`](https://github.com/storytold/craft-libs/tree/main/crates/proof) (package alias `wordcraft-proof`) | — | Proofing moved to craft-libs (CP1, 2026-11): fifteen spelling dictionaries: English (US, GB, CA), Polish, Portuguese, Italian, Croatian, Turkish, Russian, Czech, Indonesian and Spanish (Spain, Mexico, Latin America, Uruguay); language modules provide spelling, suggestions and grammar, while Bulgarian and German have hyphenation only. Its word lists and patterns are craft-i18n's `language-data/`, embedded from `CRAFT_I18N_DIR` at the commit in `craft-i18n.rev` (CI and releases set `CRAFT_I18N_REQUIRED=1`); without them English spelling falls back to an installed Hunspell English or craft-proof's built-in Moby list, and pattern hyphenation is off (Bulgarian, Turkish and Russian hyphenate by rule) |
+| L1 (external) | [`craft-proof`](https://github.com/storytold/craft-libs/tree/main/crates/proof) (package alias `deskwerk-docs-proof`) | — | Proofing moved to craft-libs (CP1, 2026-11): fifteen spelling dictionaries: English (US, GB, CA), Polish, Portuguese, Italian, Croatian, Turkish, Russian, Czech, Indonesian and Spanish (Spain, Mexico, Latin America, Uruguay); language modules provide spelling, suggestions and grammar, while Bulgarian and German have hyphenation only. Its word lists and patterns are craft-i18n's `language-data/`, embedded from `CRAFT_I18N_DIR` at the commit in `craft-i18n.rev` (CI and releases set `CRAFT_I18N_REQUIRED=1`); without them English spelling falls back to an installed Hunspell English or craft-proof's built-in Moby list, and pattern hyphenation is off (Bulgarian, Turkish and Russian hyphenate by rule) |
 | L2 | [`docbin`](../crates/docbin/src) | 8,815 | Word 97–2003 `.doc` reader (FIB, piece table, FKPs, SPRMs, stylesheet, lists, tables, notes, pictures) over a CFB container |
 | L2 | [`docx`](../crates/docx/src) | 37,376 | OOXML WordprocessingML reader/writer (Transitional and Strict), OMML, custom properties and preserved VBA parts |
 | L2 | [`formats`](../crates/formats/src) | 23,058 | TXT, Markdown, HTML, RTF, ODT and LaTeX import/export through the shared document model |
@@ -33,9 +33,9 @@ crate name links to its source tree.
 | L5 | [`mcp`](../crates/mcp/src) | 1,822 | MCP server exposing commands as tools; headless or bridged to the running app |
 | L5 | [`zotero`](../crates/zotero/src) | 2,372 | Zotero word-processor integration protocol answered against a `Session` |
 | L6 | [`ui-egui`](../crates/ui-egui/src) | 81,759 | Front end: ribbon, keytips, mini-toolbar, Backstage, canvas, rulers, panes, dialogs, i18n, themes, control channel and headless `ui_shot` example |
-| apps | [`wordcraft`](../apps/wordcraft/src) | 3,740 | Desktop app (eframe + wgpu; logging, window geometry and file associations) |
-| apps | [`deskwerk-docs-cli`](../apps/wordcraft-cli/src) | 1,901 | `convert`, `text`, `inspect`, `run`, `commands`, `parity`, `mcp` and `zotero` |
-| apps | [`wordcraft-web`](../apps/wordcraft-web/src) | 1,159 | Browser build (eframe web runner, WebGPU with WebGL2 fallback) |
+| apps | [`deskwerk-docs`](../apps/deskwerk-docs/src) | 3,740 | Desktop app (eframe + wgpu; logging, window geometry and file associations) |
+| apps | [`deskwerk-docs-cli`](../apps/deskwerk-docs-cli/src) | 1,901 | `convert`, `text`, `inspect`, `run`, `commands`, `parity`, `mcp` and `zotero` |
+| apps | [`deskwerk-docs-web`](../apps/deskwerk-docs-web/src) | 1,159 | Browser build (eframe web runner, WebGPU with WebGL2 fallback) |
 | tooling | [`xtask`](../xtask/src) | 1,488 | Workspace maintenance and quality-gate commands, including `layers` |
 
 ## Data flow

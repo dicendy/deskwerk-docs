@@ -7,7 +7,7 @@
 DIR (from fetch.sh) holds the files and manifest.tsv. For every file, each step in its own process
 with a timeout:
 
-  open     deskwerk-docs-cli text <file>               open + plain text (apps/wordcraft-cli/src/main.rs `text`)
+  open     deskwerk-docs-cli text <file>               open + plain text (apps/deskwerk-docs-cli/src/main.rs `text`)
   save     deskwerk-docs-cli convert <file> <rt.docx>  open + save as .docx (`convert`, file.save)
   reopen   deskwerk-docs-cli text <rt.docx>            the saved file opens again, and its text
 
@@ -664,8 +664,8 @@ def main() -> int:
     if args.limit:
         entries = entries[: args.limit]
 
-    env = dict(os.environ, RUST_BACKTRACE="0", WORDCRAFT_REGION="en-US", LC_ALL="C.UTF-8")
-    env.pop("WORDCRAFT_PASSWORD", None)
+    env = dict(os.environ, RUST_BACKTRACE="0", DESKWERK_DOCS_REGION="en-US", LC_ALL="C.UTF-8")
+    env.pop("DESKWERK_DOCS_PASSWORD", None)
     recs: list[dict] = []
     not_run = 0
     lock = threading.Lock()

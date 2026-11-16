@@ -316,11 +316,11 @@ mod tests {
     /// suggested name; Enter writes `<folder>/<name>.docx` and closes it.
     #[test]
     fn save_on_a_new_document_asks_in_the_compact_dialog() {
-        let dir = std::env::temp_dir().join(format!("wordcraft-ui-save-file-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("deskwerk-docs-ui-save-file-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
-        let doc = wordcraft_doc::Document::from_text("Quarterly report");
-        let mut a = WordApp::new(wordcraft_engine::Session::new(doc), Services::default());
+        let doc = deskwerk_docs_doc::Document::from_text("Quarterly report");
+        let mut a = WordApp::new(deskwerk_docs_engine::Session::new(doc), Services::default());
         a.ui.recent_folders = vec![RecentFolder { path: dir.to_string_lossy().into_owned(), used: 1 }];
         let r = a.run("file.save", json!({})).unwrap();
         assert_eq!(r["pending"], "saveFile", "{r}");

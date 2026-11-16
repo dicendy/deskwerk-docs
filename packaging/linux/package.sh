@@ -37,16 +37,16 @@ case "$ARCH" in
   aarch64 | arm64) ARCH=aarch64; DEB_ARCH=arm64 ;;
   *) echo "unsupported architecture $ARCH" >&2; exit 2 ;;
 esac
-export WORDCRAFT_MAINTAINER="${WORDCRAFT_MAINTAINER:-Deskwerk Docs maintainers <dicendy@users.noreply.github.com>}"
+export DESKWERK_DOCS_MAINTAINER="${DESKWERK_DOCS_MAINTAINER:-Deskwerk Docs maintainers <dicendy@users.noreply.github.com>}"
 BASENAME="deskwerk-docs-$VERSION-linux-$ARCH"
 
 echo "==> Deskwerk Docs $VERSION for Linux $ARCH ($FORMATS)"
 
 if [[ "$SKIP_BUILD" = 0 ]]; then
   if [[ -n "${CROSS_TARGET:-}" ]]; then
-    (cd "$ROOT" && cargo build --release --locked -p wordcraft -p wordcraft-cli --target "$CROSS_TARGET")
+    (cd "$ROOT" && cargo build --release --locked -p deskwerk-docs -p deskwerk-docs-cli --target "$CROSS_TARGET")
   else
-    (cd "$ROOT" && cargo build --release --locked -p wordcraft -p wordcraft-cli)
+    (cd "$ROOT" && cargo build --release --locked -p deskwerk-docs -p deskwerk-docs-cli)
   fi
 fi
 BIN="$CARGO_TARGET_DIR/${CROSS_TARGET:+$CROSS_TARGET/}release"
@@ -61,7 +61,7 @@ install -Dm755 "$BIN/deskwerk-docs-cli" "$STAGE/usr/bin/deskwerk-docs-cli"
 install -Dm644 "$HERE/$APP_ID.desktop" "$STAGE/usr/share/applications/$APP_ID.desktop"
 install -Dm644 "$HERE/$APP_ID.mime.xml" "$STAGE/usr/share/mime/packages/$APP_ID.xml"
 mkdir -p "$STAGE/usr/share/metainfo"
-sed -e "s/@VERSION@/$VERSION/g" -e "s/@DATE@/$WORDCRAFT_BUILD_DATE/g" \
+sed -e "s/@VERSION@/$VERSION/g" -e "s/@DATE@/$DESKWERK_DOCS_BUILD_DATE/g" \
   "$HERE/$APP_ID.metainfo.xml.in" >"$STAGE/usr/share/metainfo/$APP_ID.metainfo.xml"
 mkdir -p "$STAGE/usr/share/icons"
 cp -R "$ROOT/assets/app-icon/hicolor" "$STAGE/usr/share/icons/"

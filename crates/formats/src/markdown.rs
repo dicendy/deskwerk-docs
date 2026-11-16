@@ -12,8 +12,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use wordcraft_doc::table::{MAX_COLS, MAX_ROWS};
-use wordcraft_doc::{Align, Document};
+use deskwerk_docs_doc::table::{MAX_COLS, MAX_ROWS};
+use deskwerk_docs_doc::{Align, Document};
 
 use crate::html::decode_entity;
 use crate::model::{self, Cell, FBlock, FTable, Fmt, Inline, Kind, ListInfo, Para, make_img};

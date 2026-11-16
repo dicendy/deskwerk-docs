@@ -36,26 +36,26 @@ pub enum Placed {
         path: Path,
         off: usize,
         spin: Spin,
-        /// Brightness, contrast and transparency (see [`wordcraft_doc::picfx`]).
-        fx: wordcraft_doc::picfx::PicFx,
+        /// Brightness, contrast and transparency (see [`deskwerk_docs_doc::picfx`]).
+        fx: deskwerk_docs_doc::picfx::PicFx,
         /// Its outline (Picture Border), drawn on its frame.
-        outline: Option<wordcraft_doc::para::PicOutline>,
+        outline: Option<deskwerk_docs_doc::para::PicOutline>,
     },
     Shape {
         rect: Rect,
-        kind: wordcraft_doc::para::ShapeKind,
-        fill: Option<wordcraft_doc::fill::Fill>,
+        kind: deskwerk_docs_doc::para::ShapeKind,
+        fill: Option<deskwerk_docs_doc::fill::Fill>,
         stroke: Option<Rgb>,
         stroke_width: f32,
         /// A freeform's paths (ink strokes among them).
-        freeform: Option<Arc<wordcraft_doc::freeform::Freeform>>,
-        effects: wordcraft_doc::effects::ShapeEffects,
+        freeform: Option<Arc<deskwerk_docs_doc::freeform::Freeform>>,
+        effects: deskwerk_docs_doc::effects::ShapeEffects,
         spin: Spin,
-        /// Arrowheads and text warp (see [`wordcraft_doc::connector::ShapeExtra`]).
-        extra: Box<wordcraft_doc::connector::ShapeExtra>,
+        /// Arrowheads and text warp (see [`deskwerk_docs_doc::connector::ShapeExtra`]).
+        extra: Box<deskwerk_docs_doc::connector::ShapeExtra>,
         /// The floating object it draws (a Drawing Canvas's members: the canvas's), for leaving
         /// exactly one object out of a page (see [`crate::display::DisplayOptions::hide_object`]).
-        object: Option<wordcraft_doc::Pos>,
+        object: Option<deskwerk_docs_doc::Pos>,
         /// The description it is tagged with as a figure in tagged PDF (see
         /// [`shape_figure_alt`]); empty for a shape that is an artifact.
         alt: String,
@@ -64,7 +64,7 @@ pub enum Placed {
     /// byte `off` of paragraph `path` (its alt text).
     Graphic {
         rect: Rect,
-        graphic: Arc<wordcraft_doc::graphic::Graphic>,
+        graphic: Arc<deskwerk_docs_doc::graphic::Graphic>,
         story: StoryRef,
         path: Path,
         off: usize,
@@ -106,7 +106,7 @@ pub enum Placed {
         wrap: Wrap,
         /// Its paragraph's column left and top: where offsets relative to the column and the
         /// paragraph (`Anchor::Column` / `Anchor::Paragraph`) start.
-        origin: wordcraft_geom::Point,
+        origin: deskwerk_docs_geom::Point,
     },
 }
 

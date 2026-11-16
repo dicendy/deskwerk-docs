@@ -39,7 +39,7 @@ pub(super) fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
         Dialog::Macros { name } => macros(app, ui, name),
         Dialog::Icons { query, category, selected } => icons_body(app, ui, query, category, selected),
         Dialog::PasteSpecial { .. } => paste_special_dialog(app, ui, d),
-        Dialog::About { .. } => about_dialog(ui, d),
+        Dialog::About => about_dialog(ui),
         Dialog::DiscardRecovery { .. } => discard_recovery_dialog(app, ui, d),
         Dialog::SaveChanges { .. } => save_changes_dialog(app, ui, d),
         Dialog::RecipientList { fields, rows, message, filter } => recipient_list(app, ui, fields, rows, message, filter),
@@ -692,16 +692,16 @@ fn page_setup_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                     }
                     commands.push(("layout.documentGrid", v));
                 }
-                if *rtl != wordcraft_engine::cmd::page::sect(&app.session).rtl {
+                if *rtl != deskwerk_docs_engine::cmd::page::sect(&app.session).rtl {
                     commands.push(("layout.sectionRtl", json!({"value": *rtl})));
                 }
-                if *valign != wordcraft_engine::cmd::page::sect(&app.session).valign {
+                if *valign != deskwerk_docs_engine::cmd::page::sect(&app.session).valign {
                     commands.push(("layout.verticalAlign", json!({"value": page_valign_value(*valign)})));
                 }
                 if *odd_even != app.session.doc.settings.even_odd_headers {
                     commands.push(("layout.differentOddEven", json!({"value": *odd_even})));
                 }
-                if *first_page != wordcraft_engine::cmd::page::sect(&app.session).title_page {
+                if *first_page != deskwerk_docs_engine::cmd::page::sect(&app.session).title_page {
                     commands.push(("layout.differentFirstPage", json!({"value": *first_page})));
                 }
                 run_as_one_step(app, commands)
@@ -1032,7 +1032,7 @@ fn modify_style_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
     let (ok, cancel) = buttons(ui, tl!("OK"));
     if ok {
         let mut chr = json!({"font": font, "size": *size, "bold": *bold, "italic": *italic});
-        if let Some(c) = wordcraft_doc::Rgb::parse(color) {
+        if let Some(c) = deskwerk_docs_doc::Rgb::parse(color) {
             chr["color"] = json!({"Rgb": [c.0, c.1, c.2]});
         }
         let _ = app.run("styles.modify", json!({"style": id, "name": name, "chr": chr, "para": {"spaceBefore": *before, "spaceAfter": *after}}));
@@ -1079,7 +1079,7 @@ fn commands_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
 pub(crate) fn search_results(app: &mut WordApp, ui: &mut Ui, query: &str, enter: bool, width: f32) -> bool {
     let reg = app.session.registry.clone();
     // An empty box suggests a few common commands, as Word's Search does.
-    let mut hits: Vec<&wordcraft_engine::CommandSpec> = if query.trim().is_empty() {
+    let mut hits: Vec<&deskwerk_docs_engine::CommandSpec> = if query.trim().is_empty() {
         ui.label(egui::RichText::new(tl!("Suggested")).font(semibold(12.5)));
         SEARCH_SUGGESTIONS.iter().filter_map(|id| reg.get(id)).collect()
     } else {
@@ -1126,7 +1126,7 @@ fn paste_special_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool 
         ui.label(egui::RichText::new(text).weak());
     }
     for (i, f) in formats.iter().enumerate() {
-        let label = wordcraft_engine::cmd::paste::FORMATS.iter().find(|(id, _)| id == f).map(|(_, l)| *l).unwrap_or(f.as_str());
+        let label = deskwerk_docs_engine::cmd::paste::FORMATS.iter().find(|(id, _)| id == f).map(|(_, l)| *l).unwrap_or(f.as_str());
         ui.radio_value(choice, i, tl!(label));
     }
     if let Some(f) = formats.get(*choice) {
@@ -1150,32 +1150,10 @@ fn paste_special_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool 
     ok || cancel
 }
 
-fn about_dialog(ui: &mut Ui, d: &mut Dialog) -> bool {
-    let Dialog::About { tab } = d else {
-        return false;
-    };
-    ui.set_width(820.0);
-    let names = ["About", "Contributors", "Models", "Language data"].map(|n| tl!(n).to_string());
-    if let Some(i) = crate::widgets::dialog_tabs(ui, &names, *tab as usize) {
-        *tab = i as u8;
-    }
+fn about_dialog(ui: &mut Ui) -> bool {
+    ui.set_width(360.0);
+    ui.label(egui::RichText::new(tl!("Deskwerk Docs")).font(semibold(22.0)));
     ui.add_space(6.0);
-    match *tab {
-        1 => crate::credits::contributors_ui(ui),
-        2 => crate::credits::models_ui(ui),
-        3 => crate::language_packs::about_tab(ui),
-        _ => {
-            ui.label(egui::RichText::new(tl!("Deskwerk Docs")).font(semibold(22.0)));
-            let build = option_env!("WORDCRAFT_BUILD_SHA").map(|s| s.get(..8).unwrap_or(s)).unwrap_or(tl!("development build"));
-            ui.label(crate::i18n::fmt(tl!("Version {version} ({build})"), &[("version", env!("CARGO_PKG_VERSION")), ("build", build)]));
-            ui.label(tl!("A free, open-source word processor written in Rust.\nBased on WordCraft by the ArtCraft team; not affiliated with them."));
-            ui.add_space(6.0);
-            ui.hyperlink_to(tl!("Source code: github.com/dicendy/deskwerk-docs"), "https://github.com/dicendy/deskwerk-docs");
-            ui.add_space(6.0);
-            ui.label(egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 Deskwerk contributors.")).small().weak());
-            ui.label(egui::RichText::new(tl!("Based on WordCraft, (c) 2026 ArtCraft Team and the WordCraft contributors.")).small().weak());
-        }
-    }
     // One Close button: About has nothing to cancel.
     super::chrome::close_button(ui)
 }
@@ -1320,7 +1298,7 @@ fn password_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 app.ui.backstage = false;
                 return true;
             }
-            Err(e) if wordcraft_engine::io::wrong_password(&e) => {
+            Err(e) if deskwerk_docs_engine::io::wrong_password(&e) => {
                 *message = tl!("That password isn't right. Check it (passwords are case-sensitive) and try again.").to_string();
                 password.as_mut_string().clear();
             }
@@ -1501,7 +1479,7 @@ fn merge_records_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool 
         let id = if *print { "mailings.printDocuments" } else { "mailings.finish" };
         // An empty range is reported here, before Save Changes asks about the document.
         let run = params.ok_or_else(|| tl!("Enter a number.").to_string()).and_then(|p| {
-            wordcraft_engine::cmd::mailings::merge_range(&app.session, &p).map_err(|e| e.to_string())?;
+            deskwerk_docs_engine::cmd::mailings::merge_range(&app.session, &p).map_err(|e| e.to_string())?;
             app.run(id, p)
         });
         match run {

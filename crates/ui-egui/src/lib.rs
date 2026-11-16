@@ -1,5 +1,5 @@
-//! WordCraft's egui front end: a Word-style window (title bar with Quick Access Toolbar, ribbon,
-//! rulers, page canvas, panes, status bar, Backstage, dialogs) over `wordcraft-engine`.
+//! Deskwerk Docs's egui front end: a Word-style window (title bar with Quick Access Toolbar, ribbon,
+//! rulers, page canvas, panes, status bar, Backstage, dialogs) over `deskwerk-docs-engine`.
 //!
 //! The UI is thin: it reads `Session` state and acts through [`WordApp::run`] (command ids), so
 //! the menus, ribbon, shortcuts, control channel and MCP all reach the same behaviour.
@@ -8,7 +8,7 @@
 /// Deskwerk Docs as craft-update knows it, with its 128 px icon and accent colour: the update
 /// prompt shows both, and an AppImage's menu entry gets the icon. Releases come only from
 /// this fork's repository (`https://api.github.com/repos/dicendy/deskwerk-docs/releases`),
-/// never from upstream WordCraft's; asset names start with `deskwerk-docs-`.
+/// never from upstream's; asset names start with `deskwerk-docs-`.
 #[cfg(not(target_arch = "wasm32"))]
 pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
     id: "deskwerk-docs",
@@ -17,7 +17,7 @@ pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
     developer: "Deskwerk",
     icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/eu.deskwerk.Docs.png")),
     accent: Some([0x3f, 0x5f, 0xe0]),
-    ..craft_update::suite::WORDCRAFT
+    ..craft_update::app::App::new("deskwerk-docs", "Deskwerk Docs", "Writing and document design", "dicendy/deskwerk-docs")
 };
 
 /// An English UI string in the current interface language ([`i18n::t`]).
@@ -39,7 +39,6 @@ pub mod chrome;
 pub mod colors;
 pub mod content_controls;
 pub mod control;
-pub mod credits;
 pub mod crop;
 pub mod desktop_theme;
 pub mod dialogs;
@@ -90,9 +89,9 @@ mod windows;
 pub mod wordart_menus;
 pub mod zotero;
 
+use deskwerk_docs_engine::Session;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use wordcraft_engine::Session;
 
 pub use control::ControlRequest;
 pub use dialogs::dialogs_chart;
@@ -146,7 +145,7 @@ struct AwaitingSave {
 
 /// File › Options › Advanced › Linux display server (#2184, `ui.displayServer`): how the desktop
 /// app connects on Linux and the BSDs. It's read before the window opens, so a change applies at
-/// the next launch; `WORDCRAFT_WAYLAND` overrides it. An unknown saved value reads as Automatic.
+/// the next launch; `DESKWERK_DOCS_WAYLAND` overrides it. An unknown saved value reads as Automatic.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(from = "String", into = "String")]
 pub enum DisplayServer {
@@ -251,8 +250,8 @@ impl From<StatusCount> for String {
 }
 
 /// Whole-document counts the status bar shows (#2797), computed together whenever the document
-/// changes: words ([`wordcraft_engine::Session::word_count`]), characters and characters without
-/// spaces (the Word Count dialog's [`wordcraft_doc::count_chars`] and [`wordcraft_doc::count_chars_no_spaces`]).
+/// changes: words ([`deskwerk_docs_engine::Session::word_count`]), characters and characters without
+/// spaces (the Word Count dialog's [`deskwerk_docs_doc::count_chars`] and [`deskwerk_docs_doc::count_chars_no_spaces`]).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct StatusCounts {
     pub words: usize,
@@ -274,9 +273,9 @@ impl StatusCounts {
 /// `s` (a selection, say) counted in the unit the status bar is showing.
 pub fn count_in_unit(s: &str, unit: StatusCount) -> usize {
     match unit {
-        StatusCount::Words => wordcraft_doc::count_words(s),
-        StatusCount::Characters => wordcraft_doc::count_chars(s),
-        StatusCount::CharactersNoSpaces => wordcraft_doc::count_chars_no_spaces(s),
+        StatusCount::Words => deskwerk_docs_doc::count_words(s),
+        StatusCount::Characters => deskwerk_docs_doc::count_chars(s),
+        StatusCount::CharactersNoSpaces => deskwerk_docs_doc::count_chars_no_spaces(s),
     }
 }
 
@@ -332,7 +331,7 @@ pub struct UiState {
     pub nav_pane: bool,
     /// Where the Styles pane sits (#1756). The session owns it while running (see [`WordApp::prefs`]).
     #[serde(deserialize_with = "lenient_styles_pane_dock")]
-    pub styles_pane_dock: wordcraft_engine::StylesPaneDock,
+    pub styles_pane_dock: deskwerk_docs_engine::StylesPaneDock,
     /// The floating Styles pane's `[x, y, width, height]`, also kept while it is docked.
     #[serde(deserialize_with = "lenient_float_rect")]
     pub styles_pane_float: Option<[f32; 4]>,
@@ -348,7 +347,7 @@ pub struct UiState {
     pub pane_order: Vec<String>,
     /// Headings whose sub-headings the Navigation pane hides (#1997); per session, not saved.
     #[serde(skip)]
-    pub nav_collapsed: std::collections::HashSet<wordcraft_doc::Path>,
+    pub nav_collapsed: std::collections::HashSet<deskwerk_docs_doc::Path>,
     pub show_discord: bool,
     /// User name (File › Options) for comments and tracked changes. `None` (no saved name) keeps
     /// the default; a saved empty name stays empty (#4368).
@@ -358,7 +357,7 @@ pub struct UiState {
     /// Interface language: `auto` (follow the system) or a code from [`i18n::LANGUAGES`].
     pub language: String,
     /// Editing preferences; the session owns them while running (see [`WordApp::prefs`]).
-    pub editing: wordcraft_engine::Prefs,
+    pub editing: deskwerk_docs_engine::Prefs,
     /// Read Aloud speed (1 = normal) and whether it skips citations and bibliographies.
     pub read_aloud_rate: f32,
     pub read_aloud_skip_citations: bool,
@@ -395,10 +394,10 @@ pub struct UiState {
     /// (off).
     pub caret_animation: bool,
     /// Custom keyboard shortcuts (Customize Keyboard, #368); the session owns them while running.
-    pub keyboard: wordcraft_engine::KeyMap,
+    pub keyboard: deskwerk_docs_engine::KeyMap,
     /// Custom ribbon tabs and groups, hidden tabs and the Quick Access Toolbar (Customize Ribbon,
     /// #379); the session owns them while running.
-    pub ribbon: wordcraft_engine::RibbonLayout,
+    pub ribbon: deskwerk_docs_engine::RibbonLayout,
     /// Caption labels the user added (References › Insert Caption › New Label), kept between
     /// runs like Word keeps them in its Normal template (#402).
     pub caption_labels: Vec<String>,
@@ -406,12 +405,12 @@ pub struct UiState {
     pub last_caption_label: String,
     /// Draw › Add Pen: the pens added to the pen gallery; the session owns them while running.
     /// Entries that aren't pens are dropped on reading.
-    #[serde(deserialize_with = "wordcraft_engine::cmd::draw::lenient_pens")]
-    pub ink_pens: Vec<wordcraft_engine::cmd::draw::CustomPen>,
+    #[serde(deserialize_with = "deskwerk_docs_engine::cmd::draw::lenient_pens")]
+    pub ink_pens: Vec<deskwerk_docs_engine::cmd::draw::CustomPen>,
     /// File › Options › General: initials for comments; empty = the user name's. The session
     /// owns them while running, like `author`.
     pub initials: String,
-    /// The File › Options pane last shown ([`wordcraft_engine::cmd::options::PANES`]).
+    /// The File › Options pane last shown ([`deskwerk_docs_engine::cmd::options::PANES`]).
     pub options_pane: String,
     /// File › Options › Advanced: how many recent documents File › Home and Open list (0–50).
     pub recent_count: usize,
@@ -476,7 +475,7 @@ impl Default for UiState {
             legacy_dark: None,
             nav_tab: "headings".into(),
             nav_pane: false,
-            styles_pane_dock: wordcraft_engine::StylesPaneDock::Right,
+            styles_pane_dock: deskwerk_docs_engine::StylesPaneDock::Right,
             styles_pane_float: None,
             styles_pane_width: None,
             pane_places: Default::default(),
@@ -486,7 +485,7 @@ impl Default for UiState {
             author: None,
             window: None,
             language: i18n::AUTO.into(),
-            editing: wordcraft_engine::Prefs::default(),
+            editing: deskwerk_docs_engine::Prefs::default(),
             read_aloud_rate: 1.0,
             read_aloud_skip_citations: true,
             keytips_enabled: true,
@@ -499,8 +498,8 @@ impl Default for UiState {
             dark_page: false,
             check_spelling: true,
             caret_animation: true,
-            keyboard: wordcraft_engine::KeyMap::default(),
-            ribbon: wordcraft_engine::RibbonLayout::default(),
+            keyboard: deskwerk_docs_engine::KeyMap::default(),
+            ribbon: deskwerk_docs_engine::RibbonLayout::default(),
             caption_labels: Vec::new(),
             last_caption_label: String::new(),
             ink_pens: Vec::new(),
@@ -575,9 +574,9 @@ pub fn recent_fonts_from<'a>(names: impl IntoIterator<Item = &'a str>) -> Vec<St
 }
 
 /// An unknown saved position reads as the default.
-fn lenient_styles_pane_dock<'de, D: serde::Deserializer<'de>>(d: D) -> Result<wordcraft_engine::StylesPaneDock, D::Error> {
+fn lenient_styles_pane_dock<'de, D: serde::Deserializer<'de>>(d: D) -> Result<deskwerk_docs_engine::StylesPaneDock, D::Error> {
     let v = Value::deserialize(d)?;
-    Ok(v.as_str().and_then(wordcraft_engine::StylesPaneDock::parse).unwrap_or_default())
+    Ok(v.as_str().and_then(deskwerk_docs_engine::StylesPaneDock::parse).unwrap_or_default())
 }
 
 /// Anything but four finite numbers reads as no saved rect; `craft_ui::panes` brings a saved one
@@ -645,7 +644,7 @@ pub struct WordApp {
     /// Web: a recipient list was asked for (Select Recipients › Use an Existing List…), so the
     /// next text file from the picker loads as recipients instead of opening (#240).
     pub recipient_list_pending: bool,
-    /// The font database's [`generation`](wordcraft_fonts::FontDb::generation) last seen: when
+    /// The font database's [`generation`](deskwerk_docs_fonts::FontDb::generation) last seen: when
     /// fonts are added or removed (by any route) the font lists and the layout are refreshed.
     font_generation: u64,
     /// A file picked for the open dialog (Templates and Add-ins › Attach…, Organizer ›
@@ -766,11 +765,11 @@ pub struct WordApp {
     /// uses it to keep IME commits from setting the application-change signal.
     pub(crate) ime_origin: bool,
     /// Read Aloud: the start of the sentence the caret was last moved to, and the last error shown.
-    pub(crate) read_aloud_at: Option<wordcraft_engine::doc::Pos>,
+    pub(crate) read_aloud_at: Option<deskwerk_docs_engine::doc::Pos>,
     pub(crate) read_aloud_error: Option<String>,
     /// The file the document was last explicitly saved to in this session; AutoSave writes only
     /// there. A file that was merely opened isn't rewritten until the user saves it: saving drops
-    /// whatever WordCraft can't represent (content controls, charts, macros…).
+    /// whatever Deskwerk Docs can't represent (content controls, charts, macros…).
     autosave_path: Option<std::path::PathBuf>,
     /// Web: saves the browser's picker hasn't finished yet ([`async_saves`], #1315).
     saves_in_flight: Vec<SaveInFlight>,

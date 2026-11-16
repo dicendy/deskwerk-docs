@@ -1,21 +1,20 @@
 //! The named drawing definitions graphic styles use (ODF 1.3 §16.39–16.41): line dashes
 //! (`draw:stroke-dash`), gradients (`draw:gradient`) and arrowheads (`draw:marker`), read into
-//! WordCraft's dash patterns and gradient fills and written from them.
+//! Deskwerk Docs's dash patterns and gradient fills and written from them.
 
 use super::writer::pt;
 use super::xml::{Attrs, get, length};
 use crate::model::parse_color;
+use deskwerk_docs_doc::fill::{Fill, Gradient, GradientKind, PathShape};
+use deskwerk_docs_doc::line_dash::{DASH_PERCENT, LineDash, MAX_DASH_STOPS};
+use deskwerk_docs_doc::props::Rgb;
+use deskwerk_docs_doc::wordart::GradStop;
 use std::sync::Arc;
-use wordcraft_doc::fill::{Fill, Gradient, GradientKind, PathShape};
-use wordcraft_doc::line_dash::{DASH_PERCENT, LineDash, MAX_DASH_STOPS};
-use wordcraft_doc::props::Rgb;
-use wordcraft_doc::wordart::GradStop;
 
-/// The arrowhead WordCraft writes (`draw:marker`, §16.39): a plain triangle pointing along the
+/// The arrowhead Deskwerk Docs writes (`draw:marker`, §16.39): a plain triangle pointing along the
 /// line, its tip at the line's end.
-pub(super) const ARROW: &str = "WordCraft_20_Arrow";
-pub(super) const ARROW_DEF: &str =
-    "<draw:marker draw:name=\"WordCraft_20_Arrow\" draw:display-name=\"WordCraft Arrow\" svg:viewBox=\"0 0 20 20\" svg:d=\"M10 0L20 20H0z\"/>";
+pub(super) const ARROW: &str = "Deskwerk_20_Docs_20_Arrow";
+pub(super) const ARROW_DEF: &str = "<draw:marker draw:name=\"Deskwerk_20_Docs_20_Arrow\" draw:display-name=\"Deskwerk Docs Arrow\" svg:viewBox=\"0 0 20 20\" svg:d=\"M10 0L20 20H0z\"/>";
 
 /// A dash or space length: a fraction of the line width, or an absolute length in points.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -71,7 +70,7 @@ impl Dash {
         }
     }
 
-    /// The pattern for a line `width` points wide: one of WordCraft's named dashes when it is one.
+    /// The pattern for a line `width` points wide: one of Deskwerk Docs's named dashes when it is one.
     pub(super) fn pattern(&self, width: f32) -> LineDash {
         let space = self.space.of(width);
         let pairs: Vec<(u32, u32)> = std::iter::repeat_n((self.len1.of(width), space), self.dots1 as usize)
@@ -85,7 +84,7 @@ impl Dash {
     }
 }
 
-/// WordCraft's named dashes.
+/// Deskwerk Docs's named dashes.
 const PRESETS: [LineDash; 10] = [
     LineDash::Dot,
     LineDash::Dash,
@@ -136,8 +135,8 @@ pub(super) fn dash_def(name: &str, dash: &LineDash) -> Option<String> {
 /// in their files before ODF 1.3 (`300` for 30°), and LibreOffice still reads such files so
 /// (observed: the same gradient turns 30° in an ODF 1.2 file and 300° in an ODF 1.3 one). Read
 /// by the standard, the gradients of every older LibreOffice document would turn the wrong
-/// way. So for files older than 1.3 WordCraft reads them as written; from 1.3 on, as the
-/// standard says. WordCraft writes them with a unit (`30deg`), which both read the same.
+/// way. So for files older than 1.3 Deskwerk Docs reads them as written; from 1.3 on, as the
+/// standard says. Deskwerk Docs writes them with a unit (`30deg`), which both read the same.
 pub(super) fn legacy_angles(version: Option<&str>) -> bool {
     version.is_none_or(|v| v.trim() < "1.3")
 }
@@ -166,7 +165,7 @@ fn percent(v: Option<&str>) -> Option<f32> {
 }
 
 /// A `draw:gradient` (§16.40) as a fill. Linear and axial gradients run along their angle (ODF's
-/// 0° runs top to bottom, turning anticlockwise; WordCraft's 0° left to right, clockwise);
+/// 0° runs top to bottom, turning anticlockwise; Deskwerk Docs's 0° left to right, clockwise);
 /// radial, ellipsoid, square and rectangular ones run from their end colour in the middle to
 /// their start colour at the edge. The border is where the start colour stays plain; intensity
 /// darkens a colour.
@@ -320,7 +319,7 @@ impl DrawDefs {
         if let Some(n) = self.names.get(&key) {
             return Some(n.clone());
         }
-        let name = format!("WordCraft_20_{kind}_20_{prefix}{}", self.names.len() + 1);
+        let name = format!("Deskwerk_20_Docs_20_{kind}_20_{prefix}{}", self.names.len() + 1);
         let def = make(&name)?;
         self.names.insert(key, name.clone());
         self.defs.insert(name.clone(), def);

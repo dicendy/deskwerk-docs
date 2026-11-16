@@ -1,19 +1,19 @@
 [package]
-name = "wordcraft-layout"
+name = "deskwerk-docs-layout"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "WordCraft layout: shaping, line breaking, tabs, lists, tables, pagination, headers/footers, hit testing"
+description = "Deskwerk Docs layout: shaping, line breaking, tabs, lists, tables, pagination, headers/footers, hit testing"
 
 [lints]
 workspace = true
 
 [dependencies]
-wordcraft-geom = { workspace = true, features = ["image"] }
-wordcraft-doc = { workspace = true }
-wordcraft-fonts = { workspace = true }
-wordcraft-proof = { workspace = true }
-wordcraft-metafile = { workspace = true }
+deskwerk-docs-geom = { workspace = true, features = ["image"] }
+deskwerk-docs-doc = { workspace = true }
+deskwerk-docs-fonts = { workspace = true }
+deskwerk-docs-proof = { workspace = true }
+deskwerk-docs-metafile = { workspace = true }
 kurbo = { workspace = true }
 unicode-bidi = { workspace = true }
 unicode-linebreak = { workspace = true }
@@ -24,7 +24,7 @@ image = { workspace = true }
 log = { workspace = true }
 
 [dev-dependencies]
-wordcraft-doc = { workspace = true, features = ["test-support"] }
+deskwerk-docs-doc = { workspace = true, features = ["test-support"] }
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 # The browser clock (`SystemTime::now()`/`Instant::now()` panic on wasm32-unknown-unknown).

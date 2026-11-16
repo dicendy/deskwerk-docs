@@ -67,21 +67,21 @@ const MAX_DECODE_SIDE: u32 = u16::MAX as u32;
 /// Decode an encoded image to a premultiplied pixmap. The dimension limit above and the default
 /// allocation cap (512 MB, what `load_from_memory` applied) bound the decode during paint.
 pub fn decode_pixmap(bytes: &[u8]) -> Option<Pixmap> {
-    decode_pixmap_fx(bytes, wordcraft_doc::picfx::PicFx::default())
+    decode_pixmap_fx(bytes, deskwerk_docs_doc::picfx::PicFx::default())
 }
 
 /// [`decode_pixmap`] with a picture's brightness and contrast applied (#1711, #1766), under the
 /// same decode limits.
-pub fn decode_pixmap_fx(bytes: &[u8], fx: wordcraft_doc::picfx::PicFx) -> Option<Pixmap> {
+pub fn decode_pixmap_fx(bytes: &[u8], fx: deskwerk_docs_doc::picfx::PicFx) -> Option<Pixmap> {
     // The shared probe also charges what the decoder holds beside its output (#3644).
-    if !wordcraft_geom::picture::probe(bytes).is_ok_and(|p| p.fits(wordcraft_geom::MAX_DECODED_BYTES)) {
+    if !deskwerk_docs_geom::picture::probe(bytes).is_ok_and(|p| p.fits(deskwerk_docs_geom::MAX_DECODED_BYTES)) {
         return None;
     }
-    decode_pixmap_within(bytes, fx, wordcraft_geom::MAX_DECODED_BYTES)
+    decode_pixmap_within(bytes, fx, deskwerk_docs_geom::MAX_DECODED_BYTES)
 }
 
 /// [`decode_pixmap_fx`] with an explicit RGBA byte budget (a small one in tests).
-pub(crate) fn decode_pixmap_within(bytes: &[u8], fx: wordcraft_doc::picfx::PicFx, budget: u64) -> Option<Pixmap> {
+pub(crate) fn decode_pixmap_within(bytes: &[u8], fx: deskwerk_docs_doc::picfx::PicFx, budget: u64) -> Option<Pixmap> {
     use image::ImageDecoder;
     let mut limits = image::Limits::default();
     limits.max_image_width = Some(MAX_DECODE_SIDE);
@@ -98,7 +98,7 @@ pub(crate) fn decode_pixmap_within(bytes: &[u8], fx: wordcraft_doc::picfx::PicFx
         let (w, h) = d.dimensions();
         (w, h, u64::from(d.color_type().bytes_per_pixel()))
     };
-    if !wordcraft_geom::decode_peak_fits(hw, hh, native, budget) {
+    if !deskwerk_docs_geom::decode_peak_fits(hw, hh, native, budget) {
         // Logged once a picture: its refusal is cached with it (`pixmap_for`).
         log::warn!(
             "a {hw}×{hh} picture of {native} bytes a pixel needs more than {budget} bytes to decode: it is not drawn (in the text, a grey box takes its place)"
@@ -142,11 +142,11 @@ pub fn image_size(bytes: &[u8]) -> Option<(u32, u32)> {
 /// extension it is stored under (`"wmf"` or `"emf"`), or None for anything else (#802). Very large
 /// frames are scaled down to 22 inches on the longer side, keeping the shape.
 pub fn metafile_size(bytes: &[u8]) -> Option<(f32, f32, &'static str)> {
-    if !wordcraft_metafile::is_metafile(bytes) {
+    if !deskwerk_docs_metafile::is_metafile(bytes) {
         return None;
     }
     // The frame comes from the header where the file has one, so no bitmap is decoded for it.
-    let (w, h) = wordcraft_metafile::size(bytes).ok()?;
+    let (w, h) = deskwerk_docs_metafile::size(bytes).ok()?;
     if !(w.is_finite() && h.is_finite() && w > 0.0 && h > 0.0) {
         return None;
     }
@@ -185,7 +185,7 @@ impl Vector {
 /// the caller falls back to the raster path (and the grey box).
 pub(crate) fn vector_for(doc: &Document, key: &str) -> Option<Arc<Vector>> {
     let bytes = doc.media.get(key)?;
-    if !wordcraft_metafile::is_metafile(bytes) {
+    if !deskwerk_docs_metafile::is_metafile(bytes) {
         return None;
     }
     if let Some(v) = lock(vectors()).get(key, bytes) {
@@ -202,7 +202,7 @@ pub(crate) fn vector_for(doc: &Document, key: &str) -> Option<Arc<Vector>> {
 
 /// Parses a metafile and decodes its bitmaps. None when the picture has no usable size.
 fn build_vector(bytes: &[u8]) -> Option<Vector> {
-    let mut pic = wordcraft_metafile::parse(bytes).ok()?;
+    let mut pic = deskwerk_docs_metafile::parse(bytes).ok()?;
     if !pic.has_size() {
         return None;
     }
@@ -269,9 +269,9 @@ pub(crate) fn draw_vector(ctx: &mut RenderContext, v: &Vector, r: &kurbo::Rect, 
 }
 
 /// Draws a metafile text run: `tf` maps the run's own space (see [`PlacedItem::Text`]) to the device.
-fn draw_vector_text(ctx: &mut RenderContext, t: &wordcraft_metafile::Text, tf: Affine) {
-    let face = wordcraft_fonts::word::resolve(&t.font, t.bold, t.italic).face;
-    let shaped = wordcraft_fonts::shape(&face, &t.text, &[], |c| c);
+fn draw_vector_text(ctx: &mut RenderContext, t: &deskwerk_docs_metafile::Text, tf: Affine) {
+    let face = deskwerk_docs_fonts::word::resolve(&t.font, t.bold, t.italic).face;
+    let shaped = deskwerk_docs_fonts::shape(&face, &t.text, &[], |c| c);
     let glyphs: Vec<_> = shaped.iter().map(|g| (g.cluster, f64::from(g.x_advance), f64::from(g.x_offset), f64::from(g.y_offset))).collect();
     let Some(lay) = t.layout(face.upem, face.ascent, face.descent, &glyphs) else { return };
     let k = lay.em / face.upem.max(1.0);
@@ -338,7 +338,7 @@ pub(crate) fn draw_page_picture(ctx: &mut RenderContext, doc: &Document, page: &
         Some((w, h)) if w > 0 && h > 0 && (w as u64) * (h as u64) <= MAX_BACKGROUND_PIXELS => (w as f64, h as f64),
         _ => return,
     };
-    let Some(pm) = pixmap_for(doc, &pic.media, wordcraft_doc::picfx::PicFx::default()) else { return };
+    let Some(pm) = pixmap_for(doc, &pic.media, deskwerk_docs_doc::picfx::PicFx::default()) else { return };
     let (pw, ph) = (pm.width().max(1) as f64, pm.height().max(1) as f64);
     let (w, h) = (page.w as f64, (page.h as f64).min(1e6));
     if !(w.is_finite() && h.is_finite() && w > 0.0 && h > 0.0) {
@@ -372,7 +372,7 @@ pub(crate) fn draw_page_picture(ctx: &mut RenderContext, doc: &Document, page: &
     ctx.reset_paint_transform();
 }
 
-pub(crate) fn pixmap_for(doc: &Document, key: &str, fx: wordcraft_doc::picfx::PicFx) -> Option<Arc<Pixmap>> {
+pub(crate) fn pixmap_for(doc: &Document, key: &str, fx: deskwerk_docs_doc::picfx::PicFx) -> Option<Arc<Pixmap>> {
     let bytes = doc.media.get(key)?;
     // Corrected pixels are cached apart from the picture's own (the same picture can be shown
     // both ways).

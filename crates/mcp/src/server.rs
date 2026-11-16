@@ -28,8 +28,8 @@ list_documents gives their ids, and `doc` on execute, batch and the other docume
 without switching.";
 
 /// Resource URIs.
-pub const DOC_URI: &str = "wordcraft://document";
-pub const COMMANDS_URI: &str = "wordcraft://commands";
+pub const DOC_URI: &str = "deskwerk-docs://document";
+pub const COMMANDS_URI: &str = "deskwerk-docs://commands";
 
 /// Longest request line accepted on stdin.
 pub const MAX_REQUEST_LINE: usize = 1 << 20;

@@ -64,13 +64,13 @@ echo "==> Deskwerk Docs $VERSION for FreeBSD $ARCH"
 
 if [[ "$DRY_RUN" = 1 ]]; then
   echo "dry run: target=${CARGO_BUILD_TARGET:-native} arch=$ARCH"
-  echo "dry run: cargo build --release --locked ${CARGO_BUILD_TARGET:+--target $CARGO_BUILD_TARGET} -p wordcraft -p wordcraft-cli"
+  echo "dry run: cargo build --release --locked ${CARGO_BUILD_TARGET:+--target $CARGO_BUILD_TARGET} -p deskwerk-docs -p deskwerk-docs-cli"
   echo "dry run: would write $DIST/$BASENAME.tar.gz"
   exit 0
 fi
 
 if [[ "$SKIP_BUILD" = 0 ]]; then
-  (cd "$ROOT" && cargo build --release --locked ${CARGO_BUILD_TARGET:+--target "$CARGO_BUILD_TARGET"} -p wordcraft -p wordcraft-cli)
+  (cd "$ROOT" && cargo build --release --locked ${CARGO_BUILD_TARGET:+--target "$CARGO_BUILD_TARGET"} -p deskwerk-docs -p deskwerk-docs-cli)
 fi
 # Cargo puts a cross build under target/<triple>/release.
 BIN="$CARGO_TARGET_DIR/${CARGO_BUILD_TARGET:+$CARGO_BUILD_TARGET/}release"
@@ -86,7 +86,7 @@ strip "$STAGE/bin/deskwerk-docs" "$STAGE/bin/deskwerk-docs-cli" 2>/dev/null || t
 # The desktop entry, MIME type and metainfo are the freedesktop files the Linux packages use.
 install -m 644 "$LINUX/$APP_ID.desktop" "$STAGE/share/applications/$APP_ID.desktop"
 install -m 644 "$LINUX/$APP_ID.mime.xml" "$STAGE/share/mime/packages/$APP_ID.xml"
-sed -e "s/@VERSION@/$VERSION/g" -e "s/@DATE@/$WORDCRAFT_BUILD_DATE/g" \
+sed -e "s/@VERSION@/$VERSION/g" -e "s/@DATE@/$DESKWERK_DOCS_BUILD_DATE/g" \
   "$LINUX/$APP_ID.metainfo.xml.in" >"$STAGE/share/metainfo/$APP_ID.metainfo.xml"
 cp -R "$ROOT/assets/app-icon/hicolor" "$STAGE/share/icons/"
 copy_docs "$STAGE/share/doc/deskwerk-docs"

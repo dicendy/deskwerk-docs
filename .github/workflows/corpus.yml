@@ -109,7 +109,7 @@ jobs:
           cache-on-failure: true
 
       - name: Build deskwerk-docs-cli (release)
-        run: cargo build --release --locked -p wordcraft-cli
+        run: cargo build --release --locked -p deskwerk-docs-cli
 
       - name: Fetch corpus
         run: bash tools/corpus/fetch.sh "$RUNNER_TEMP/corpus"

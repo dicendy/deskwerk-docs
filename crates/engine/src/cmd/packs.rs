@@ -575,7 +575,7 @@ mod tests {
     fn an_installed_pack_proofs_and_hyphenates_its_runs() {
         let _g = LOCK.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         let _reset = Reset;
-        let dir = std::env::temp_dir().join(format!("wordcraft-pack-fixture-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("deskwerk-docs-pack-fixture-{}", std::process::id()));
         let lt = dir.join("lt");
         std::fs::create_dir_all(&lt).unwrap();
         std::fs::write(lt.join("pack.toml"), "locale = \"lt\"\nname = \"Lietuvių\"\nlicence = \"MIT\"\nclass = \"Embeddable\"\n").unwrap();
@@ -583,12 +583,14 @@ mod tests {
         std::fs::write(lt.join("spelling.dic"), "2\nlabas\nrytas\n").unwrap();
         // One break, laba-rytas; the other letters only make up the patterns' alphabet.
         std::fs::write(lt.join("hyphenation.pat"), "a1r b l s t y z\n").unwrap();
-        wordcraft_proof::packs::set_packs_dir(Some(dir.clone()));
+        deskwerk_docs_proof::packs::set_packs_dir(Some(dir.clone()));
         let text = "labas rytaz labarytas typography beautifull";
-        let mut s = Session::new(wordcraft_doc::Document::from_text(text));
+        let mut s = Session::new(deskwerk_docs_doc::Document::from_text(text));
         let eng = text.find("typography").unwrap();
-        s.doc.format_range(&wordcraft_doc::Pos::body(0, 0), &wordcraft_doc::Pos::body(0, eng), &|c| c.lang = Some("lt-LT".into())).unwrap();
-        s.doc.format_range(&wordcraft_doc::Pos::body(0, eng), &wordcraft_doc::Pos::body(0, text.len()), &|c| c.lang = Some("en-US".into())).unwrap();
+        s.doc.format_range(&deskwerk_docs_doc::Pos::body(0, 0), &deskwerk_docs_doc::Pos::body(0, eng), &|c| c.lang = Some("lt-LT".into())).unwrap();
+        s.doc
+            .format_range(&deskwerk_docs_doc::Pos::body(0, eng), &deskwerk_docs_doc::Pos::body(0, text.len()), &|c| c.lang = Some("en-US".into()))
+            .unwrap();
         s.doc.settings.auto_hyphenation = true;
         s.relayout();
         let issues = s.run("review.issues", &json!({})).map(|v| v.to_string()).unwrap_or_default();
@@ -597,10 +599,10 @@ mod tests {
             .pages
             .iter()
             .flat_map(|p| &p.items)
-            .filter_map(|i| if let wordcraft_layout::Placed::Lines { para, .. } = i { Some(para) } else { None })
+            .filter_map(|i| if let deskwerk_docs_layout::Placed::Lines { para, .. } = i { Some(para) } else { None })
             .flat_map(|para| para.hyph_after.iter().filter_map(|&k| para.clusters.get(k as usize).map(|c| c.end)).collect::<Vec<_>>())
             .collect();
-        wordcraft_proof::packs::set_packs_dir(None);
+        deskwerk_docs_proof::packs::set_packs_dir(None);
         let _ = std::fs::remove_dir_all(&dir);
         let laba = text.find("labarytas").unwrap() + "laba".len();
         assert!(ends.contains(&laba), "the pack's pattern breaks laba-rytas: {ends:?}");
@@ -639,25 +641,26 @@ mod tests {
     /// their spelling is their own) but hyphenate and check grammar as German and Portuguese.
     #[test]
     fn swiss_german_and_portugal_portuguese_keep_their_languages_rules() {
-        use wordcraft_proof::ProofLang;
+        use deskwerk_docs_proof::ProofLang;
         let de_ch = ProofLang::from_tag(Some("de-CH"));
         let pt_pt = ProofLang::from_tag(Some("pt-PT"));
         assert_eq!(de_ch.tag(), "de-ch");
         assert_eq!(pt_pt.tag(), "pt-pt");
         assert!(packs::proofable("de-CH") && packs::proofable("pt-PT"));
         for word in ["Zusammenarbeit", "Rechtschreibung"] {
-            let german = wordcraft_proof::hyphen::word_breaks_in(word, ProofLang::De).0;
+            let german = deskwerk_docs_proof::hyphen::word_breaks_in(word, ProofLang::De).0;
             assert!(!german.is_empty(), "German hyphenates {word}");
-            assert_eq!(wordcraft_proof::hyphen::word_breaks_in(word, de_ch).0, german, "Swiss German hyphenates {word} as German");
+            assert_eq!(deskwerk_docs_proof::hyphen::word_breaks_in(word, de_ch).0, german, "Swiss German hyphenates {word} as German");
         }
         for word in ["computador", "informação"] {
             assert_eq!(
-                wordcraft_proof::hyphen::word_breaks_in(word, pt_pt).0,
-                wordcraft_proof::hyphen::word_breaks_in(word, ProofLang::Pt).0,
+                deskwerk_docs_proof::hyphen::word_breaks_in(word, pt_pt).0,
+                deskwerk_docs_proof::hyphen::word_breaks_in(word, ProofLang::Pt).0,
                 "{word}"
             );
         }
-        let messages = |lang| wordcraft_proof::check_grammar_in("Ele disse que que viria .", lang).into_iter().map(|i| i.message).collect::<Vec<_>>();
+        let messages =
+            |lang| deskwerk_docs_proof::check_grammar_in("Ele disse que que viria .", lang).into_iter().map(|i| i.message).collect::<Vec<_>>();
         assert!(!messages(ProofLang::Pt).is_empty());
         assert_eq!(messages(pt_pt), messages(ProofLang::Pt), "Portugal text gets the Portuguese grammar checks");
     }
@@ -734,7 +737,7 @@ mod tests {
         let _reset = Reset;
         let b = Arc::new(Uncached(b));
         packs::set_backend(Some(b.clone() as Arc<dyn Backend>));
-        let mut s = Session::new(wordcraft_doc::Document::new());
+        let mut s = Session::new(deskwerk_docs_doc::Document::new());
         f(&mut s, &b)
     }
 
@@ -753,7 +756,7 @@ mod tests {
             }
             assert!(packs::available().is_empty() && packs::missing(s).is_empty(), "no list: no pack to offer");
             for tag in ["kl-GL", "tlh"] {
-                assert!(wordcraft_proof::missing_dictionary(Some(tag)).is_some(), "{tag} has no dictionary here");
+                assert!(deskwerk_docs_proof::missing_dictionary(Some(tag)).is_some(), "{tag} has no dictionary here");
             }
             assert_eq!(packs::unlisted(s), ["kl-GL", "tlh"], "English is never offered");
             // Downloading off: getting it fails up front, and asks for nothing.
@@ -811,7 +814,7 @@ mod tests {
         assert!(!packs::refresh_if_stale(), "asked once a session: turned on later, the person's own click fetches");
         // A new session (the backend set again) with downloading on.
         packs::set_backend(Some(b.clone() as Arc<dyn Backend>));
-        let mut s = Session::new(wordcraft_doc::Document::new());
+        let mut s = Session::new(deskwerk_docs_doc::Document::new());
         s.run("document.setText", &json!({"text": "Aluu"})).unwrap();
         s.run("select.all", &json!({})).unwrap();
         s.run("review.language", &json!({"lang": "kl"})).unwrap();

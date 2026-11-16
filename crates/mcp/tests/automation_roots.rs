@@ -5,9 +5,9 @@
 
 use std::path::{Path, PathBuf};
 
+use deskwerk_docs_engine::file_access::AutomationRoots;
+use deskwerk_docs_mcp::{Headless, Server};
 use serde_json::{Value, json};
-use wordcraft_engine::file_access::AutomationRoots;
-use wordcraft_mcp::{Headless, Server};
 
 /// A 1x1 PNG, so `insert.picture` has something real to read.
 const PNG: &[u8] = &[

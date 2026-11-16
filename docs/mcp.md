@@ -1,6 +1,6 @@
 # MCP server
 
-WordCraft speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio, so
+Deskwerk Docs speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio, so
 Claude and other agents can write and edit documents.
 
 ```sh
@@ -9,13 +9,13 @@ deskwerk-docs --control 7981 &                 # or: drive the running app…
 deskwerk-docs-cli mcp --connect 127.0.0.1:7981 # …including clicks, keys and screenshots
 ```
 
-Claude Code: `claude mcp add wordcraft -- deskwerk-docs-cli mcp`.
+Claude Code: `claude mcp add deskwerk-docs -- deskwerk-docs-cli mcp`.
 
 With `--connect`, the bridge sends the app's control key, which it reads from
-`WORDCRAFT_CONTROL_KEY` or from the key file the app writes at start. It sends the key only to
+`DESKWERK_DOCS_CONTROL_KEY` or from the key file the app writes at start. It sends the key only to
 loopback addresses; see [Keys](control-protocol.md#keys). The bridge serves even when the app
 isn't open yet: tool calls return "not reachable … will retry on each call" and succeed once the
-app's port opens (#4078), so a client that starts before WordCraft doesn't lose the server for
+app's port opens (#4078), so a client that starts before Deskwerk Docs doesn't lose the server for
 its whole session.
 
 ## Scripts from the command line
@@ -58,7 +58,7 @@ deskwerk-docs-cli mcp --automation-read-root /work/project --automation-write-ro
 ```
 
 ```json
-{"mcpServers": {"wordcraft": {"command": "/abs/path/target/release/deskwerk-docs-cli",
+{"mcpServers": {"deskwerk-docs": {"command": "/abs/path/target/release/deskwerk-docs-cli",
   "args": ["mcp", "--automation-read-root", "/work/project", "--automation-write-root", "/work/project/out"]}}}
 ```
 
@@ -98,7 +98,7 @@ config works across the suite) keep the agent to the folders you give it:
   given once (`--flag <dir>` or `--flag=<dir>`).
 
 The flags confine the headless server; `--connect` with them is an error, since the server would
-otherwise talk to an app that isn't confined. WordCraft's desktop app has no equivalent flags yet,
+otherwise talk to an app that isn't confined. Deskwerk Docs's desktop app has no equivalent flags yet,
 so a running app (`deskwerk-docs --control`) is not confined.
 
 What the roots do not cover: commands that take no path (`text.insert`, `execute` of anything that
@@ -139,7 +139,7 @@ downloading on either: only the person's own click does; the app shows why inste
 
 Installing reads the pinned index of craft-i18n's language-packs-2 release (75 languages). For
 testing packs before they are released, set `CRAFT_LANGUAGE_PACK_INDEX` to another index (a URL or a path
-to an `index.json`) when starting WordCraft or `deskwerk-docs-cli`. That index isn't pinned, so the
+to an `index.json`) when starting Deskwerk Docs or `deskwerk-docs-cli`. That index isn't pinned, so the
 sha256 of each archive only matches what that index says: it catches a broken download, not a
 changed pack. `proof.packs` then returns `"index_override": "<url or path>"`, and the app shows the
 test source in File › Options › Language and on the bar's Install.
@@ -189,7 +189,7 @@ window, so they work on the document on screen.
 `insert.picture` and `insert.icon` leave the caret after the new picture, so typing next doesn't
 replace it; Picture Format commands (`picture.*`, `arrange.*`) still act on it.
 
-Resources: `wordcraft://document` (inspect) and `wordcraft://commands`.
+Resources: `deskwerk-docs://document` (inspect) and `deskwerk-docs://commands`.
 
 The acceptance test `crates/mcp/src/tests.rs` writes a formatted document using MCP only.
 

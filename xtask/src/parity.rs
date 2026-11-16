@@ -5,7 +5,7 @@ use std::path::Path;
 
 pub fn run(root: &Path) -> Result<(), String> {
     let out = crate::cargo()
-        .args(["run", "-q", "-p", "wordcraft-cli", "--", "parity", "--markdown"])
+        .args(["run", "-q", "-p", "deskwerk-docs-cli", "--", "parity", "--markdown"])
         .output()
         .map_err(|e| format!("cargo run deskwerk-docs-cli: {e}"))?;
     if !out.status.success() {

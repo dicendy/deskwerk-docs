@@ -1,6 +1,6 @@
 //! Language packs in the window (CP4.3): the list in File › Options › Language, the missing-pack
-//! bar over the page and About › Language data. The engine does the work
-//! ([`wordcraft_engine::packs`]): in the app installs and fetches of the list run on its thread,
+//! bar over the page. The engine does the work
+//! ([`deskwerk_docs_engine::packs`]): in the app installs and fetches of the list run on its thread,
 //! whoever asks (these buttons, or `proof.installPack` from MCP and the control channel), so the
 //! window keeps drawing. A click of the person's own on Install, Add a language… or
 //! Refresh is their consent: it turns on the font store's downloading (there is no second
@@ -9,9 +9,9 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
+use deskwerk_docs_engine::packs::{self, LanguageRow, Pack, Proofing};
 use egui::{RichText, Ui, vec2};
 use serde_json::json;
-use wordcraft_engine::packs::{self, LanguageRow, Pack, Proofing};
 
 use crate::WordApp;
 use crate::theme::{Tokens, semibold};
@@ -25,11 +25,6 @@ const MAX_BAR_NAME: usize = 40;
 /// index isn't ours to trust), and at most `max` characters.
 pub(crate) fn shown(text: &str, max: usize) -> String {
     shown_keeping(text, max, false)
-}
-
-/// [`shown`] keeping line breaks and tabs: a licence's text.
-fn shown_text(text: &str) -> String {
-    shown_keeping(text, usize::MAX, true)
 }
 
 /// Most characters of a failure the window shows: the font store's errors can quote the index
@@ -278,7 +273,7 @@ fn missing(app: &mut WordApp, now: f64) -> Offers {
     let key = MissingKey {
         document: app.session.document_id(),
         rev: app.session.rev(),
-        generation: wordcraft_engine::proof::dictionary_generation(),
+        generation: deskwerk_docs_engine::proof::dictionary_generation(),
         packs: packs::index_generation(),
         caret: packs::caret_language(&app.session),
     };
@@ -451,7 +446,7 @@ fn your_rows(app: &mut WordApp) -> Vec<LanguageRow> {
         MissingKey {
             document: app.session.document_id(),
             rev: app.session.rev(),
-            generation: wordcraft_engine::proof::dictionary_generation(),
+            generation: deskwerk_docs_engine::proof::dictionary_generation(),
             packs: packs::index_generation(),
             // The rows don't follow the caret (it is only made bold when drawn).
             caret: None,
@@ -663,7 +658,9 @@ pub(crate) fn your_languages_section(app: &mut WordApp, ui: &mut Ui) {
                     ui.end_row();
                     let error = row.pack.as_deref().and_then(|l| error_of(app, l));
                     let unreadable = (matches!(row.proofing, Proofing::OwnDictionary | Proofing::SystemDictionary))
-                        .then(|| wordcraft_engine::proof::dictionary_load_error(wordcraft_engine::proof::ProofLang::from_tag(Some(&row_tag(row)))))
+                        .then(|| {
+                            deskwerk_docs_engine::proof::dictionary_load_error(deskwerk_docs_engine::proof::ProofLang::from_tag(Some(&row_tag(row))))
+                        })
                         .flatten();
                     if error.is_some() || unreadable.is_some() {
                         ui.label("");
@@ -840,57 +837,12 @@ pub(crate) fn add_language_window(app: &mut WordApp, ctx: &egui::Context) {
     }
 }
 
-/// Height of About › Language data's list.
-const ABOUT_HEIGHT: f32 = 420.0;
-
-/// The licence texts About shows, read again only when the dictionaries change (they can run to
-/// megabytes).
-static LICENCES: std::sync::Mutex<Option<(u64, Arc<Vec<(String, String)>>)>> = std::sync::Mutex::new(None);
-
-fn licence_texts() -> Arc<Vec<(String, String)>> {
-    let generation = wordcraft_engine::proof::dictionary_generation();
-    let mut cached = LICENCES.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-    if let Some((g, texts)) = cached.as_ref()
-        && *g == generation
-    {
-        return texts.clone();
-    }
-    let texts: Arc<Vec<(String, String)>> =
-        Arc::new(packs::licence_texts().into_iter().map(|(title, text)| (shown(&title, 200), shown_text(&text))).collect());
-    *cached = Some((generation, texts.clone()));
-    texts
-}
-
-/// About › Language data: the full licence text of the embedded English data and of each
-/// installed pack.
-pub(crate) fn about_tab(ui: &mut Ui) {
-    ui.label(RichText::new(tl!("The spelling and hyphenation data Deskwerk Docs uses, and their licences.")).small().weak());
-    ui.add_space(4.0);
-    let texts = licence_texts();
-    // A fixed height: entries open and long texts scroll inside it, and the dialog keeps its size.
-    egui::ScrollArea::vertical()
-        .id_salt("about_language_data")
-        .min_scrolled_height(ABOUT_HEIGHT)
-        .max_height(ABOUT_HEIGHT)
-        .auto_shrink([false, false])
-        .show(ui, |ui| {
-            for (title, text) in texts.iter() {
-                egui::CollapsingHeader::new(RichText::new(title.as_str()).font(semibold(13.0))).id_salt(("language_data", title.as_str())).show(
-                    ui,
-                    |ui| {
-                        ui.add(egui::Label::new(RichText::new(text).small().monospace()).wrap());
-                    },
-                );
-            }
-        });
-}
-
 #[cfg(test)]
 mod tests {
     use std::sync::atomic::Ordering;
 
+    use deskwerk_docs_engine::packs::{self, Backend, FixedBackend};
     use serde_json::{Value, json};
-    use wordcraft_engine::packs::{self, Backend, FixedBackend};
 
     use crate::WordApp;
 
@@ -1060,7 +1012,7 @@ mod tests {
         assert_eq!(super::language_of("ar", "العربية"), "Arabic");
         assert_eq!(super::language_of("nn", "Norsk nynorsk"), "Norwegian (Nynorsk)");
         assert_eq!(super::language_of("es-cu", ""), "Spanish (Cuba)");
-        // A locale WordCraft has no name for keeps the pack's own name.
+        // A locale Deskwerk Docs has no name for keeps the pack's own name.
         assert_eq!(super::language_of("xq", "Xq name"), "Xq name");
     }
 
@@ -1154,7 +1106,7 @@ mod tests {
         assert_eq!(short.len(), crate::ribbon::PROOFING_LANGUAGES.len() + 1);
         assert_eq!(short.last().map(|(t, n)| (t.as_str(), n.as_str())), Some(("bg-BG", "Bulgarian")));
         // Choosing it marks the text with the tag its pack proofs.
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
         a.run("document.setText", json!({"text": "Добър ден"})).unwrap();
         a.run("select.all", json!({})).unwrap();
         a.run("review.language", json!({"lang": "bg-BG"})).unwrap();
@@ -1173,7 +1125,6 @@ mod tests {
     fn shown_strips_tag_characters_and_separators() {
         let name = "Ned\u{E0001}\u{E0041}\u{E007F}erlands\u{2028}\u{2029}";
         assert_eq!(super::shown(name, 100), "Nederlands");
-        assert_eq!(super::shown_text("one\u{2028}two\nthree\u{2029}\tfour\u{E0020}"), "onetwo\nthree\tfour");
         // A cut never splits what's left, and counts characters, not bytes.
         assert_eq!(super::shown("\u{E0041}ab\u{2028}cd", 3), "ab…");
     }
@@ -1227,7 +1178,7 @@ mod tests {
         let backend = std::sync::Arc::new(Hostile { inner: FixedBackend::sample(), message });
         packs::set_backend(Some(backend.clone() as std::sync::Arc<dyn Backend>));
         let ctx = egui::Context::default();
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
         let clean = |shown: &str| {
             assert!(!shown.chars().any(hostile), "{shown:?}");
             assert!(shown.contains("https://evil.example/gnp.exe"), "{shown:?}");
@@ -1277,7 +1228,7 @@ mod tests {
         let _reset = Reset;
         let backend = std::sync::Arc::new(FixedBackend::sample());
         packs::set_backend(Some(backend.clone() as std::sync::Arc<dyn Backend>));
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
         a.run("document.setText", json!({"text": "Dzień dobry, jak się masz?"})).unwrap();
         a.run("select.all", json!({})).unwrap();
         a.run("review.language", json!({"lang": "pl-PL"})).unwrap();
@@ -1322,7 +1273,7 @@ mod tests {
         let backend = std::sync::Arc::new(FixedBackend::sample());
         backend.network.store(network, Ordering::Relaxed);
         packs::set_backend(Some(backend.clone() as std::sync::Arc<dyn Backend>));
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
         a.ui.backstage = true;
         a.ui.backstage_page = "options".into();
         a.ui.options_pane = pane.into();
@@ -1600,7 +1551,7 @@ mod tests {
         inner.packs.push(kl);
         let backend = std::sync::Arc::new(Uncached(inner));
         packs::set_backend(Some(backend.clone() as std::sync::Arc<dyn Backend>));
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
         a.run("document.setText", json!({"text": "Aluu, qanoq ippit?"})).unwrap();
         a.run("select.all", json!({})).unwrap();
         a.run("review.language", json!({"lang": "kl-GL"})).unwrap();
@@ -1630,7 +1581,7 @@ mod tests {
     /// list lists its pack (the dismissal is kept by document tag, the pack bar by pack locale).
     #[test]
     fn a_language_closed_before_the_list_stays_closed_after_it() {
-        let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+        let mut a = WordApp::new(deskwerk_docs_engine::Session::new(deskwerk_docs_doc::Document::new()), crate::Services::default());
         let doc = a.session.document_id();
         let kl = packs::Pack { locale: "kl".into(), ..FixedBackend::sample().packs[0].clone() };
         let pt_pt = packs::Pack { locale: "pt-pt".into(), ..kl.clone() };

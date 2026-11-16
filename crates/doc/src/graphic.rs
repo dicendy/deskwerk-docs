@@ -1,5 +1,5 @@
 //! Charts, SmartArt diagrams and native ink: drawings kept as neutral items ready to draw. Charts and SmartArt
-//! WordCraft can edit also keep their model ([`crate::chart::ChartSpec`],
+//! Deskwerk Docs can edit also keep their model ([`crate::chart::ChartSpec`],
 //! [`crate::smart_art::SmartArtSpec`]); the rest are shown, not edited.
 
 use serde::{Deserialize, Serialize};
@@ -26,19 +26,19 @@ pub struct Graphic {
     /// only these items). `None` for graphics made some other way.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source: Option<std::sync::Arc<Embedded>>,
-    /// A SmartArt graphic WordCraft can edit (one it made, or one read back exactly as it wrote
+    /// A SmartArt graphic Deskwerk Docs can edit (one it made, or one read back exactly as it wrote
     /// it): saving writes the diagram parts from it, and the items are drawn from it. See
     /// [`crate::smart_art`].
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub smart_art: Option<std::sync::Arc<crate::smart_art::SmartArtSpec>>,
-    /// A chart WordCraft can edit (one it made, or one read back that holds nothing more): saving
+    /// A chart Deskwerk Docs can edit (one it made, or one read back that holds nothing more): saving
     /// writes the chart part from it, and the items are drawn from it. See [`crate::chart`].
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub chart: Option<std::sync::Arc<crate::chart::ChartSpec>>,
 }
 
 /// What an object read from a file needs to be written back as it was: its own markup in the
-/// source format and the package parts that markup refers to. Never edited; WordCraft only moves
+/// source format and the package parts that markup refers to. Never edited; Deskwerk Docs only moves
 /// and resizes the object around it. The parts themselves (bytes, content type and their own
 /// relationships) are kept in [`crate::Document::passthrough`] under their part names.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -55,11 +55,13 @@ pub struct Embedded {
 impl Embedded {
     /// The root element of an ODF embedded object's markup: its files are kept in
     /// [`crate::Document::passthrough`] for the ODT writer; DOCX shows it as its picture.
-    pub const ODF_OBJECT: &'static str = "<wordcraft:odf-object";
+    pub const ODF_OBJECT: &'static str = "<deskwerk-docs:odf-object";
 
-    /// Is it an ODF embedded object (a spreadsheet in an ODT), not Word markup?
+    /// Is it an ODF embedded object (a spreadsheet in an ODT), not Word markup? Also true for the
+    /// marker older builds wrote ([`crate::legacy::OLD_ODF_OBJECT`]).
     pub fn is_odf_object(&self) -> bool {
-        self.xml.trim_start().starts_with(Self::ODF_OBJECT)
+        let xml = self.xml.trim_start();
+        xml.starts_with(Self::ODF_OBJECT) || xml.starts_with(crate::legacy::OLD_ODF_OBJECT)
     }
 }
 

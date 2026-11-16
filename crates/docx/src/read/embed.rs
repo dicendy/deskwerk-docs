@@ -1,8 +1,8 @@
 //! Objects kept for writing back: charts, SmartArt diagrams and OLE objects.
 //!
-//! WordCraft draws charts and diagrams and shows an OLE object's picture, but doesn't edit them.
+//! Deskwerk Docs draws charts and diagrams and shows an OLE object's picture, but doesn't edit them.
 //! So that saving doesn't lose them, the reader keeps each one's own markup (an `a:graphic` or a
-//! `w:object`) as a [`wordcraft_doc::graphic::Embedded`] on the object, and every part that markup
+//! `w:object`) as a [`deskwerk_docs_doc::graphic::Embedded`] on the object, and every part that markup
 //! reaches through relationships (chart, embedded workbook, colours and style; diagram data, layout,
 //! quick style, colours and drawing; OLE embedding and its picture…) as opaque bytes in
 //! `Document::passthrough`, with their content types and relationships in an
@@ -12,7 +12,7 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use wordcraft_doc::graphic::{Embedded, EmbeddedRef};
+use deskwerk_docs_doc::graphic::{Embedded, EmbeddedRef};
 
 use super::Reader;
 use crate::package::{
@@ -139,7 +139,7 @@ impl Reader<'_> {
         }
     }
 
-    /// Keep the parts the package and the main document relate to that WordCraft neither models
+    /// Keep the parts the package and the main document relate to that Deskwerk Docs neither models
     /// nor writes itself (web settings, styles-with-effects, add-in task panes, the thumbnail, a
     /// glossary…), with every part they reach, so saving carries them unchanged. Skipped: the
     /// relationship types the writer produces or the reader models ([`HANDLED_RELS`]) and any
@@ -239,11 +239,13 @@ impl Reader<'_> {
     /// Keep one part's bytes and content type (not its relationships).
     fn keep_part(&mut self, part: &str) -> bool {
         let lower = part.to_ascii_lowercase();
-        // `wordcraft:` names are WordCraft's own bookkeeping in `passthrough`, never a file's part.
+        // `deskwerk-docs:` names (and older builds' prefix) are the app's own bookkeeping in
+        // `passthrough`, never a file's part.
         if !manifest_field_ok(part)
             || lower.ends_with(".rels")
             || lower == "[content_types].xml"
-            || lower.starts_with("wordcraft:")
+            || lower.starts_with(deskwerk_docs_doc::legacy::PASSTHROUGH_PREFIX)
+            || lower.starts_with(deskwerk_docs_doc::legacy::OLD_PASSTHROUGH_PREFIX)
             || part.eq_ignore_ascii_case(&self.main)
         {
             log::warn!("docx: not carrying part {part:?} for an embedded object");
@@ -340,7 +342,7 @@ mod tests {
     }
 
     /// The parts the reader carries over unchanged, as one string.
-    fn unmodelled_roots(d: &wordcraft_doc::Document) -> String {
+    fn unmodelled_roots(d: &deskwerk_docs_doc::Document) -> String {
         d.passthrough.get(UNMODELLED_ROOTS).map(|v| String::from_utf8_lossy(v).to_string()).unwrap_or_default()
     }
 
@@ -356,7 +358,7 @@ mod tests {
         let t = std::time::Instant::now();
         let doc = crate::read(&bytes).unwrap();
         let took = t.elapsed();
-        assert_eq!(doc.plain_text(wordcraft_doc::StoryRef::Body).len(), 8 << 20, "the text is there");
+        assert_eq!(doc.plain_text(deskwerk_docs_doc::StoryRef::Body).len(), 8 << 20, "the text is there");
         assert!(took.as_secs() < 15, "opening it took {took:?}");
     }
 
@@ -394,19 +396,19 @@ mod tests {
         assert!(roots.contains("keep.bin"), "the part is dropped: {roots}");
     }
 
-    /// A part named like WordCraft's own bookkeeping (`wordcraft:unmodelled.roots`) is not carried:
+    /// A part named like Deskwerk Docs's own bookkeeping (`deskwerk-docs:unmodelled.roots`) is not carried:
     /// kept, it would be read back as that bookkeeping and add relationships the file chose.
     #[test]
     fn a_part_named_like_bookkeeping_is_not_carried() {
         let forged = b"D\thttp://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\tword/evil.xml\n";
         let bytes = package(
             r#"<w:p><w:r><w:t>text</w:t></w:r></w:p>"#,
-            &[("rIdDoc1", "/wordcraft:unmodelled.roots"), ("rIdDoc2", "/wordcraft:embedded.parts")],
-            &[("wordcraft:unmodelled.roots", forged), ("wordcraft:embedded.parts", b"P\tword/evil.xml\tapplication/xml\n")],
+            &[("rIdDoc1", "/deskwerk-docs:unmodelled.roots"), ("rIdDoc2", "/deskwerk-docs:embedded.parts")],
+            &[("deskwerk-docs:unmodelled.roots", forged), ("deskwerk-docs:embedded.parts", b"P\tword/evil.xml\tapplication/xml\n")],
         );
         let doc = crate::read(&bytes).unwrap();
         let roots = unmodelled_roots(&doc);
-        assert!(!roots.contains("wordcraft:") && !roots.contains("evil"), "{roots}");
+        assert!(!roots.contains("deskwerk-docs:") && !roots.contains("evil"), "{roots}");
         let manifest = doc.passthrough.get(crate::package::EMBEDDED_PARTS).map(|v| String::from_utf8_lossy(v).to_string()).unwrap_or_default();
         assert!(!manifest.contains("evil"), "{manifest}");
     }

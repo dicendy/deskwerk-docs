@@ -124,7 +124,7 @@ fn extra_of(e: &CharProps) -> Option<Box<CharProps>> {
         hidden: set(e.hidden),
         spacing: e.spacing.filter(|v| *v != 0.0 && v.is_finite()),
         scale: e.scale.filter(|v| *v != 100.0 && v.is_finite()),
-        emphasis: e.emphasis.filter(|m| *m != wordcraft_doc::props::EmphasisMark::None),
+        emphasis: e.emphasis.filter(|m| *m != deskwerk_docs_doc::props::EmphasisMark::None),
         position: e.position.filter(|v| *v != 0.0 && v.is_finite()),
         outline: set(e.outline),
         shadow: set(e.shadow),
@@ -144,12 +144,12 @@ fn extra_of(e: &CharProps) -> Option<Box<CharProps>> {
     (x != CharProps::default()).then(|| Box::new(x))
 }
 
-/// Whether character style `id` of `doc` is one of its own rather than one WordCraft gives links,
+/// Whether character style `id` of `doc` is one of its own rather than one Deskwerk Docs gives links,
 /// note and comment marks or placeholders.
 pub fn is_custom_char_style(doc: &Document, id: &str) -> bool {
     let builtin =
         ["DefaultParagraphFont", "Hyperlink", "FollowedHyperlink", "FootnoteReference", "EndnoteReference", "CommentReference", "PlaceholderText"];
-    !builtin.contains(&id) && doc.styles.get(id).is_some_and(|s| s.kind == wordcraft_doc::styles::StyleKind::Character)
+    !builtin.contains(&id) && doc.styles.get(id).is_some_and(|s| s.kind == deskwerk_docs_doc::styles::StyleKind::Character)
 }
 
 /// Whether paragraph style `id` of `doc` is one of its own rather than one the flow model's
@@ -160,7 +160,7 @@ pub fn is_custom_style(doc: &Document, id: &str) -> bool {
     let kinds =
         ["Normal", "Title", "Quote", super::types::CODE_STYLE, "FootnoteText", "EndnoteText", "Standard", "Footnote", "Endnote", "Quotations"];
     let heading = id.strip_prefix("Heading").is_some_and(|n| n.len() == 1 && n.chars().all(|c| c.is_ascii_digit()));
-    !heading && !kinds.contains(&id) && doc.styles.get(id).is_some_and(|s| s.kind == wordcraft_doc::styles::StyleKind::Paragraph)
+    !heading && !kinds.contains(&id) && doc.styles.get(id).is_some_and(|s| s.kind == deskwerk_docs_doc::styles::StyleKind::Paragraph)
 }
 
 /// Whether `doc`'s tab stops are measured from each paragraph's indent (an ODF document whose
@@ -170,7 +170,7 @@ pub fn tabs_from_indent(doc: &Document) -> bool {
 }
 
 /// The paragraph formatting only [`Para::extra`] holds that `p` sets itself; `None` when none.
-fn para_extra(doc: &Document, p: &wordcraft_doc::props::ParaProps) -> Option<Box<wordcraft_doc::props::ParaProps>> {
+fn para_extra(doc: &Document, p: &deskwerk_docs_doc::props::ParaProps) -> Option<Box<deskwerk_docs_doc::props::ParaProps>> {
     let tabs = p.tabs.clone().filter(|t| !t.is_empty()).map(|mut tabs| {
         // Measured from the paragraph's indent where the document measures them so (ODT).
         if tabs_from_indent(doc) {
@@ -182,7 +182,7 @@ fn para_extra(doc: &Document, p: &wordcraft_doc::props::ParaProps) -> Option<Box
         tabs
     });
     let style = p.style.clone().filter(|id| is_custom_style(doc, id));
-    let x = wordcraft_doc::props::ParaProps {
+    let x = deskwerk_docs_doc::props::ParaProps {
         tabs,
         shading: p.shading,
         style,
@@ -197,7 +197,7 @@ fn para_extra(doc: &Document, p: &wordcraft_doc::props::ParaProps) -> Option<Box
         suppress_hyphens: (doc.settings.auto_hyphenation && p.suppress_hyphens != Some(true)).then_some(false),
         ..Default::default()
     };
-    (x != wordcraft_doc::props::ParaProps::default()).then(|| Box::new(x))
+    (x != deskwerk_docs_doc::props::ParaProps::default()).then(|| Box::new(x))
 }
 
 /// Revision `i` as a flow mark (unknown author and date when there is none).
@@ -283,7 +283,7 @@ fn rich_inlines(doc: &Document, o: &InlineObject, f: &Fmt, opts: FlowOpts) -> Op
                     t.remove(0);
                 }
             }
-            let endnote = *kind == wordcraft_doc::para::NoteKind::Endnote;
+            let endnote = *kind == deskwerk_docs_doc::para::NoteKind::Endnote;
             vec![Inline::Note { endnote, custom: custom.clone(), blocks, fmt: f.clone() }]
         }
         // The comment, then the replies in its thread (replies to replies too, each answering the
@@ -332,7 +332,7 @@ fn rich_inlines(doc: &Document, o: &InlineObject, f: &Fmt, opts: FlowOpts) -> Op
 /// box keeps its text, but not notes, comments or boxes of its own. `None` for what a flow has
 /// no drawing for: a freeform's paths, a picture whose data is missing.
 fn drawing_inline(doc: &Document, o: &InlineObject, opts: FlowOpts, depth: usize, scale: (f32, f32)) -> Option<Inline> {
-    use wordcraft_doc::para::ShapeKind;
+    use deskwerk_docs_doc::para::ShapeKind;
     let (sx, sy) = scale;
     match o {
         // A freeform needs its paths.
@@ -402,12 +402,12 @@ fn drawing_inline(doc: &Document, o: &InlineObject, opts: FlowOpts, depth: usize
 }
 
 /// The placement a flow keeps for a drawing: when it floats, or turns or mirrors it in line.
-fn kept_float(f: &wordcraft_doc::para::Float) -> Option<Box<wordcraft_doc::para::Float>> {
+fn kept_float(f: &deskwerk_docs_doc::para::Float) -> Option<Box<deskwerk_docs_doc::para::Float>> {
     let turned = f.rot.is_finite() && f.rot.rem_euclid(360.0) > 0.001 && f.rot.rem_euclid(360.0) < 359.999;
-    (f.wrap != wordcraft_doc::para::Wrap::Inline || turned || f.flip_h || f.flip_v).then(|| Box::new(f.clone()))
+    (f.wrap != deskwerk_docs_doc::para::Wrap::Inline || turned || f.flip_h || f.flip_v).then(|| Box::new(f.clone()))
 }
 
-fn flow_comment(doc: &Document, c: &wordcraft_doc::Comment, parent: Option<u32>, opts: FlowOpts) -> FComment {
+fn flow_comment(doc: &Document, c: &deskwerk_docs_doc::Comment, parent: Option<u32>, opts: FlowOpts) -> FComment {
     let story = doc.parts.get(&c.part).map(|p| &p.blocks);
     let blocks = story.map(|b| flow_blocks(doc, b, 0, FlowOpts { notes: false, comments: false, ..opts })).unwrap_or_default();
     FComment { author: c.author.clone(), initials: c.initials.clone(), date: c.date.clone(), resolved: c.resolved, parent, blocks }
@@ -427,7 +427,7 @@ fn flow_list(kind: Kind, list: Option<ListInfo>, p: &Paragraph, opts: FlowOpts) 
 }
 
 /// The spacing and indents a paragraph sets itself (its style's are not included).
-fn direct_spacing(p: &wordcraft_doc::props::ParaProps) -> Spacing {
+fn direct_spacing(p: &deskwerk_docs_doc::props::ParaProps) -> Spacing {
     Spacing {
         before: p.space_before,
         after: p.space_after,
@@ -590,7 +590,7 @@ fn flow_paras_in(doc: &Document, p: &Paragraph, opts: FlowOpts) -> Vec<Para> {
                     }
                     // The linear format is the shared form; an equation known only by its
                     // structure gets it from there.
-                    let linear = if linear.is_empty() { wordcraft_doc::math::to_linear(&math.nodes) } else { linear.clone() };
+                    let linear = if linear.is_empty() { deskwerk_docs_doc::math::to_linear(&math.nodes) } else { linear.clone() };
                     out.inlines.push(Inline::Equation { linear, display: *display });
                 }
                 Some(InlineObject::Ruby { base, ruby, .. }) => {
@@ -666,8 +666,8 @@ fn flow_paras_in(doc: &Document, p: &Paragraph, opts: FlowOpts) -> Vec<Para> {
 fn graphic_inline(
     doc: &Document,
     (alt, w, h): (&str, f32, f32),
-    float: &wordcraft_doc::para::Float,
-    graphic: &wordcraft_doc::graphic::Graphic,
+    float: &deskwerk_docs_doc::para::Float,
+    graphic: &deskwerk_docs_doc::graphic::Graphic,
     opts: FlowOpts,
 ) -> Option<Inline> {
     if let Some(spec) = graphic.chart.as_ref().filter(|_| opts.boxes) {
@@ -690,17 +690,17 @@ fn graphic_inline(
     (!alt.trim().is_empty()).then(|| Inline::Figure(alt.to_string()))
 }
 
-/// A graphic's drawing items ([`wordcraft_doc::graphic::GraphicItem`]) as a group `w` × `h`
+/// A graphic's drawing items ([`deskwerk_docs_doc::graphic::GraphicItem`]) as a group `w` × `h`
 /// points: its shapes as shapes, its text as borderless text boxes centred on their places, its
 /// pictures as pictures. `None` when nothing in it can be drawn so (paths are left out).
 fn graphic_group(
     doc: &Document,
     (w, h): (f32, f32),
-    float: &wordcraft_doc::para::Float,
-    graphic: &wordcraft_doc::graphic::Graphic,
+    float: &deskwerk_docs_doc::para::Float,
+    graphic: &deskwerk_docs_doc::graphic::Graphic,
 ) -> Option<Inline> {
-    use wordcraft_doc::graphic::{GraphicItem, TextAlign};
-    use wordcraft_doc::para::ShapeKind;
+    use deskwerk_docs_doc::graphic::{GraphicItem, TextAlign};
+    use deskwerk_docs_doc::para::ShapeKind;
     let ratio = |outer: f32, inner: f32| {
         let r = outer / inner;
         if r.is_finite() && r > 0.0 { r } else { 1.0 }
@@ -715,7 +715,7 @@ fn graphic_group(
         .filter_map(|item| match item {
             GraphicItem::Shape { rect, kind, fill, stroke, stroke_width } if finite(rect) => {
                 let look = BoxLook {
-                    fill: fill.map(wordcraft_doc::fill::Fill::solid).filter(|_| *kind != ShapeKind::Line),
+                    fill: fill.map(deskwerk_docs_doc::fill::Fill::solid).filter(|_| *kind != ShapeKind::Line),
                     line: stroke.filter(|_| stroke_width.is_finite() && *stroke_width > 0.0).map(|c| (c, stroke_width.min(12.0))),
                     ..plain.clone()
                 };
@@ -731,9 +731,9 @@ fn graphic_group(
                 let fmt = Fmt { bold: *bold, color: Some(*color), size: Some(size), font: font.as_deref().map(Arc::from), ..Fmt::default() };
                 let para = Para {
                     align: Some(match align {
-                        TextAlign::Left => wordcraft_doc::Align::Left,
-                        TextAlign::Right => wordcraft_doc::Align::Right,
-                        _ => wordcraft_doc::Align::Center,
+                        TextAlign::Left => deskwerk_docs_doc::Align::Left,
+                        TextAlign::Right => deskwerk_docs_doc::Align::Right,
+                        _ => deskwerk_docs_doc::Align::Center,
                     }),
                     inlines: vec![Inline::Text(text.clone(), fmt)],
                     spacing: Spacing { before: Some(0.0), after: Some(0.0), ..Spacing::default() },
@@ -797,7 +797,7 @@ fn raise_drawings(inlines: &mut [Inline], from: usize, raise: Option<f32>) {
             _ => continue,
         };
         let f = float.get_or_insert_with(Default::default);
-        if f.wrap == wordcraft_doc::para::Wrap::Inline {
+        if f.wrap == deskwerk_docs_doc::para::Wrap::Inline {
             f.y = r;
         }
     }
@@ -806,7 +806,7 @@ fn raise_drawings(inlines: &mut [Inline], from: usize, raise: Option<f32>) {
 /// A content control of plain text being read (formats with form controls): it, its text so
 /// far and that text's formatting.
 #[derive(Default)]
-struct OpenControl(Option<(Box<wordcraft_doc::control::ContentControl>, String, Option<Fmt>)>);
+struct OpenControl(Option<(Box<deskwerk_docs_doc::control::ContentControl>, String, Option<Fmt>)>);
 
 impl OpenControl {
     /// Object `obj` comes: anything but the control's end makes the control its text after all.
@@ -865,8 +865,8 @@ impl OpenControl {
 }
 
 /// A content control that holds plain text, as a form control does.
-fn plain_control(kind: &wordcraft_doc::control::ControlKind) -> bool {
-    use wordcraft_doc::control::ControlKind as K;
+fn plain_control(kind: &deskwerk_docs_doc::control::ControlKind) -> bool {
+    use deskwerk_docs_doc::control::ControlKind as K;
     matches!(kind, K::Text { .. } | K::CheckBox { .. } | K::DropDown { .. } | K::ComboBox { .. } | K::Date { .. })
 }
 
@@ -877,7 +877,7 @@ fn kept_index(doc: &Document, bl: &Blocks, i: usize) -> Option<(usize, std::sync
     let p = bl.get(i)?.as_para()?;
     let (n, run, xml) = k.index(p)?;
     let paras: Vec<&Paragraph> = bl.get(i..i + n)?.iter().filter_map(|b| b.as_para()).collect();
-    (paras.len() == *n && wordcraft_doc::kept::run_fingerprint(paras.into_iter()) == *run).then(|| (*n, xml.clone()))
+    (paras.len() == *n && deskwerk_docs_doc::kept::run_fingerprint(paras.into_iter()) == *run).then(|| (*n, xml.clone()))
 }
 
 fn flow_blocks(doc: &Document, bl: &Blocks, depth: usize, tracked: FlowOpts) -> Vec<FBlock> {
@@ -930,18 +930,18 @@ const WORD_CELL_MARGINS: [f32; 4] = [0.0, 5.4, 0.0, 5.4];
 /// edges (a side without a line is a "none" border), its vertical alignment, and its text's
 /// character formatting and alignment.
 struct StyledCell {
-    fill: Option<wordcraft_doc::props::Rgb>,
-    borders: wordcraft_doc::props::Borders,
-    v_align: Option<wordcraft_doc::props::VAlign>,
+    fill: Option<deskwerk_docs_doc::props::Rgb>,
+    borders: deskwerk_docs_doc::props::Borders,
+    v_align: Option<deskwerk_docs_doc::props::VAlign>,
     chr: CharProps,
-    align: Option<wordcraft_doc::Align>,
+    align: Option<deskwerk_docs_doc::Align>,
     /// The style's paragraph formatting (spacing, line spacing) under each paragraph's own.
     para: ParaProps,
 }
 
-fn styled_cell(t: &Table, style: Option<&wordcraft_doc::styles::TableStyleProps>, (ri, ci): (usize, usize), ncols: usize) -> Option<StyledCell> {
-    use wordcraft_doc::props::{Border, BorderStyle, Borders};
-    use wordcraft_doc::styles::{PartSet, TablePart};
+fn styled_cell(t: &Table, style: Option<&deskwerk_docs_doc::styles::TableStyleProps>, (ri, ci): (usize, usize), ncols: usize) -> Option<StyledCell> {
+    use deskwerk_docs_doc::props::{Border, BorderStyle, Borders};
+    use deskwerk_docs_doc::styles::{PartSet, TablePart};
     let row = t.rows.get(ri)?;
     let cell = row.cells.get(ci)?;
     let nrows = t.rows.len();
@@ -978,7 +978,7 @@ fn styled_cell(t: &Table, style: Option<&wordcraft_doc::styles::TableStyleProps>
     let cb = cell.props.borders.unwrap_or_default();
     let rowb = row.props.exceptions.as_ref().and_then(|e| e.borders).unwrap_or_default();
     let (first_g, last_g) = (g == row.first_grid(), g + span >= ncols.saturating_sub(row.grid_after()));
-    let rb = wordcraft_doc::styles::part_borders(&part_borders, (ri, nrows), (first_g, last_g));
+    let rb = deskwerk_docs_doc::styles::part_borders(&part_borders, (ri, nrows), (first_g, last_g));
     let edge = |own: Option<Border>, outer: bool, outer_b: Option<Border>, inner_b: Option<Border>| own.or(if outer { outer_b } else { inner_b });
     let none = Border { style: BorderStyle::None, width: 0.0, color: None, space: 0.0 };
     let top = edge(cb.top.or(if ri == 0 { rowb.top } else { rowb.between }).or(rb.top), ri == 0, tb.top, tb.between);
@@ -1007,8 +1007,8 @@ fn styled_cell(t: &Table, style: Option<&wordcraft_doc::styles::TableStyleProps>
 }
 
 /// `blocks` with what a table style's character and paragraph formatting changes (see
-/// [`wordcraft_doc::styles::StyleSheet::table_para_patch`]) stated on each paragraph and run.
-fn with_cell_text(doc: &Document, blocks: &Blocks, chr: &CharProps, align: Option<wordcraft_doc::Align>, para: &ParaProps) -> Blocks {
+/// [`deskwerk_docs_doc::styles::StyleSheet::table_para_patch`]) stated on each paragraph and run.
+fn with_cell_text(doc: &Document, blocks: &Blocks, chr: &CharProps, align: Option<deskwerk_docs_doc::Align>, para: &ParaProps) -> Blocks {
     if chr.is_empty() && align.is_none() && para.is_empty() {
         return blocks.clone();
     }
@@ -1102,12 +1102,12 @@ fn flow_table(doc: &Document, t: &Table, depth: usize, tracked: FlowOpts) -> FTa
         rows.push(cells);
     }
     // Without a table style and without visible table or cell borders the table shows no grid.
-    let visible = |b: &Option<wordcraft_doc::props::Borders>| b.as_ref().is_some_and(|b| b.any_visible());
+    let visible = |b: &Option<deskwerk_docs_doc::props::Borders>| b.as_ref().is_some_and(|b| b.any_visible());
     let borderless =
         t.props.style.is_none() && !visible(&t.props.borders) && t.rows.iter().flat_map(|r| &r.cells).all(|c| !visible(&c.props.borders));
     // Formats that keep them get the table's alignment, width and row heights.
     let extra = tracked.paras.then(|| {
-        use wordcraft_doc::props::HeightRule;
+        use deskwerk_docs_doc::props::HeightRule;
         let heights = t
             .rows
             .iter()
@@ -1150,7 +1150,7 @@ pub fn from_doc_tracked(doc: &Document) -> Flow {
 pub fn from_doc_with(doc: &Document, opts: FlowOpts) -> Flow {
     // Paragraphs kept as read are checked against the document's comments and page setup:
     // worked out once for the whole document, not once per paragraph.
-    wordcraft_doc::kept::while_writing(doc, || flow_of(doc, opts))
+    deskwerk_docs_doc::kept::while_writing(doc, || flow_of(doc, opts))
 }
 
 /// `blocks` of `doc` (a header, footer or note) as flow blocks, keeping what `opts` asks for.
@@ -1216,8 +1216,8 @@ impl ListCounter {
         }
         match li.level % 3 {
             0 => format!("{n}."),
-            1 => format!("{}.", wordcraft_doc::section::letters(n)),
-            _ => format!("{}.", wordcraft_doc::section::roman(n)),
+            1 => format!("{}.", deskwerk_docs_doc::section::letters(n)),
+            _ => format!("{}.", deskwerk_docs_doc::section::roman(n)),
         }
     }
 }

@@ -14,7 +14,7 @@ impl WordApp {
         let mut ui = self.ui.clone();
         ui.author = Some(self.session.author.clone());
         ui.initials = self.session.initials.clone();
-        ui.dictionary = wordcraft_engine::proof::user_dictionary();
+        ui.dictionary = deskwerk_docs_engine::proof::user_dictionary();
         ui.editing = self.session.prefs.clone();
         ui.read_aloud_rate = self.session.read_aloud.rate();
         ui.read_aloud_skip_citations = self.session.read_aloud.skip_citations;
@@ -53,20 +53,21 @@ impl WordApp {
         {
             self.session.author = author;
         }
-        self.session.initials = std::mem::take(&mut self.ui.initials).chars().take(wordcraft_engine::cmd::options::MAX_INITIALS_CHARS).collect();
+        self.session.initials = std::mem::take(&mut self.ui.initials).chars().take(deskwerk_docs_engine::cmd::options::MAX_INITIALS_CHARS).collect();
         for w in std::mem::take(&mut self.ui.dictionary).iter().take(MAX_DICTIONARY) {
             let w = w.trim();
-            if !w.is_empty() && w.chars().count() <= wordcraft_engine::cmd::options::MAX_WORD_CHARS {
-                wordcraft_engine::proof::add_word(w);
+            if !w.is_empty() && w.chars().count() <= deskwerk_docs_engine::cmd::options::MAX_WORD_CHARS {
+                deskwerk_docs_engine::proof::add_word(w);
             }
         }
         self.session.prefs = std::mem::take(&mut self.ui.editing);
         // Check spelling as you type follows the saved preference (#1792).
         self.session.view.proofing = self.session.prefs.check_spelling;
         self.session.view.read_page_color = self.session.prefs.read_page_color;
-        // The saved dictionaries folder (#1063) is searched from the start.
-        if let Some(f) = self.session.prefs.dictionaries_folder.as_deref() {
-            wordcraft_engine::cmd::options::use_dictionaries_folder(Some(f));
+        // The saved dictionaries folder (#1063), or `DESKWERK_DOCS_DICTIONARIES`, is searched from
+        // the start.
+        if self.session.prefs.dictionaries_folder.is_some() || std::env::var_os("DESKWERK_DOCS_DICTIONARIES").is_some_and(|v| !v.is_empty()) {
+            deskwerk_docs_engine::cmd::options::use_dictionaries_folder(self.session.prefs.dictionaries_folder.as_deref());
         }
         self.session.read_aloud.set_rate(self.ui.read_aloud_rate);
         self.session.read_aloud.skip_citations = self.ui.read_aloud_skip_citations;

@@ -1,4 +1,5 @@
 use super::RecoveryInfo;
+use deskwerk_docs_doc::Document;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
@@ -6,7 +7,6 @@ use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, mpsc};
 use std::time::{Duration, Instant};
-use wordcraft_doc::Document;
 
 const INTERVAL: Duration = Duration::from_secs(10);
 const MAX_BYTES: u64 = 256 << 20;
@@ -113,10 +113,11 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, String> {
     if !file.metadata().map_err(|e| e.to_string())?.is_file() {
         return Err("not a regular recovery file".into());
     }
-    let s: Snapshot = serde_json::from_reader(BufReader::new(file.take(MAX_BYTES + 1))).map_err(|e| e.to_string())?;
+    let mut s: Snapshot = serde_json::from_reader(BufReader::new(file.take(MAX_BYTES + 1))).map_err(|e| e.to_string())?;
     if s.version != 1 || !id_ok(&s.info.id) {
         return Err("unsupported recovery file".into());
     }
+    s.document.upgrade_legacy_names();
     Ok(s)
 }
 impl Store {
@@ -495,7 +496,7 @@ impl Recovery {
         let (tx, jobs) = mpsc::sync_channel(1);
         let (events, rx) = mpsc::channel();
         std::thread::Builder::new()
-            .name("wordcraft-recovery".into())
+            .name("deskwerk-docs-recovery".into())
             .spawn(move || {
                 let mut store = match Store::new(root) {
                     Ok(s) => s,

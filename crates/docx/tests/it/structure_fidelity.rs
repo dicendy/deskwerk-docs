@@ -8,8 +8,8 @@
 
 use std::io::Read;
 
-use wordcraft_doc::numbering::Counters;
-use wordcraft_doc::{Block, Document, InlineObject, Paragraph};
+use deskwerk_docs_doc::numbering::Counters;
+use deskwerk_docs_doc::{Block, Document, InlineObject, Paragraph};
 
 use crate::fixtures::zip;
 
@@ -42,14 +42,14 @@ fn body_package(body: &str, parts: &[(&str, &str, &str)]) -> Vec<u8> {
 }
 
 fn saved_and_read(d: &Document) -> Document {
-    wordcraft_docx::read(&wordcraft_docx::write(d).unwrap()).unwrap()
+    deskwerk_docs_docx::read(&deskwerk_docs_docx::write(d).unwrap()).unwrap()
 }
 
 fn para(b: &Block) -> &Paragraph {
     b.as_para().expect("a paragraph")
 }
 
-fn table(b: &Block) -> &wordcraft_doc::Table {
+fn table(b: &Block) -> &deskwerk_docs_doc::Table {
     match b {
         Block::Table(t) => t,
         Block::Para(p) => panic!("a table, not the paragraph {:?}", p.plain_text()),
@@ -80,7 +80,7 @@ fn a_list_level_without_a_start_counts_from_zero() {
         r#"<w:numbering {W_NS}><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl><w:lvl w:ilvl="1"><w:start w:val="3"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1.%2."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>"#
     );
     let item = r#"<w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr><w:r><w:t>item</w:t></w:r></w:p>"#;
-    let d = wordcraft_docx::read(&body_package(&item.repeat(2), &[("numbering.xml", "numbering", &numbering)])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(&item.repeat(2), &[("numbering.xml", "numbering", &numbering)])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         let starts: Vec<u32> = (0..3).map(|l| d.numbering.level(1, l).unwrap().start).collect();
         assert_eq!(starts, [0, 3, 1]);
@@ -98,7 +98,7 @@ fn a_table_inside_a_paragraph_follows_the_paragraph() {
     let body = format!(
         r#"<w:tbl><w:tr><w:tc><w:p><w:r><w:t>A2</w:t></w:r>{inner}</w:p></w:tc></w:tr></w:tbl><w:p><w:r><w:t>before</w:t></w:r>{inner}</w:p><w:p><w:r><w:t>after</w:t></w:r></w:p>"#
     );
-    let d = wordcraft_docx::read(&body_package(&body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(&body, &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         assert_eq!(&outline(&d.body)[..4], ["[", "A2", "[", "inner"], "{:?}", outline(&d.body));
         let cell = &table(&d.body[0]).rows[0].cells[0];
@@ -115,7 +115,7 @@ fn every_body_of_a_main_part_with_several_is_read() {
     let doc = format!(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document {W_NS}><w:body><w:p><w:r><w:t>one</w:t></w:r></w:p></w:body><w:body><w:p><w:r><w:t>two</w:t></w:r></w:p></w:body><w:body><w:p><w:r><w:t>three</w:t></w:r></w:p><w:sectPr><w:pgSz w:w="11906" w:h="16838"/></w:sectPr></w:body></w:document>"#
     );
-    let d = wordcraft_docx::read(&package(&doc, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&package(&doc, &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         assert_eq!(outline(&d.body), ["one", "two", "three"]);
         assert!((d.last_section.page_w - 595.3).abs() < 0.1, "{}", d.last_section.page_w);
@@ -145,7 +145,7 @@ fn bookmarks_between_rows_and_cells_are_kept() {
         b = cell("b"),
         c = cell("c"),
     );
-    let d = wordcraft_docx::read(&body_package(&body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(&body, &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         let t = table(&d.body[0]);
         let marks: Vec<Vec<String>> = t.rows.iter().flat_map(|r| &r.cells).map(|c| bookmarks(para(&c.blocks[0]))).collect();
@@ -162,7 +162,7 @@ fn a_symbol_as_a_custom_note_mark_is_the_mark() {
     // Unicode character, is the mark; no automatic number appears (tdf#129912).
     let notes = format!(r#"<w:footnotes {W_NS}><w:footnote w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:footnote></w:footnotes>"#);
     let body = r#"<w:p><w:r><w:t>ab</w:t></w:r><w:r><w:footnoteReference w:customMarkFollows="1" w:id="1"/><w:sym w:font="Symbol" w:char="F0A7"/></w:r></w:p>"#;
-    let d = wordcraft_docx::read(&body_package(body, &[("footnotes.xml", "footnotes", &notes)])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(body, &[("footnotes.xml", "footnotes", &notes)])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         let p = para(&d.body[0]);
         let customs: Vec<&str> = p
@@ -177,7 +177,7 @@ fn a_symbol_as_a_custom_note_mark_is_the_mark() {
         assert!(!p.text.contains('\u{F0A7}'), "the symbol is the mark, not text after it");
         assert!(p.runs.iter().any(|r| r.props.sym_font.as_deref() == Some("Symbol")), "the mark keeps its symbol font");
         // Saved as the same symbol in its font, not as text.
-        let xml = part_xml(&wordcraft_docx::write(d).unwrap(), "word/document.xml");
+        let xml = part_xml(&deskwerk_docs_docx::write(d).unwrap(), "word/document.xml");
         assert!(xml.contains(r#"<w:sym w:font="Symbol" w:char="F0A7"/>"#), "{xml}");
         assert!(!xml.contains('\u{2663}'), "{xml}");
     }
@@ -188,7 +188,7 @@ fn a_custom_note_mark_of_text_and_a_symbol_stays_text() {
     // A mark mixing text and a symbol has no one font for a `w:sym`: it is saved as its text.
     let notes = format!(r#"<w:footnotes {W_NS}><w:footnote w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:footnote></w:footnotes>"#);
     let body = r#"<w:p><w:r><w:footnoteReference w:customMarkFollows="1" w:id="1"/><w:t>x</w:t><w:sym w:font="Symbol" w:char="F0A7"/></w:r></w:p>"#;
-    let d = wordcraft_docx::read(&body_package(body, &[("footnotes.xml", "footnotes", &notes)])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(body, &[("footnotes.xml", "footnotes", &notes)])).unwrap();
     let mark = |d: &Document| {
         para(&d.body[0])
             .objects
@@ -201,7 +201,7 @@ fn a_custom_note_mark_of_text_and_a_symbol_stays_text() {
     };
     assert_eq!(mark(&d), "x\u{2663}");
     assert!(para(&d.body[0]).runs.iter().all(|r| r.props.sym_font.is_none()));
-    let xml = part_xml(&wordcraft_docx::write(&d).unwrap(), "word/document.xml");
+    let xml = part_xml(&deskwerk_docs_docx::write(&d).unwrap(), "word/document.xml");
     assert!(!xml.contains("<w:sym"), "{xml}");
     assert_eq!(mark(&saved_and_read(&d)), "x\u{2663}");
 }
@@ -222,7 +222,7 @@ fn a_table_without_rows_is_kept() {
     // CT_Tbl allows a table with no rows (LibreOffice's tdf104713 has three, with a grid and
     // borders): it stays a table, of one row of empty cells across its grid.
     let body = r#"<w:p><w:r><w:t>Profiles</w:t></w:r></w:p><w:tbl><w:tblPr><w:tblBorders><w:top w:val="single"/></w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="2000"/><w:gridCol w:w="3000"/></w:tblGrid></w:tbl><w:p><w:r><w:t>Evidence</w:t></w:r></w:p><w:tbl><w:tblPr/><w:tblGrid><w:tblCol/></w:tblGrid></w:tbl><w:p/>"#;
-    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(body, &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         assert_eq!(d.body.len(), 5, "{:?}", outline(&d.body));
         assert_eq!(table_shapes(&d.body), [(2, vec![2]), (1, vec![1])]);
@@ -243,14 +243,14 @@ fn section_properties_before_the_end_of_the_body_are_section_breaks() {
     // tdf108849, two in a row): each is a section, none is lost. One after a paragraph that
     // already ends a section gets an empty paragraph; one after a plain paragraph ends it.
     let body = r#"<w:p><w:pPr><w:sectPr><w:pgSz w:w="8504" w:h="5669" w:orient="landscape"/></w:sectPr></w:pPr><w:r><w:t>Page 1</w:t></w:r></w:p><w:sectPr><w:pgSz w:w="5669" w:h="8504"/></w:sectPr><w:sectPr><w:pgSz w:w="14173" w:h="5669" w:orient="landscape"/></w:sectPr><w:p><w:r><w:t>Page 2</w:t></w:r></w:p>"#;
-    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(body, &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         assert_eq!(outline(&d.body), ["Page 1", "", "Page 2"]);
         assert_eq!(section_widths(d), [Some(425), Some(283), None]);
         assert!((d.last_section.page_w - 708.65).abs() < 0.1, "{}", d.last_section.page_w);
     }
     let body = r#"<w:p><w:r><w:t>one</w:t></w:r></w:p><w:sectPr><w:pgSz w:w="5669" w:h="8504"/></w:sectPr><w:p><w:r><w:t>two</w:t></w:r></w:p><w:sectPr><w:pgSz w:w="11906" w:h="16838"/></w:sectPr>"#;
-    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(body, &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         assert_eq!(outline(&d.body), ["one", "two"]);
         assert_eq!(section_widths(d), [Some(283), None]);
@@ -277,7 +277,7 @@ fn an_empty_content_control_is_kept() {
     // only), one with empty content and an inline one without content: each is kept, empty,
     // with its properties, and no paragraph is added for it.
     let body = r#"<w:sdt><w:sdtPr><w:alias w:val="Name"/><w:tag w:val="first"/><w:id w:val="701672912"/><w:placeholder><w:docPart w:val="E1A47590F6F14F5BB2652EA3173D555C"/></w:placeholder></w:sdtPr><w:sdtEndPr/></w:sdt><w:p><w:pPr><w:rPr><w:b/></w:rPr></w:pPr></w:p><w:sdt><w:sdtPr><w:tag w:val="second"/></w:sdtPr><w:sdtContent></w:sdtContent></w:sdt><w:p><w:r><w:t>text</w:t></w:r></w:p><w:p><w:r><w:t>a</w:t></w:r><w:sdt><w:sdtPr><w:tag w:val="inline"/></w:sdtPr></w:sdt></w:p>"#;
-    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(body, &[])).unwrap();
     let expected = (
         vec![
             ("first".to_string(), "Name".to_string(), Some(701_672_912), "E1A47590F6F14F5BB2652EA3173D555C".to_string()),
@@ -290,7 +290,7 @@ fn an_empty_content_control_is_kept() {
         assert_eq!(outline(&d.body), ["", "text", "a"]);
         assert_eq!(body_controls(d), expected);
     }
-    let xml = part_xml(&wordcraft_docx::write(&d).unwrap(), "word/document.xml");
+    let xml = part_xml(&deskwerk_docs_docx::write(&d).unwrap(), "word/document.xml");
     assert_eq!(xml.matches("<w:sdt>").count(), 3, "{xml}");
     assert!(xml.contains(r#"<w:docPart w:val="E1A47590F6F14F5BB2652EA3173D555C"/>"#), "{xml}");
 }
@@ -355,13 +355,13 @@ fn a_linked_picture_is_kept_with_its_link() {
     // is never read; the picture is kept and saved with its external relationship.
     let rels = format!(r#"<Relationship Id="rIdL" Type="{REL}/image" Target="file:///C:/pictures/p.png" TargetMode="External"/>"#);
     let body = drawing_para(PICTURE_URI, &picture(r#"r:link="rIdL""#));
-    let d = wordcraft_docx::read(&rels_package(&format!("{W_NS} {DRAWING_NS}"), &body, &rels, &[])).unwrap();
-    let bytes = wordcraft_docx::write(&d).unwrap();
+    let d = deskwerk_docs_docx::read(&rels_package(&format!("{W_NS} {DRAWING_NS}"), &body, &rels, &[])).unwrap();
+    let bytes = deskwerk_docs_docx::write(&d).unwrap();
     let xml = part_xml(&bytes, "word/document.xml");
     assert!(xml.contains("<pic:pic>") && xml.contains("r:link=\""), "{xml}");
     let doc_rels = part_xml(&bytes, "word/_rels/document.xml.rels");
     assert!(doc_rels.contains(r#"Target="file:///C:/pictures/p.png" TargetMode="External""#), "{doc_rels}");
-    for d in [&d, &wordcraft_docx::read(&bytes).unwrap()] {
+    for d in [&d, &deskwerk_docs_docx::read(&bytes).unwrap()] {
         let (w, h, kept) = kept_drawing(d);
         assert_eq!((w, h), (72.0, 36.0));
         assert!(kept.contains("r:link="), "{kept}");
@@ -374,12 +374,12 @@ fn a_picture_whose_image_is_missing_is_kept_without_it() {
     // as LibreOffice and Word show it (an empty frame), rather than leaving the document.
     let rels = format!(r#"<Relationship Id="rIdGone" Type="{REL}/image" Target="media/gone.png"/>"#);
     let body = drawing_para(PICTURE_URI, &picture(r#"r:embed="rIdGone""#));
-    let d = wordcraft_docx::read(&rels_package(&format!("{W_NS} {DRAWING_NS}"), &body, &rels, &[])).unwrap();
-    let bytes = wordcraft_docx::write(&d).unwrap();
+    let d = deskwerk_docs_docx::read(&rels_package(&format!("{W_NS} {DRAWING_NS}"), &body, &rels, &[])).unwrap();
+    let bytes = deskwerk_docs_docx::write(&d).unwrap();
     let xml = part_xml(&bytes, "word/document.xml");
     assert!(xml.contains("<a:blip") && !xml.contains("r:embed="), "{xml}");
     assert!(xml.contains(r#"<a:ext cx="914400" cy="457200"/>"#), "the picture's frame follows the object: {xml}");
-    for d in [&d, &wordcraft_docx::read(&bytes).unwrap()] {
+    for d in [&d, &deskwerk_docs_docx::read(&bytes).unwrap()] {
         assert_eq!(kept_drawing(d).0, 72.0);
     }
 }
@@ -398,14 +398,14 @@ fn a_locked_canvas_is_kept_whole() {
         (transitional.as_str(), "http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas"),
         (strict, "http://purl.oclc.org/ooxml/drawingml/lockedCanvas"),
     ] {
-        let d = wordcraft_docx::read(&rels_package(ns, &drawing_para(uri, LOCKED_CANVAS), "", &[])).unwrap();
-        let bytes = wordcraft_docx::write(&d).unwrap();
+        let d = deskwerk_docs_docx::read(&rels_package(ns, &drawing_para(uri, LOCKED_CANVAS), "", &[])).unwrap();
+        let bytes = deskwerk_docs_docx::write(&d).unwrap();
         let xml = part_xml(&bytes, "word/document.xml");
         assert!(xml.contains(r#"xmlns:lc="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas""#), "{xml}");
         assert!(xml.contains(r#"<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas"><lc:lockedCanvas>"#), "{xml}");
         assert_eq!(xml.matches(r#"<a:ext cx="12345" cy="6789"/>"#).count(), 2, "{xml}");
         assert!(xml.contains(r#"cx="914400" cy="457200""#), "{xml}");
-        for d in [&d, &wordcraft_docx::read(&bytes).unwrap()] {
+        for d in [&d, &deskwerk_docs_docx::read(&bytes).unwrap()] {
             let (w, h, kept) = kept_drawing(d);
             assert_eq!((w, h), (72.0, 36.0));
             assert!(kept.contains("<lc:lockedCanvas>") && kept.contains(r#"name="Box""#), "{kept}");
@@ -424,7 +424,7 @@ fn a_shapetype_inside_a_vml_group_is_found() {
         r#"<v:rect style="left:600;top:0;width:400;height:500"/>"#,
         r#"</v:group></w:pict></w:r></w:p>"#,
     );
-    let d = wordcraft_docx::read(&rels_package(&ns, body, "", &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&rels_package(&ns, body, "", &[])).unwrap();
     let InlineObject::Group { children, .. } = &para(&d.body[0]).objects[0] else { panic!("{:?}", para(&d.body[0]).objects) };
     let kinds: Vec<_> = children
         .iter()
@@ -433,7 +433,7 @@ fn a_shapetype_inside_a_vml_group_is_found() {
             o => panic!("{o:?}"),
         })
         .collect();
-    assert_eq!(kinds, [wordcraft_doc::para::ShapeKind::Triangle, wordcraft_doc::para::ShapeKind::Rectangle]);
+    assert_eq!(kinds, [deskwerk_docs_doc::para::ShapeKind::Triangle, deskwerk_docs_doc::para::ShapeKind::Rectangle]);
 }
 
 fn fld(kind: &str) -> String {
@@ -480,12 +480,12 @@ fn a_field_in_another_fields_code_is_saved_as_a_field() {
         fld("end"),
     ]
     .concat();
-    let d = wordcraft_docx::read(&body_package(&format!("<w:p>{body}</w:p>"), &[])).unwrap();
-    let bytes = wordcraft_docx::write(&d).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(&format!("<w:p>{body}</w:p>"), &[])).unwrap();
+    let bytes = deskwerk_docs_docx::write(&d).unwrap();
     let xml = part_xml(&bytes, "word/document.xml");
     assert_eq!(xml.matches(r#"w:fldCharType="begin""#).count(), 2, "{xml}");
     assert!(xml.contains("> MERGEFIELD City <") && !xml.contains("{ MERGEFIELD"), "{xml}");
-    for d in [&d, &wordcraft_docx::read(&bytes).unwrap()] {
+    for d in [&d, &deskwerk_docs_docx::read(&bytes).unwrap()] {
         assert_eq!(fields(para(&d.body[0])), [r#"IF { MERGEFIELD City } = "Oslo" "yes" "no"=yes"#]);
     }
 }
@@ -506,7 +506,7 @@ fn a_field_in_another_fields_result_stays_a_field() {
         fld("end"),
     ]
     .concat();
-    let d = wordcraft_docx::read(&body_package(&format!("<w:p>{body}</w:p>"), &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(&format!("<w:p>{body}</w:p>"), &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         let p = para(&d.body[0]);
         assert_eq!(fields(p), [r#"<IF 1 = 1 "by ""#, "AUTHOR=Ada", ">"]);
@@ -526,7 +526,7 @@ fn a_bibliography_of_several_paragraphs_is_a_range() {
         run("Source two"),
         fld("end"),
     );
-    let d = wordcraft_docx::read(&body_package(&body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(&body, &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         let ps: Vec<&Paragraph> = d.body.iter().filter_map(|b| b.as_para()).collect();
         assert_eq!(fields(ps[0]), ["<BIBLIOGRAPHY"]);
@@ -536,7 +536,7 @@ fn a_bibliography_of_several_paragraphs_is_a_range() {
     // One that ends in its paragraph (the engine writes its list's field empty, after a heading)
     // stays a field.
     let body = format!("<w:p>{}{}{}{}{}</w:p>", run("References"), fld("begin"), instr(" BIBLIOGRAPHY "), fld("separate"), fld("end"));
-    let d = wordcraft_docx::read(&body_package(&body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(&body, &[])).unwrap();
     let p = d.body.iter().find_map(|b| b.as_para()).unwrap();
     assert_eq!(fields(p), ["BIBLIOGRAPHY="]);
 }
@@ -554,10 +554,10 @@ fn a_lists_own_level_without_a_start_override_goes_on_counting() {
     let item =
         |num: u32| format!(r#"<w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="{num}"/></w:numPr></w:pPr><w:r><w:t>item</w:t></w:r></w:p>"#);
     let body = [item(1), item(1), item(2)].concat();
-    let d = wordcraft_docx::read(&body_package(&body, &[("numbering.xml", "numbering", &numbering)])).unwrap();
-    let bytes = wordcraft_docx::write(&d).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(&body, &[("numbering.xml", "numbering", &numbering)])).unwrap();
+    let bytes = deskwerk_docs_docx::write(&d).unwrap();
     assert!(!part_xml(&bytes, "word/numbering.xml").contains("w:startOverride"));
-    for d in [&d, &wordcraft_docx::read(&bytes).unwrap()] {
+    for d in [&d, &deskwerk_docs_docx::read(&bytes).unwrap()] {
         let mut c = Counters::default();
         let labels: Vec<String> = [1, 1, 2].iter().map(|&n| c.next_label(&d.numbering, n, 0).unwrap().0).collect();
         assert_eq!(labels, ["1.", "2.", "3)"]);
@@ -572,7 +572,7 @@ fn text_without_preserved_space_reads_as_word_shows_it() {
     let body = r#"<w:p><w:r><w:t>Before </w:t></w:r><w:sdt><w:sdtPr><w:id w:val="1001"/></w:sdtPr><w:sdtContent><w:r><w:rPr><w:b w:val="on"/></w:rPr><w:t>Control</w:t></w:r></w:sdtContent></w:sdt><w:r><w:t> After</w:t></w:r></w:p><w:p><w:r><w:t xml:space="preserve">Kept </w:t></w:r><w:r><w:t>
             indented
         </w:t></w:r></w:p>"#;
-    let d = wordcraft_docx::read(&body_package(body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(body, &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         assert_eq!(outline(&d.body), ["BeforeControlAfter", "Kept indented"]);
         assert_eq!(body_controls(d).1, 1);
@@ -594,7 +594,7 @@ fn a_hyperlink_field_in_a_deletion_stays_a_deleted_link() {
     ]
     .concat();
     let body = format!(r#"<w:p><w:r><w:t xml:space="preserve">A pendant (</w:t></w:r>{}<w:r><w:t>).</w:t></w:r></w:p>"#, del(&field));
-    let d = wordcraft_docx::read(&body_package(&body, &[])).unwrap();
+    let d = deskwerk_docs_docx::read(&body_package(&body, &[])).unwrap();
     for d in [&d, &saved_and_read(&d)] {
         let p = para(&d.body[0]);
         assert_eq!(p.plain_text(), "A pendant (tilaka).");
@@ -602,7 +602,7 @@ fn a_hyperlink_field_in_a_deletion_stays_a_deleted_link() {
         assert!(props.link.as_deref().is_some_and(|l| l.starts_with(url)), "{:?}", props.link);
         assert!(props.del.is_some(), "the link text stays deleted");
         assert!(p.props_of_char(0).del.is_none());
-        let xml = part_xml(&wordcraft_docx::write(d).unwrap(), "word/document.xml");
+        let xml = part_xml(&deskwerk_docs_docx::write(d).unwrap(), "word/document.xml");
         assert!(xml.contains("<w:delText xml:space=\"preserve\">tilaka</w:delText>"), "{xml}");
         assert!(!xml.contains("<w:instrText"), "the field's code is not live text: {xml}");
     }

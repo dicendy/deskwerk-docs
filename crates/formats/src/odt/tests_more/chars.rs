@@ -4,8 +4,8 @@
 
 use crate::odt::tests::{NS_T, package};
 use crate::odt::{export, import};
-use wordcraft_doc::props::{CharProps, Underline};
-use wordcraft_doc::{Document, Paragraph, Rgb, para_block};
+use deskwerk_docs_doc::props::{CharProps, Underline};
+use deskwerk_docs_doc::{Document, Paragraph, Rgb, para_block};
 
 fn spans(props: &[&str]) -> Document {
     let styles: String = props
@@ -109,8 +109,8 @@ fn character_formatting_round_trips() {
     for (i, props) in want.iter().enumerate() {
         let s = format!("s{i}|");
         p.text.push_str(&s);
-        p.runs.push(wordcraft_doc::para::Run { len: s.len() - 1, props: props.clone() });
-        p.runs.push(wordcraft_doc::para::Run { len: 1, props: Default::default() });
+        p.runs.push(deskwerk_docs_doc::para::Run { len: s.len() - 1, props: props.clone() });
+        p.runs.push(deskwerk_docs_doc::para::Run { len: 1, props: Default::default() });
     }
     let mut d = Document::new();
     d.body = vec![para_block(p)];
@@ -230,14 +230,14 @@ fn a_border_around_text_is_read_and_written() {
     let d = crate::odt::import(&crate::odt::tests::package(&content, None)).unwrap();
     let p = d.body.iter().find_map(|b| b.as_para()).unwrap();
     let b = p.runs.iter().find_map(|r| r.props.border).expect("a text border");
-    assert_eq!((b.color, (b.width * 100.0).round(), (b.space * 100.0).round()), (Some(wordcraft_doc::props::Rgb(255, 0, 0)), 74.0, 144.0));
+    assert_eq!((b.color, (b.width * 100.0).round(), (b.space * 100.0).round()), (Some(deskwerk_docs_doc::props::Rgb(255, 0, 0)), 74.0, 144.0));
     let c = crate::odt::tests::content_of(&crate::odt::tests::export_model(&d).unwrap());
     assert!(c.contains(r#"loext:border="0.74pt solid #ff0000" loext:padding="1.44pt""#), "{c}");
 }
 
 #[test]
 fn emphasis_marks_are_read_and_written() {
-    use wordcraft_doc::props::EmphasisMark as E;
+    use deskwerk_docs_doc::props::EmphasisMark as E;
     let style = |n: &str, v: &str| {
         format!(r#"<style:style style:name="{n}" style:family="text"><style:text-properties style:text-emphasize="{v}"/></style:style>"#)
     };
@@ -276,13 +276,17 @@ fn objects_in_hidden_text_are_kept() {
     let mut p = Paragraph::with_text("Shown. Hidden words.", CharProps::default());
     let n = p.len();
     p.format(7, n, &|c| c.hidden = Some(true)).unwrap();
-    p.insert_object(14, wordcraft_doc::para::InlineObject::BookmarkStart { name: "Secret".into() }, &hidden).unwrap();
+    p.insert_object(14, deskwerk_docs_doc::para::InlineObject::BookmarkStart { name: "Secret".into() }, &hidden).unwrap();
     let mut d = Document::new();
     d.body = vec![para_block(p)];
     let back = import(&export(&d).unwrap()).unwrap();
     let p = back.body[0].as_para().unwrap();
     assert!(p.text.contains("Hidden"), "{:?}", p.text);
-    assert!(p.objects.iter().any(|o| matches!(o, wordcraft_doc::para::InlineObject::BookmarkStart { name } if name == "Secret")), "{:?}", p.objects);
+    assert!(
+        p.objects.iter().any(|o| matches!(o, deskwerk_docs_doc::para::InlineObject::BookmarkStart { name } if name == "Secret")),
+        "{:?}",
+        p.objects
+    );
 }
 
 #[test]

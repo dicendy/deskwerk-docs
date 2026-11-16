@@ -1,10 +1,10 @@
 //! Heading numbering (ODF 1.3 §16.34 `text:outline-style`): the outline style's levels number the
-//! headings of those levels; WordCraft numbers them through the heading styles, as Word does.
+//! headings of those levels; Deskwerk Docs numbers them through the heading styles, as Word does.
 
 use crate::odt::tests::{NS_T, package};
 use crate::odt::{export, import};
-use wordcraft_doc::Document;
-use wordcraft_doc::section::NumFormat;
+use deskwerk_docs_doc::Document;
+use deskwerk_docs_doc::section::NumFormat;
 
 fn open(outline: &str) -> Document {
     let styles = format!(

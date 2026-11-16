@@ -1,12 +1,12 @@
 //! The ribbon's Breaks menu: its controls carry a name, and each item inserts the break it says.
 
+use deskwerk_docs_engine::Session;
+use deskwerk_docs_ui_egui::{Services, WordApp};
 use serde_json::json;
-use wordcraft_engine::Session;
-use wordcraft_ui_egui::{Services, WordApp};
 
-/// A WordCraft window on the Layout tab, ready for ribbon clicks.
+/// A Deskwerk Docs window on the Layout tab, ready for ribbon clicks.
 fn layout_tab() -> egui_kittest::Harness<'static, WordApp> {
-    let mut app = WordApp::new(Session::new(wordcraft_doc::Document::from_text("one\ntwo")), Services::default());
+    let mut app = WordApp::new(Session::new(deskwerk_docs_doc::Document::from_text("one\ntwo")), Services::default());
     // The labels below are English; an integration test otherwise follows the machine's language.
     app.ui.language = "en".into();
     let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(

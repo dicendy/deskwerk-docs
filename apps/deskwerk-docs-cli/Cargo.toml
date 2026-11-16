@@ -1,0 +1,23 @@
+[package]
+name = "deskwerk-docs-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "Deskwerk Docs command line: convert, inspect, render, run commands, MCP server"
+
+[[bin]]
+name = "deskwerk-docs-cli"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+deskwerk-docs-doc = { workspace = true }
+deskwerk-docs-engine = { workspace = true }
+deskwerk-docs-render = { workspace = true }
+deskwerk-docs-mcp = { workspace = true }
+deskwerk-docs-zotero = { workspace = true }
+serde_json = { workspace = true }
+sys-locale = "0.3"

@@ -9,7 +9,7 @@ pub struct Prefs {
     pub count_notes: bool,
     /// Track Changes Options: what markup shows and how revisions are drawn (per user, as in
     /// Word).
-    pub markup: wordcraft_layout::display::MarkupOptions,
+    pub markup: deskwerk_docs_layout::display::MarkupOptions,
     /// File › Print / Export: Print Markup. PDFs, prints and page images show comments in
     /// balloons beside each page and tracked changes as marked up; HTML, Markdown and text
     /// copies end with the comments (`file.printMarkup`).
@@ -30,20 +30,20 @@ pub struct Prefs {
     /// Advanced › Measurement units); `None` follows the region ([`Session::units`]). Saved under
     /// a new key; an older `units` value other than inches (the old default) carries over on load.
     #[serde(rename = "measurementUnits")]
-    pub units: Option<wordcraft_geom::Unit>,
+    pub units: Option<deskwerk_docs_geom::Unit>,
     /// The region the user chose for new documents, units and the decimal separator (a locale
     /// tag like `pl-PL`, File › Options › Advanced › Region); `None` follows the system.
     pub region: Option<String>,
     /// A folder searched for Hunspell dictionaries before the system locations (File › Options ›
     /// Language, #1063): an app started from Finder or the Dock doesn't see
-    /// `WORDCRAFT_DICTIONARIES`. `None` searches the system locations only.
+    /// `DESKWERK_DOCS_DICTIONARIES`. `None` searches the system locations only.
     pub dictionaries_folder: Option<String>,
     /// The user templates folder File › New lists personal templates from and Save as Word
     /// Template starts in (File › Options › Advanced › File locations, #2852). `None`: the app's
     /// own `Templates` folder in its settings folder.
     pub user_templates_folder: Option<String>,
     /// Formatting marks shown even while Show/Hide ¶ is off.
-    pub marks: wordcraft_layout::display::FormattingMarks,
+    pub marks: deskwerk_docs_layout::display::FormattingMarks,
     /// Mark grammar errors as you type (with Check spelling as you type on).
     pub mark_grammar: bool,
     /// Check spelling as you type (File › Options › Proofing). The live value is
@@ -90,8 +90,8 @@ impl Default for Prefs {
 
 impl Prefs {
     /// What the spelling check skips.
-    pub fn spelling(&self) -> wordcraft_proof::Options {
-        wordcraft_proof::Options {
+    pub fn spelling(&self) -> deskwerk_docs_proof::Options {
+        deskwerk_docs_proof::Options {
             ignore_uppercase: self.ignore_uppercase,
             ignore_numbers: self.ignore_numbers,
             ignore_internet: self.ignore_internet,
@@ -102,7 +102,7 @@ impl Prefs {
 /// Ignore malformed saved language tags without discarding the other preferences.
 fn lenient_default_language<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Option<String>, D::Error> {
     let value = serde_json::Value::deserialize(d)?;
-    Ok(value.as_str().and_then(wordcraft_proof::lang::normalize_tag))
+    Ok(value.as_str().and_then(deskwerk_docs_proof::lang::normalize_tag))
 }
 
 /// Ignore an invalid saved Page Color without discarding other preferences.

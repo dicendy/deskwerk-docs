@@ -56,7 +56,7 @@ if (-not $haveCert -and -not $haveAzure) {
 
 $script:SignTool = Find-SignTool
 $common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'Deskwerk Docs', '/du', 'https://github.com/dicendy/deskwerk-docs')
-$tmp = Join-Path ([IO.Path]::GetTempPath()) "wordcraft-sign-$([IO.Path]::GetRandomFileName())"
+$tmp = Join-Path ([IO.Path]::GetTempPath()) "deskwerk-docs-sign-$([IO.Path]::GetRandomFileName())"
 New-Item -ItemType Directory -Path $tmp | Out-Null
 
 try {

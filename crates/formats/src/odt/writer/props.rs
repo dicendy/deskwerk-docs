@@ -5,7 +5,7 @@ use super::{Align, Border, BorderStyle, Borders, Fmt, Kind, LineSpacing, Rgb, mo
 
 /// `style:text-properties` attributes for what only [`Fmt::extra`] holds (underline and strike
 /// are written with the rest); `size` is the text's size, which a raised position is a share of.
-pub(in crate::odt) fn extra_props(x: &wordcraft_doc::props::CharProps, size: Option<f32>) -> String {
+pub(in crate::odt) fn extra_props(x: &deskwerk_docs_doc::props::CharProps, size: Option<f32>) -> String {
     let mut p = String::new();
     let on = |v: Option<bool>| v == Some(true);
     if on(x.caps) {
@@ -27,7 +27,7 @@ pub(in crate::odt) fn extra_props(x: &wordcraft_doc::props::CharProps, size: Opt
         p.push_str(&format!(" style:text-scale=\"{}%\"", s.round()));
     }
     if let Some(m) = x.emphasis {
-        use wordcraft_doc::props::EmphasisMark as E;
+        use deskwerk_docs_doc::props::EmphasisMark as E;
         p.push_str(match m {
             E::None => " style:text-emphasize=\"none\"",
             E::Dot => " style:text-emphasize=\"dot above\"",
@@ -67,8 +67,8 @@ pub(in crate::odt) fn extra_props(x: &wordcraft_doc::props::CharProps, size: Opt
 }
 
 /// `style:text-properties` attributes for character properties `cp` (a style's look).
-pub(in crate::odt) fn props_text(cp: &wordcraft_doc::props::CharProps) -> String {
-    use wordcraft_doc::props::{TextColor, Underline, VertAlign};
+pub(in crate::odt) fn props_text(cp: &deskwerk_docs_doc::props::CharProps) -> String {
+    use deskwerk_docs_doc::props::{TextColor, Underline, VertAlign};
     let f = Fmt {
         bold: cp.bold == Some(true),
         italic: cp.italic == Some(true),
@@ -138,7 +138,7 @@ pub(in crate::odt) fn lang_attrs(tag: &str, suffix: &str) -> String {
 
 /// The Asian and complex-script attributes of `x`: fonts, complex size, weight, posture and the
 /// two languages.
-pub(in crate::odt) fn script_attrs(x: &wordcraft_doc::props::CharProps) -> String {
+pub(in crate::odt) fn script_attrs(x: &deskwerk_docs_doc::props::CharProps) -> String {
     let mut p = String::new();
     if let Some(f) = x.font_ea.as_deref() {
         p.push_str(&format!(" style:font-family-asian=\"'{}'\"", crate::odt::writer::x(&f.replace('\'', ""))));
@@ -167,7 +167,7 @@ pub(in crate::odt) fn script_attrs(x: &wordcraft_doc::props::CharProps) -> Strin
 pub(in crate::odt) fn text_props(f: &Fmt) -> String {
     let mut p = String::new();
     // Complex-script weight and posture of their own are written with the other script extras.
-    let own_cs = |pick: fn(&wordcraft_doc::props::CharProps) -> Option<bool>| f.extra.as_deref().and_then(pick).is_some();
+    let own_cs = |pick: fn(&deskwerk_docs_doc::props::CharProps) -> Option<bool>| f.extra.as_deref().and_then(pick).is_some();
     if f.bold {
         p.push_str(" fo:font-weight=\"bold\" style:font-weight-asian=\"bold\"");
         if !own_cs(|x| x.bold_cs) {
@@ -182,7 +182,7 @@ pub(in crate::odt) fn text_props(f: &Fmt) -> String {
     }
     let extra = f.extra.as_deref();
     if f.underline {
-        use wordcraft_doc::props::Underline as U;
+        use deskwerk_docs_doc::props::Underline as U;
         let (style, kind, width, mode) = match extra.and_then(|e| e.underline) {
             Some(U::Double) => ("solid", "double", "auto", ""),
             Some(U::Thick) => ("solid", "single", "bold", ""),
@@ -211,7 +211,7 @@ pub(in crate::odt) fn text_props(f: &Fmt) -> String {
         if (f.sup || f.sub) && e.position.is_some() {
             // One `style:text-position` only (a repeated attribute isn't well-formed XML):
             // superscript or subscript, written below, wins over a raised or lowered position.
-            let e = wordcraft_doc::props::CharProps { position: None, ..e.clone() };
+            let e = deskwerk_docs_doc::props::CharProps { position: None, ..e.clone() };
             p.push_str(&extra_props(&e, f.size));
         } else {
             p.push_str(&extra_props(e, f.size));
@@ -270,8 +270,8 @@ pub(in crate::odt) fn spacing_props(sp: &model::Spacing) -> String {
 
 /// `style:tab-stops` (ODF 1.3 §17.7) for `tabs`, measured from the margin (the package's
 /// settings say so); bar and clearing stops have no ODF form and are left out.
-pub(in crate::odt) fn tab_stops(tabs: &[wordcraft_doc::props::TabStop]) -> String {
-    use wordcraft_doc::props::{TabAlign, TabLeader};
+pub(in crate::odt) fn tab_stops(tabs: &[deskwerk_docs_doc::props::TabStop]) -> String {
+    use deskwerk_docs_doc::props::{TabAlign, TabLeader};
     let mut s = String::from("<style:tab-stops>");
     for t in tabs.iter().filter(|t| t.pos.is_finite()) {
         let kind = match t.align {
@@ -360,7 +360,7 @@ pub(in crate::odt) fn parent_style(k: Kind) -> &'static str {
     }
 }
 
-/// The LibreOffice style (name and display name) standing for WordCraft's table of contents,
+/// The LibreOffice style (name and display name) standing for Deskwerk Docs's table of contents,
 /// table of figures and index heading styles, which LibreOffice's indexes are generated in:
 /// TOC 1–9 are Contents 1–9, TOC Heading is Contents Heading, Table of Figures is Figure Index 1.
 pub(in crate::odt) fn generated_style(id: &str) -> Option<(String, String)> {
@@ -373,7 +373,7 @@ pub(in crate::odt) fn generated_style(id: &str) -> Option<(String, String)> {
     })
 }
 
-/// The WordCraft style (id and name) a LibreOffice index style `odt` stands for (the reverse
+/// The Deskwerk Docs style (id and name) a LibreOffice index style `odt` stands for (the reverse
 /// of [`generated_style`]).
 pub(in crate::odt) fn generating_style(odt: &str) -> Option<(String, String)> {
     let n = odt.strip_prefix("Contents_20_").and_then(|n| n.parse::<u8>().ok()).filter(|n| (1..=10).contains(n));
@@ -396,7 +396,7 @@ mod tests {
                 sup,
                 sub,
                 size: Some(12.0),
-                extra: Some(Box::new(wordcraft_doc::props::CharProps { position: Some(3.0), ..Default::default() })),
+                extra: Some(Box::new(deskwerk_docs_doc::props::CharProps { position: Some(3.0), ..Default::default() })),
                 ..Default::default()
             };
             let p = text_props(&f);
@@ -405,7 +405,7 @@ mod tests {
         // Without superscript or subscript the position is still written.
         let f = Fmt {
             size: Some(12.0),
-            extra: Some(Box::new(wordcraft_doc::props::CharProps { position: Some(3.0), ..Default::default() })),
+            extra: Some(Box::new(deskwerk_docs_doc::props::CharProps { position: Some(3.0), ..Default::default() })),
             ..Default::default()
         };
         assert!(text_props(&f).contains("style:text-position=\"25% 100%\""), "{}", text_props(&f));

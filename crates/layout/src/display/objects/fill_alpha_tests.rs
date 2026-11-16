@@ -1,6 +1,6 @@
 use super::*;
-use wordcraft_doc::connector::ShapeExtra;
-use wordcraft_doc::freeform::{FreePath, Freeform, InkTool};
+use deskwerk_docs_doc::connector::ShapeExtra;
+use deskwerk_docs_doc::freeform::{FreePath, Freeform, InkTool};
 
 #[test]
 fn freeform_fill_has_own_alpha() {
@@ -19,7 +19,7 @@ fn freeform_fill_has_own_alpha() {
                 rect,
                 &ShapeLook {
                     kind: ShapeKind::Freeform,
-                    fill: Some(&wordcraft_doc::fill::Fill::Solid { color: Rgb::BLACK, transparency }),
+                    fill: Some(&deskwerk_docs_doc::fill::Fill::Solid { color: Rgb::BLACK, transparency }),
                     stroke: Some(Rgb::WHITE),
                     stroke_width: 2.0,
                     effects: Default::default(),
@@ -47,7 +47,7 @@ fn freeform_fill_has_own_alpha() {
         rect,
         &ShapeLook {
             kind: ShapeKind::Freeform,
-            fill: Some(&wordcraft_doc::fill::Fill::Solid { color: Rgb::BLACK, transparency: 100.0 }),
+            fill: Some(&deskwerk_docs_doc::fill::Fill::Solid { color: Rgb::BLACK, transparency: 100.0 }),
             stroke: Some(Rgb::WHITE),
             stroke_width: 2.0,
             effects: Default::default(),
@@ -86,8 +86,8 @@ fn other_path_alpha_defaults() {
 /// width and dashes, inside the picture's turn; a picture without one is the image alone.
 #[test]
 fn picture_outline_is_drawn_on_the_frame() {
-    use wordcraft_doc::line_dash::LineDash;
-    use wordcraft_doc::para::{Float, PicOutline};
+    use deskwerk_docs_doc::line_dash::LineDash;
+    use deskwerk_docs_doc::para::{Float, PicOutline};
     let rect = Rect::new(10.0, 20.0, 100.0, 50.0);
     let picture = |outline: Option<PicOutline>, rot: f32| InlineObject::Image {
         media: "m".into(),

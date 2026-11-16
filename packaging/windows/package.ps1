@@ -7,7 +7,8 @@
     deskwerk-docs-<version>-windows-<arch>.msi            installer (WiX v5), one dual-scope package: for the
                                                       current user by default, no admin rights (#39);
                                                       "Everyone on this computer" installs per machine
-    deskwerk-docs-<version>-windows-<arch>-portable.zip   deskwerk-docs.exe + deskwerk-docs-cli.exe
+    deskwerk-docs-<version>-windows-<arch>-portable.zip   deskwerk-docs.exe + deskwerk-docs-cli.exe, the document icon
+                                                          and the licence files
 
   The binaries link the C runtime statically (+crt-static), so neither the MSI nor the portable
   zip needs the Visual C++ redistributable. Signing is delegated to sign.ps1 (skipped with a
@@ -38,7 +39,7 @@ function Invoke-Native([string] $What, [scriptblock] $Block) {
 }
 
 # The version lives in one place: [workspace.package] version in the root Cargo.toml.
-$Version = $env:WORDCRAFT_VERSION
+$Version = $env:DESKWERK_DOCS_VERSION
 if (-not $Version) {
   $inPkg = $false
   foreach ($line in Get-Content (Join-Path $Root 'Cargo.toml')) {
@@ -55,8 +56,8 @@ $Dist = if ($env:DIST) { $env:DIST } else { Join-Path $Root 'dist\release' }
 $TargetDir = if ($env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR } else { Join-Path $Root 'target' }
 New-Item -ItemType Directory -Force -Path $Dist | Out-Null
 
-if (-not $env:WORDCRAFT_BUILD_SHA) { $env:WORDCRAFT_BUILD_SHA = (git -C $Root rev-parse HEAD 2>$null) }
-if (-not $env:WORDCRAFT_BUILD_DATE) { $env:WORDCRAFT_BUILD_DATE = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd') }
+if (-not $env:DESKWERK_DOCS_BUILD_SHA) { $env:DESKWERK_DOCS_BUILD_SHA = (git -C $Root rev-parse HEAD 2>$null) }
+if (-not $env:DESKWERK_DOCS_BUILD_DATE) { $env:DESKWERK_DOCS_BUILD_DATE = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd') }
 
 Write-Output "Deskwerk Docs $Version for Windows $Arch ($Target)"
 
@@ -66,8 +67,8 @@ if (-not $SkipBuild) {
   $flagVar = 'CARGO_TARGET_' + ($Target.ToUpper() -replace '-', '_') + '_RUSTFLAGS'
   [Environment]::SetEnvironmentVariable($flagVar, '-C target-feature=+crt-static')
   # Fail the build (rather than warn) if the icon/VERSIONINFO can't be embedded.
-  $env:WORDCRAFT_REQUIRE_WINRES = '1'
-  Invoke-Native "cargo build ($Target)" { cargo build --release --locked -p wordcraft -p wordcraft-cli --target $Target }
+  $env:DESKWERK_DOCS_REQUIRE_WINRES = '1'
+  Invoke-Native "cargo build ($Target)" { cargo build --release --locked -p deskwerk-docs -p deskwerk-docs-cli --target $Target }
 }
 
 $Bin = Join-Path $TargetDir "$Target\release"
@@ -94,13 +95,13 @@ New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 Copy-Item (Join-Path $Bin 'deskwerk-docs.exe'), (Join-Path $Bin 'deskwerk-docs-cli.exe') $Stage
 
 & (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'deskwerk-docs.exe') (Join-Path $Stage 'deskwerk-docs-cli.exe')
-# The document icon of the Word, RTF and ODT ProgIds (wordcraft.wxs), installed next to the exe.
+# The document icon of the Word, RTF and ODT ProgIds (deskwerk-docs.wxs), installed next to the exe.
 Copy-Item (Join-Path $Root 'assets\app-icon\document.ico') (Join-Path $Stage 'deskwerk-docs-document.ico')
 
 # Required notices ship in every MSI, independently of optional craft-fonts.
 $AppNotices = Join-Path $Stage 'app-notices'
 New-Item -ItemType Directory -Force -Path $AppNotices | Out-Null
-Copy-Item -LiteralPath (Join-Path $Root 'NOTICE'), (Join-Path $Root 'ATTRIBUTION.md') -Destination $AppNotices
+Copy-Item -LiteralPath (Join-Path $Root 'LICENSE-MIT'), (Join-Path $Root 'LICENSE-APACHE'), (Join-Path $Root 'NOTICE'), (Join-Path $Root 'ATTRIBUTION.md') -Destination $AppNotices
 # The font pack (assets\webfonts) is built into deskwerk-docs.exe: ship its licences and manifest.
 $FontPackLicences = Join-Path $AppNotices 'font-pack-licences'
 New-Item -ItemType Directory -Force -Path $FontPackLicences | Out-Null
@@ -120,8 +121,8 @@ if ($env:CRAFT_FONTS_DIR) {
 # ---- end font notices for the MSI --------------------------------------------------------------
 
 # ---- MSI ---------------------------------------------------------------------------------------
-# The installer's welcome page shows the license: build its RTF from LICENSE-MIT and LICENSE-APACHE
-# so it never drifts from them. Hard-wrapped lines are rejoined into paragraphs so the text wraps
+# The installer shows no licence page, but WiX's licence dialog stays in the MSI (unreachable): give it
+# an RTF built from LICENSE-MIT and LICENSE-APACHE instead of WiX's sample text. Hard-wrapped lines are rejoined into paragraphs so the text wraps
 # to the dialog's width.
 function ConvertTo-RtfText([string] $Text) {
   $sb = [System.Text.StringBuilder]::new()
@@ -150,14 +151,14 @@ $rtf = '{\rtf1\ansi\ansicpg1252\deff0{\fonttbl{\f0\fswiss\fcharset0 Tahoma;}}\vi
   ($paragraphs -join "\par`r`n") + "\par`r`n}`r`n"
 [System.IO.File]::WriteAllText($LicenseRtf, $rtf, [System.Text.Encoding]::ASCII)
 
-# One MSI from one dual-scope source (see wordcraft.wxs and install-policy.wxi): per user by default into
+# One MSI from one dual-scope source (see deskwerk-docs.wxs and install-policy.wxi): per user by default into
 # %LOCALAPPDATA%\Programs\Deskwerk\Docs (#39), per machine into Program Files\Deskwerk on request.
 # The plain name is the one every sibling app, the launcher and the shared windows-arm64 workflow expect.
 $Msi = Join-Path $Dist "deskwerk-docs-$Version-windows-$Arch.msi"
 Invoke-Native "wix build" {
-  wix build (Join-Path $PSScriptRoot 'wordcraft.wxs') -arch $Arch `
+  wix build (Join-Path $PSScriptRoot 'deskwerk-docs.wxs') -arch $Arch `
     -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext `
-    -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\wordcraft.ico')" `
+    -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\deskwerk-docs.ico')" `
     -d "LicenseRtf=$LicenseRtf" `
     -d "AppNoticesDir=$AppNotices" -d "DocsDir=$Docs" -d "HasCraftFontLicences=$HasCraftFontLicences" -d "Scope=perUserOrMachine" `
     -o $Msi
@@ -175,6 +176,7 @@ $Portable = Join-Path $TargetDir "windows-package\deskwerk-docs-$Version-windows
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
+Copy-Item (Join-Path $Stage 'deskwerk-docs-document.ico') $Portable
 foreach ($f in 'README.md', 'LICENSE', 'LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE', 'ATTRIBUTION.md') {
   $p = Join-Path $Root $f
   if (Test-Path $p) { Copy-Item $p $Portable }

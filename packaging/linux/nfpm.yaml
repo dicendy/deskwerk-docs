@@ -12,7 +12,7 @@ version_schema: semver
 release: 1
 section: graphics
 priority: optional
-maintainer: ${WORDCRAFT_MAINTAINER}
+maintainer: ${DESKWERK_DOCS_MAINTAINER}
 vendor: Deskwerk
 homepage: https://github.com/dicendy
 license: MIT OR Apache-2.0
