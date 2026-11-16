@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/app-icon/hicolor/256x256/apps/eu.deskwerk.Docs.png" width="128" height="128" alt="Deskwerk Docs icon: a document page and pen on a blue tile">
+  <img src="assets/app-icon/hicolor/256x256/apps/eu.deskwerk.Docs.png" width="128" height="128" alt="Deskwerk Docs icon: a document page with a D badge on a blue tile">
 </p>
 
 <h1 align="center">Deskwerk Docs</h1>

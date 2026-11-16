@@ -7,6 +7,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Deskwerk Docs</title>
   <link data-trunk rel="icon" href="../../assets/app-icon/wordcraft.ico" />
+  <!-- Home-screen / install icons: the manifest names icon-192.png and icon-512.png next to it. -->
+  <link data-trunk rel="copy-file" href="manifest.webmanifest" />
+  <link data-trunk rel="copy-file" href="../../assets/app-icon/web/icon-192.png" />
+  <link data-trunk rel="copy-file" href="../../assets/app-icon/web/icon-512.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <link data-trunk rel="rust" data-bin="wordcraft-web" data-wasm-opt="z" data-weak-refs />
   <!-- The font pack (assets/webfonts): fetched from this origin only, never from a font CDN. -->
   <link data-trunk rel="copy-dir" href="../../assets/webfonts" />
