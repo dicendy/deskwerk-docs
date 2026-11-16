@@ -266,7 +266,7 @@ fn records_from_many_threads_are_whole_lines() {
     }
     let text = read(&path);
     assert_eq!(text.lines().count(), 800);
-    assert!(text.lines().all(|l| l.contains(" deskwerk-docs: thread ")), "{text}");
+    assert!(text.lines().all(|l| l.contains(" deskwerk_docs: thread ")), "{text}");
     let _ = std::fs::remove_dir_all(&dir);
 }
 
@@ -301,7 +301,7 @@ fn a_poisoned_sink_still_logs() {
     assert!(logger.sink.is_poisoned());
     let path = logger.attach_dir(&dir).expect("attach");
     logger.log(&log::Record::builder().level(log::Level::Warn).target("deskwerk_docs").args(format_args!("after the poison")).build());
-    assert!(read(&path).contains("deskwerk-docs: after the poison"));
+    assert!(read(&path).contains("deskwerk_docs: after the poison"));
     let _ = std::fs::remove_dir_all(&dir);
 }
 
