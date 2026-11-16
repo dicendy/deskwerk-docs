@@ -647,7 +647,7 @@ fn reading_layout_reflows_into_viewport_height_pages_without_changing_print_layo
 fn hit_and_caret_agree() {
     let d = Document::from_text("Hello world, this is Deskwerk Docs.\nSecond paragraph here.");
     let l = lay(&d);
-    for off in [0, 5, 12, 31] {
+    for off in [0, 5, 12, 35] {
         let pos = Pos::body(0, off);
         let c = l.caret(&pos).unwrap();
         let back = l.hit(c.page, c.x + 0.1, c.top + c.height / 2.0, StoryRef::Body).unwrap();
