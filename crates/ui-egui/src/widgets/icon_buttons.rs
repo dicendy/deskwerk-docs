@@ -79,7 +79,7 @@ pub fn push_width(ui: &Ui, labels: &[&str]) -> f32 {
 /// Whether focus came from the keyboard (Tab or the arrow keys) since the last pointer press:
 /// only then does a push button show its focus ring.
 fn keyboard_focus_visible(ui: &Ui) -> bool {
-    let id = egui::Id::new("deskwerk_push_keyboard_focus");
+    let id = egui::Id::unique("deskwerk_push_keyboard_focus");
     let (pressed, keys) = ui.input(|i| {
         let keys =
             [egui::Key::Tab, egui::Key::ArrowLeft, egui::Key::ArrowRight, egui::Key::ArrowUp, egui::Key::ArrowDown].iter().any(|k| i.key_pressed(*k));
