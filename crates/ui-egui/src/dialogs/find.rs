@@ -242,7 +242,7 @@ pub(super) fn goto_body(app: &mut WordApp, ui: &mut Ui, what: &mut GoToWhat, tar
                 GoToWhat::Bookmark => None,
             };
         }
-        if ui.button(tl!("Close")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+        if ui.add(crate::widgets::neutral_button(tl!("Close"))).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
             close = true;
         }
     });

@@ -254,7 +254,7 @@ pub(super) fn macros(app: &mut WordApp, ui: &mut Ui, name: &mut String) -> bool 
     let mut close = ui.input(|i| i.key_pressed(egui::Key::Escape));
     ui.horizontal(|ui| {
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            close |= ui.button(tl!("Close")).clicked();
+            close |= ui.add(crate::widgets::neutral_button(tl!("Close"))).clicked();
         });
     });
     close

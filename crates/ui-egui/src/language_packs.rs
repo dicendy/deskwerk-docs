@@ -343,7 +343,7 @@ pub(crate) fn bar(app: &mut WordApp, ui: &mut Ui) {
                     }
                     None => {
                         let label = crate::i18n::fmt(tl!("Install ({size})"), &[("size", &size_text(pack.size))]);
-                        if ui.add(crate::widgets::primary_button(ui, label)).on_hover_text(licence_hover(&pack)).clicked() {
+                        if ui.add(crate::widgets::primary_button(label)).on_hover_text(licence_hover(&pack)).clicked() {
                             start_install(app, &ui.ctx().clone(), &pack);
                         }
                     }
@@ -403,7 +403,7 @@ fn unlisted_bar(app: &mut WordApp, ui: &mut Ui, tag: &str) {
                     if packs::backend().is_some_and(|b| !b.network_on()) {
                         hover.push(tl!("Installing turns on downloading of fonts and Language packs from GitHub.").to_string());
                     }
-                    if ui.add(crate::widgets::primary_button(ui, tl!("Install").to_string())).on_hover_text(hover.join("\n")).clicked() {
+                    if ui.add(crate::widgets::primary_button(tl!("Install").to_string())).on_hover_text(hover.join("\n")).clicked() {
                         start_get(app, &ui.ctx().clone(), tag);
                     }
                 }

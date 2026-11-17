@@ -257,7 +257,7 @@ pub fn organizer(app: &mut WordApp, ui: &mut Ui, f: &mut OrganizerForm) -> bool 
     let mut close = ui.input(|i| i.key_pressed(egui::Key::Escape));
     ui.horizontal(|ui| {
         ui.with_layout(crate::rtl::far_side(ui, egui::Align::Center), |ui| {
-            close |= ui.add(crate::widgets::primary_button(ui, tl!("Close"))).clicked();
+            close |= ui.add(crate::widgets::primary_button(tl!("Close"))).clicked();
         });
     });
     if close {

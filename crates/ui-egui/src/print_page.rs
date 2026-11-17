@@ -198,7 +198,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                 let ready = !native || app.printing.ready();
                 // Return prints too, as in Word, whose ⌘P opens on Print as the default button.
                 if hook
-                    && (ui.add_enabled(ready, crate::widgets::primary_button(ui, tl!("Print")).min_size(vec2(320.0, 34.0))).clicked()
+                    && (ui.add_enabled(ready, crate::widgets::primary_button(tl!("Print")).min_width(320.0)).clicked()
                         || (ready && app.dialog.is_none() && !app.file_dialog_open() && return_prints(ui.ctx())))
                 {
                     let params = app.ui.print.params();
@@ -218,10 +218,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                 } else {
                     ui.label(tl!("Save a copy in another format. Printing goes through a PDF you can print from any viewer."));
                 }
-                if ui
-                    .add(egui::Button::new(egui::RichText::new(tl!("Save these pages as PDF…")).font(medium(13.5))).min_size(vec2(320.0, 34.0)))
-                    .clicked()
-                {
+                if ui.add(crate::widgets::neutral_button(tl!("Save these pages as PDF…")).min_width(320.0)).clicked() {
                     app.print_pdf_dialog();
                 }
                 ui.add_space(6.0);

@@ -203,7 +203,7 @@ pub(super) fn mark_ui(app: &mut WordApp, ui: &mut Ui, f: &mut MarkForm) -> Next 
     ui.add_space(8.0);
     ui.horizontal(|ui| {
         ui.with_layout(crate::rtl::far_side(ui, egui::Align::Center), |ui| {
-            if ui.button(tl!("Close")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+            if ui.add(crate::widgets::neutral_button(tl!("Close"))).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                 close = true;
             }
             let can = !f.entry.trim().is_empty();
@@ -215,7 +215,7 @@ pub(super) fn mark_ui(app: &mut WordApp, ui: &mut Ui, f: &mut MarkForm) -> Next 
                     Err(e) => e,
                 };
             }
-            if ui.add_enabled(can, crate::widgets::primary_button(ui, tl!("Mark"))).clicked() {
+            if ui.add_enabled(can, crate::widgets::primary_button(tl!("Mark"))).clicked() {
                 f.message = match app.run("references.markEntry", f.params(false)) {
                     Ok(_) => tl!("Entry marked.").to_string(),
                     Err(e) => e,

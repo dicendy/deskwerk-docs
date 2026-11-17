@@ -2,16 +2,167 @@ use super::buttons::DROPDOWN;
 use super::combo::drawn_state;
 use super::{Color32, CornerRadius, Rect, Response, Sense, Stroke, Tokens, Ui, icons, pos2, regular, vec2};
 
-/// A dialog's primary button (OK, Save, Close): the accent fill with `on_accent` text, per theme.
-pub fn primary_button(ui: &Ui, text: impl Into<String>) -> egui::Button<'static> {
-    let t = Tokens::get(ui.ctx());
-    egui::Button::new(egui::RichText::new(text.into()).color(t.on_accent)).fill(t.accent)
+/// Height of a dialog push button, in points (the shared Docs/Sheets button spec).
+pub const PUSH_H: f32 = 32.0;
+/// Narrowest a push button gets, whatever its label.
+pub const PUSH_MIN_W: f32 = 96.0;
+/// Space between the label and each side of the button.
+pub const PUSH_PAD_X: f32 = 16.0;
+/// Corner radius of a push button.
+pub const PUSH_RADIUS: u8 = 4;
+/// Label size: the normal interface font at 14 pt.
+pub const PUSH_FONT: f32 = 14.0;
+/// Space between neighbouring push buttons in a row.
+pub const PUSH_GAP: f32 = 8.0;
+
+/// The three push button looks of a dialog's button row, as in Word's prompts: Save filled in
+/// the app colour, Don't Save outlined in it, Cancel neutral grey.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PushKind {
+    /// The default answer: accent fill, `on_accent` text.
+    Primary,
+    /// A secondary answer: no fill, a 1 px border and text in the accent colour.
+    Outline,
+    /// Cancel, Close and the like: no fill, a 1 px grey border and normal text.
+    Neutral,
 }
 
-/// A dialog's secondary button with no fill: a 1 px `border` and `ink` text (Don't Save in
-/// the accent colour, Cancel in neutral grey), as in Word's prompts.
-pub fn outline_button(text: impl Into<String>, border: Color32, ink: Color32) -> egui::Button<'static> {
-    egui::Button::new(egui::RichText::new(text.into()).color(ink)).fill(Color32::TRANSPARENT).stroke(Stroke::new(1.0, border))
+/// A dialog or backstage push button drawn to the shared spec: 32 pt high, at least 96 pt wide,
+/// 16 pt padding, 4 pt corners, 14 pt label. Hover and press darken it (the fill of a primary
+/// button, a tint of an outline or neutral one); keyboard focus draws a 2 pt accent ring around
+/// it, pointer focus doesn't; disabled, it fades to 40 % and doesn't react. Add with `ui.add`.
+#[must_use = "add it with `ui.add`"]
+pub struct PushButton {
+    text: String,
+    kind: PushKind,
+    min_w: f32,
+}
+
+impl PushButton {
+    pub fn new(kind: PushKind, text: impl Into<String>) -> Self {
+        Self { text: text.into(), kind, min_w: PUSH_MIN_W }
+    }
+
+    /// At least `w` points wide: the buttons of one row share the widest one's width
+    /// ([`push_width`]).
+    pub fn min_width(mut self, w: f32) -> Self {
+        self.min_w = self.min_w.max(w);
+        self
+    }
+}
+
+/// A dialog's primary button (OK, Save, Close).
+pub fn primary_button(text: impl Into<String>) -> PushButton {
+    PushButton::new(PushKind::Primary, text)
+}
+
+/// A dialog's secondary button outlined in the accent colour (Don't Save).
+pub fn outline_button(text: impl Into<String>) -> PushButton {
+    PushButton::new(PushKind::Outline, text)
+}
+
+/// A dialog's neutral button (Cancel, Close, Apply).
+pub fn neutral_button(text: impl Into<String>) -> PushButton {
+    PushButton::new(PushKind::Neutral, text)
+}
+
+fn push_label_width(ui: &Ui, text: &str) -> f32 {
+    ui.ctx().fonts_mut(|f| f.layout_no_wrap(text.to_string(), regular(PUSH_FONT), Color32::WHITE).size().x)
+}
+
+/// The width every button of a row takes so they all match: the widest label plus padding,
+/// never under [`PUSH_MIN_W`].
+pub fn push_width(ui: &Ui, labels: &[&str]) -> f32 {
+    labels.iter().map(|l| push_label_width(ui, l) + 2.0 * PUSH_PAD_X).fold(PUSH_MIN_W, f32::max)
+}
+
+/// Whether focus came from the keyboard (Tab or the arrow keys) since the last pointer press:
+/// only then does a push button show its focus ring.
+fn keyboard_focus_visible(ui: &Ui) -> bool {
+    let id = egui::Id::new("deskwerk_push_keyboard_focus");
+    let (pressed, keys) = ui.input(|i| {
+        let keys =
+            [egui::Key::Tab, egui::Key::ArrowLeft, egui::Key::ArrowRight, egui::Key::ArrowUp, egui::Key::ArrowDown].iter().any(|k| i.key_pressed(*k));
+        (i.pointer.any_pressed(), keys)
+    });
+    ui.ctx().data_mut(|d| {
+        let v = d.get_temp_mut_or_insert_with(id, || false);
+        if pressed {
+            *v = false;
+        } else if keys {
+            *v = true;
+        }
+        *v
+    })
+}
+
+/// `c` darkened by `f` (0..1) toward black.
+fn darken(c: Color32, f: f32) -> Color32 {
+    c.lerp_to_gamma(Color32::BLACK, f)
+}
+
+impl egui::Widget for PushButton {
+    fn ui(self, ui: &mut Ui) -> Response {
+        let t = Tokens::get(ui.ctx());
+        let w = (push_label_width(ui, &self.text) + 2.0 * PUSH_PAD_X).max(self.min_w);
+        let (rect, resp) = ui.allocate_exact_size(vec2(w, PUSH_H), Sense::click());
+        let enabled = ui.is_enabled();
+        resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, &self.text));
+        let ring = keyboard_focus_visible(ui) && resp.has_focus();
+        if !ui.is_rect_visible(rect) {
+            return resp;
+        }
+        let pressed = enabled && resp.is_pointer_button_down_on();
+        let hovered = enabled && (resp.hovered() || pressed);
+        let (fill, border, ink) = match self.kind {
+            PushKind::Primary => {
+                let fill = if pressed {
+                    darken(t.accent, 0.20)
+                } else if hovered {
+                    darken(t.accent, 0.10)
+                } else {
+                    t.accent
+                };
+                (fill, Color32::TRANSPARENT, t.on_accent)
+            }
+            PushKind::Outline => {
+                let a = if t.dark { t.accent_text } else { t.accent };
+                let fill = if pressed {
+                    a.gamma_multiply(0.16)
+                } else if hovered {
+                    a.gamma_multiply(0.08)
+                } else {
+                    Color32::TRANSPARENT
+                };
+                (fill, if pressed { darken(a, 0.10) } else { a }, a)
+            }
+            PushKind::Neutral => {
+                let fill = if pressed {
+                    t.text.gamma_multiply(0.12)
+                } else if hovered {
+                    t.text.gamma_multiply(0.06)
+                } else {
+                    Color32::TRANSPARENT
+                };
+                (fill, t.input_border, t.text)
+            }
+        };
+        // Disabled: 40 % of the enabled look. A fresh painter, so egui's own fading of a
+        // disabled `Ui` doesn't stack on top.
+        let (painter, fade) =
+            if enabled { (ui.painter().clone(), 1.0) } else { (ui.ctx().layer_painter(ui.layer_id()).with_clip_rect(ui.clip_rect()), 0.4) };
+        let cr = CornerRadius::same(PUSH_RADIUS);
+        let stroke = if border == Color32::TRANSPARENT { Stroke::NONE } else { Stroke::new(1.0, border.gamma_multiply(fade)) };
+        painter.rect(rect, cr, fill.gamma_multiply(fade), stroke, egui::StrokeKind::Inside);
+        let galley = ui.ctx().fonts_mut(|f| f.layout_no_wrap(self.text.clone(), regular(PUSH_FONT), ink.gamma_multiply(fade)));
+        let pos = rect.center() - galley.size() / 2.0;
+        painter.galley(pos, galley, ink.gamma_multiply(fade));
+        if ring {
+            let a = if t.dark { t.accent_text } else { t.accent };
+            painter.rect_stroke(rect.expand(1.0), CornerRadius::same(PUSH_RADIUS + 2), Stroke::new(2.0, a), egui::StrokeKind::Outside);
+        }
+        resp
+    }
 }
 
 /// A frameless 22 px icon button (pane close buttons): ribbon-style hover and press feedback.

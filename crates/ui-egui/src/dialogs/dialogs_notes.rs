@@ -170,13 +170,13 @@ pub fn note_options(app: &mut WordApp, ui: &mut Ui, f: &mut NoteForm) -> bool {
             let enter = ui.input(|i| i.key_pressed(egui::Key::Enter));
             if cfg!(target_os = "macos") {
                 // macOS: [Apply] [Cancel] [Insert], the default button rightmost.
-                insert = ui.add(crate::widgets::primary_button(ui, tl!(label))).clicked() || enter;
-                cancel = ui.button(tl!("Cancel")).clicked();
-                apply = ui.button(tl!("Apply")).clicked();
+                insert = ui.add(crate::widgets::primary_button(tl!(label))).clicked() || enter;
+                cancel = ui.add(crate::widgets::neutral_button(tl!("Cancel"))).clicked();
+                apply = ui.add(crate::widgets::neutral_button(tl!("Apply"))).clicked();
             } else {
-                cancel = ui.button(tl!("Cancel")).clicked();
-                apply = ui.button(tl!("Apply")).clicked();
-                insert = ui.add(crate::widgets::primary_button(ui, tl!(label))).clicked() || enter;
+                cancel = ui.add(crate::widgets::neutral_button(tl!("Cancel"))).clicked();
+                apply = ui.add(crate::widgets::neutral_button(tl!("Apply"))).clicked();
+                insert = ui.add(crate::widgets::primary_button(tl!(label))).clicked() || enter;
             }
             cancel |= crate::dialogs::cancel_key_pressed(ui);
         });

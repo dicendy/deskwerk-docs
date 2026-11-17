@@ -121,7 +121,7 @@ pub(super) fn references(app: &mut WordApp, ui: &mut Ui) {
             small(
                 ui,
                 app,
-                "update",
+                "updateFigures",
                 Some("Update Table"),
                 "Update Table of Figures",
                 crate::widgets::ButtonAction::new("references.updateFigures", json!({}), false),
@@ -143,7 +143,7 @@ pub(super) fn references(app: &mut WordApp, ui: &mut Ui) {
             small(
                 ui,
                 app,
-                "update",
+                "updateIndex",
                 Some("Update Index"),
                 "Update Index",
                 crate::widgets::ButtonAction::new("references.updateIndex", json!({}), false),
@@ -164,7 +164,7 @@ pub(super) fn references(app: &mut WordApp, ui: &mut Ui) {
             small(
                 ui,
                 app,
-                "update",
+                "updateAuthorities",
                 Some("Update Table"),
                 "Update Table",
                 crate::widgets::ButtonAction::new("references.updateAuthorities", json!({}), false),

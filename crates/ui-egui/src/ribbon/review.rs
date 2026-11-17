@@ -177,6 +177,6 @@ pub(super) fn help(app: &mut WordApp, ui: &mut Ui) {
         big(ui, app, "checkForUpdates", "Check for\nUpdates…", "ui.checkForUpdates", json!({}), false);
     });
     group(ui, "Agents", None, app, |ui, app| {
-        big(ui, app, "macros", "Commands", "ui.dialog", json!({"name": "commands"}), false);
+        big(ui, app, "commands", "Commands", "ui.dialog", json!({"name": "commands"}), false);
     });
 }

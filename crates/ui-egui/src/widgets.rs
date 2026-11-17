@@ -26,8 +26,8 @@ use combo::{Row, highlight_row, section_row, section_rows};
 pub(crate) use combo::{current_pick, note_hover, paint_stand_in_mark, set_current_pick, swatch, take_hover};
 pub use groups::{command_icon, command_menu, customize_menu_items, group, group_titled, row};
 pub use icon_buttons::{
-    dialog_tabs, icon_button, icon_menu_item, icon_only_button, icon_text_button, icon_text_button_width, icon_text_menu_button, outline_button,
-    primary_button,
+    PUSH_GAP, PushButton, PushKind, dialog_tabs, icon_button, icon_menu_item, icon_only_button, icon_text_button, icon_text_button_width,
+    icon_text_menu_button, neutral_button, outline_button, primary_button, push_width,
 };
 #[cfg(test)]
 use tooltip::show_hint;

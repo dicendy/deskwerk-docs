@@ -489,7 +489,7 @@ fn find_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 Err(e) => *message = e,
             }
         }
-        if ui.button(tl!("Close")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+        if ui.add(crate::widgets::neutral_button(tl!("Close"))).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
             close = true;
         }
     });
@@ -1166,8 +1166,8 @@ fn discard_recovery_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bo
     ui.label(tl!("This cannot be undone. Your original file stays unchanged."));
     let answer = ui
         .horizontal(|ui| {
-            let cancel = ui.button(tl!("Cancel"));
-            let discard = ui.button(tl!("Discard"));
+            let cancel = ui.add(crate::widgets::neutral_button(tl!("Cancel")));
+            let discard = ui.add(crate::widgets::primary_button(tl!("Discard")));
             if cancel.clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                 Some("cancel")
             } else if discard.clicked() {
@@ -1202,11 +1202,13 @@ fn save_changes_dialog(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
     ui.add_space(8.0);
     let buttons = ui.horizontal(|ui| {
         ui.with_layout(crate::rtl::far_side(ui, egui::Align::Center), |ui| {
-            // As in Word: Save filled in the app colour, Don't Save outlined in it, Cancel neutral.
-            let t = Tokens::get(ui.ctx());
-            let cancel = ui.add(crate::widgets::outline_button(tl!("Cancel"), t.input_border, t.text));
-            let dont_save = ui.add(crate::widgets::outline_button(tl!("Don't Save"), t.accent, t.accent_text));
-            let save = ui.add(crate::widgets::primary_button(ui, tl!("Save")));
+            // As in Word: Save filled in the app colour, Don't Save outlined in it, Cancel neutral,
+            // all three as wide as the widest label (the shared push button spec).
+            ui.spacing_mut().item_spacing.x = crate::widgets::PUSH_GAP;
+            let w = crate::widgets::push_width(ui, &[tl!("Save"), tl!("Don't Save"), tl!("Cancel")]);
+            let cancel = ui.add(crate::widgets::neutral_button(tl!("Cancel")).min_width(w));
+            let dont_save = ui.add(crate::widgets::outline_button(tl!("Don't Save")).min_width(w));
+            let save = ui.add(crate::widgets::primary_button(tl!("Save")).min_width(w));
             [(cancel, "cancel"), (dont_save, "dontSave"), (save, "save")]
         })
         .inner

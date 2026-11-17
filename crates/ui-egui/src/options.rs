@@ -357,7 +357,7 @@ fn dictionaries(app: &mut WordApp, ui: &mut Ui) {
             .labelled_by(folder_label);
         let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
         let changed = folder.trim() != saved;
-        if ui.add_enabled(changed, egui::Button::new(tl!("Apply"))).clicked() || (enter && changed) {
+        if ui.add_enabled(changed, crate::widgets::neutral_button(tl!("Apply"))).clicked() || (enter && changed) {
             let value = if folder.trim().is_empty() { "auto" } else { folder.trim() };
             match app.run("file.options", json!({"dictionariesFolder": value})) {
                 // Shown as saved (`~/` expanded).
@@ -687,7 +687,7 @@ fn templates_folder(app: &mut WordApp, ui: &mut Ui) {
         let r = ui.add(egui::TextEdit::singleline(&mut folder).desired_width(320.0).hint_text(hint)).labelled_by(templates_label);
         let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
         let changed = folder.trim() != saved;
-        if ui.add_enabled(changed, egui::Button::new(tl!("Apply"))).clicked() || (enter && changed) {
+        if ui.add_enabled(changed, crate::widgets::neutral_button(tl!("Apply"))).clicked() || (enter && changed) {
             let value = if folder.trim().is_empty() { "auto" } else { folder.trim() };
             match app.run("file.options", json!({"userTemplatesFolder": value})) {
                 Ok(_) => folder = app.session.prefs.user_templates_folder.clone().unwrap_or_default(),

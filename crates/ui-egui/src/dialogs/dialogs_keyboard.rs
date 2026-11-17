@@ -255,11 +255,11 @@ pub fn customize_keyboard(app: &mut WordApp, ui: &mut Ui, f: &mut KeyboardForm) 
     if f.confirm_reset {
         ui.label(tl!("Remove every custom shortcut and restore the built-in keys?"));
         ui.horizontal(|ui| {
-            if ui.button(tl!("Yes")).clicked() {
+            if ui.add(crate::widgets::primary_button(tl!("Yes"))).clicked() {
                 change(app, json!({"reset": true}));
                 f.confirm_reset = false;
             }
-            if ui.button(tl!("No")).clicked() {
+            if ui.add(crate::widgets::neutral_button(tl!("No"))).clicked() {
                 f.confirm_reset = false;
             }
         });
@@ -281,7 +281,7 @@ pub fn customize_keyboard(app: &mut WordApp, ui: &mut Ui, f: &mut KeyboardForm) 
             f.confirm_reset = true;
         }
         ui.with_layout(crate::rtl::far_side(ui, egui::Align::Center), |ui| {
-            if ui.button(tl!("Close")).clicked() {
+            if ui.add(crate::widgets::neutral_button(tl!("Close"))).clicked() {
                 close = true;
             }
         });

@@ -294,7 +294,7 @@ pub(super) fn sources_ui(app: &mut WordApp, ui: &mut Ui, selected: &mut Option<u
     ui.add_space(8.0);
     ui.horizontal(|ui| {
         ui.with_layout(crate::rtl::far_side(ui, egui::Align::Center), |ui| {
-            if ui.button(tl!("Close")).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+            if ui.add(crate::widgets::neutral_button(tl!("Close"))).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                 next = Next::Close;
             }
         });

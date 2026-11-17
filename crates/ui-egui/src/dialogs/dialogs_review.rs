@@ -68,11 +68,8 @@ fn buttons(ui: &mut Ui, ok_enabled: bool) -> (bool, bool) {
     ui.add_space(8.0);
     ui.horizontal(|ui| {
         ui.with_layout(crate::rtl::far_side(ui, egui::Align::Center), |ui| {
-            let (okb, cancelb) = crate::dialogs::ok_cancel_responses(
-                ui,
-                |ui| ui.add_enabled(ok_enabled, crate::widgets::primary_button(ui, tl!("OK"))),
-                tl!("Cancel"),
-            );
+            let (okb, cancelb) =
+                crate::dialogs::ok_cancel_responses(ui, |ui| ui.add_enabled(ok_enabled, crate::widgets::primary_button(tl!("OK"))), tl!("Cancel"));
             if cancelb.clicked() || crate::dialogs::cancel_key_pressed(ui) {
                 r.1 = true;
             }
@@ -698,8 +695,8 @@ fn setup_ui(app: &mut WordApp, ui: &mut Ui, st: &mut RestrictPane) {
         ui.horizontal_wrapped(|ui| {
             // macOS puts Cancel before OK.
             let mac = cfg!(target_os = "macos");
-            let mut cancel = mac && ui.button(tl!("Cancel")).clicked();
-            if ui.button(tl!("OK")).clicked() {
+            let mut cancel = mac && ui.add(crate::widgets::neutral_button(tl!("Cancel"))).clicked();
+            if ui.add(crate::widgets::primary_button(tl!("OK"))).clicked() {
                 if st.password != st.confirm {
                     st.message = tl!("The passwords don't match.").to_string();
                     st.confirm.as_mut_string().clear();
@@ -722,7 +719,7 @@ fn setup_ui(app: &mut WordApp, ui: &mut Ui, st: &mut RestrictPane) {
                     st.confirm = Password::default();
                 }
             }
-            cancel |= !mac && ui.button(tl!("Cancel")).clicked();
+            cancel |= !mac && ui.add(crate::widgets::neutral_button(tl!("Cancel"))).clicked();
             if cancel {
                 st.asking = false;
                 st.password = Password::default();
@@ -784,11 +781,11 @@ fn enforced_ui(app: &mut WordApp, ui: &mut Ui, st: &mut RestrictPane, mode: &str
         ui.horizontal_wrapped(|ui| {
             // macOS puts Cancel before OK.
             let mac = cfg!(target_os = "macos");
-            let cancel_first = mac && ui.button(tl!("Cancel")).clicked();
-            if ui.button(tl!("OK")).clicked() {
+            let cancel_first = mac && ui.add(crate::widgets::neutral_button(tl!("Cancel"))).clicked();
+            if ui.add(crate::widgets::primary_button(tl!("OK"))).clicked() {
                 stop(app, st);
             }
-            if cancel_first || (!mac && ui.button(tl!("Cancel")).clicked()) {
+            if cancel_first || (!mac && ui.add(crate::widgets::neutral_button(tl!("Cancel"))).clicked()) {
                 st.asking = false;
                 st.password = Password::default();
             }

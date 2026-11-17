@@ -66,6 +66,52 @@ impl Pen<'_> {
         self.closed(&[(x0, y0), (x1 - 4.0, y0), (x1, y0 + 4.0), (x1, y1), (x0, y1)], self.c);
         self.line(&[(x1 - 4.0, y0), (x1 - 4.0, y0 + 4.0), (x1, y0 + 4.0)]);
     }
+    /// A pencil with its point at (x, y), lying up to the right.
+    fn pencil(&self, x: f32, y: f32, c: Color32) {
+        self.closed(&[(x, y), (x + 0.5, y - 2.5), (x + 6.0, y - 8.0), (x + 8.0, y - 6.0), (x + 2.5, y - 0.5)], c);
+        self.line_c(&[(x + 5.0, y - 7.0), (x + 7.0, y - 5.0)], c);
+    }
+    /// An arc round (cx, cy) from `a0` to `a1` degrees (0 = right, 90 = down).
+    fn arc(&self, cx: f32, cy: f32, r: f32, a0: f32, a1: f32, c: Color32) {
+        let pts: Vec<(f32, f32)> = (0..=12)
+            .map(|i| {
+                let t = (a0 + (a1 - a0) * i as f32 / 12.0).to_radians();
+                (cx + r * t.cos(), cy + r * t.sin())
+            })
+            .collect();
+        self.line_c(&pts, c);
+    }
+    /// A filled arrowhead at angle `ang` on the circle, pointing clockwise.
+    fn arc_head(&self, cx: f32, cy: f32, r: f32, ang: f32, c: Color32) {
+        let t = ang.to_radians();
+        let (x, y) = (cx + r * t.cos(), cy + r * t.sin());
+        let (dx, dy) = (-t.sin(), t.cos());
+        let (nx, ny) = (t.cos(), t.sin());
+        let h = (r * 0.5).clamp(1.8, 2.6);
+        self.fill(&[(x + dx * h, y + dy * h), (x + nx * h * 0.75, y + ny * h * 0.75), (x - nx * h * 0.75, y - ny * h * 0.75)], c);
+    }
+    /// Refresh: two arrows chasing each other round a circle.
+    fn refresh(&self, cx: f32, cy: f32, r: f32, c: Color32) {
+        self.arc(cx, cy, r, 195.0, 330.0, c);
+        self.arc_head(cx, cy, r, 330.0, c);
+        self.arc(cx, cy, r, 15.0, 150.0, c);
+        self.arc_head(cx, cy, r, 150.0, c);
+    }
+    /// A straight arrow from (x0, y0) to (x1, y1), with a head at both ends if `both`.
+    fn arrow(&self, x0: f32, y0: f32, x1: f32, y1: f32, c: Color32, both: bool) {
+        self.line_c(&[(x0, y0), (x1, y1)], c);
+        let (dx, dy) = (x1 - x0, y1 - y0);
+        let l = (dx * dx + dy * dy).sqrt().max(0.01);
+        let (ux, uy) = (dx / l, dy / l);
+        let h = 2.0;
+        let head = |x: f32, y: f32, ux: f32, uy: f32| {
+            self.line_c(&[(x - h * ux - h * uy, y - h * uy + h * ux), (x, y), (x - h * ux + h * uy, y - h * uy - h * ux)], c);
+        };
+        head(x1, y1, ux, uy);
+        if both {
+            head(x0, y0, -ux, -uy);
+        }
+    }
     fn arrow_down(&self, x: f32, y: f32, c: Color32) {
         self.fill(&[(x - 2.5, y - 1.2), (x + 2.5, y - 1.2), (x, y + 1.5)], c);
     }
@@ -303,9 +349,17 @@ fn paint_clipboard_to_insert(pen: &Pen, name: &str) -> bool {
             pen.line(&[(5.0, 9.5), (5.0, 11.0), (10.0, 15.0), (15.0, 11.0), (15.0, 9.5)]);
             pen.line(&[(10.0, 15.0), (10.0, 18.0)]);
         }
-        "editor" | "spelling" => {
+        "spelling" => {
             pen.text(8.0, 7.0, 9.0, "abc", c, true);
             pen.line_c(&[(5.0, 13.0), (8.5, 16.5), (16.0, 9.0)], green);
+        }
+        // Editor: a pen going over a line with a wavy underline, and a spark.
+        "editor" => {
+            pen.lines(2.5, 10.0, &[5.0, 8.5]);
+            pen.line_c(&[(2.5, 12.5), (4.0, 11.3), (5.5, 12.5), (7.0, 11.3), (8.5, 12.5)], red);
+            pen.pencil(9.5, 18.0, a);
+            pen.line_c(&[(15.0, 2.0), (15.0, 6.5)], a);
+            pen.line_c(&[(12.75, 4.25), (17.25, 4.25)], a);
         }
         "styles" => {
             pen.text(10.0, 10.0, 14.0, "A", a, false);
@@ -685,18 +739,27 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.page(4.0, 2.0, 16.0, 18.0);
             pen.text(10.0, 11.0, 7.0, "W", a.linear_multiply(0.6), true);
         }
+        // Page Color: a tinted page and a paint bucket pouring.
         "pageColor" => {
-            pen.page(4.0, 2.0, 16.0, 18.0);
-            pen.frect(5.0, 9.0, 15.0, 17.0, a.linear_multiply(0.5));
+            pen.page(2.0, 2.0, 10.5, 18.0);
+            pen.frect(3.0, 10.0, 9.5, 17.0, a.linear_multiply(0.5));
+            pen.closed(&[(11.5, 9.5), (15.0, 6.0), (18.5, 9.5), (15.0, 13.0)], c);
+            pen.line(&[(13.5, 7.5), (12.0, 6.0)]);
+            pen.fill(&[(16.4, 15.6), (18.6, 15.6), (17.5, 13.4)], a);
+            pen.fcircle(17.5, 16.2, 1.2, a);
         }
         "pageBorders" => {
             pen.page(4.0, 2.0, 16.0, 18.0);
             pen.rect(6.0, 6.5, 14.0, 15.5, a);
         }
         // Layout
+        // Margins: a page with its margin guides.
         "margins" => {
-            pen.page(4.0, 2.0, 16.0, 18.0);
-            pen.frect(6.0, 4.5, 14.0, 15.5, a.linear_multiply(0.3));
+            pen.page(3.5, 2.0, 16.5, 18.0);
+            pen.line_c(&[(6.5, 2.0), (6.5, 18.0)], a);
+            pen.line_c(&[(13.5, 6.0), (13.5, 18.0)], a);
+            pen.line_c(&[(3.5, 5.0), (12.5, 5.0)], a);
+            pen.line_c(&[(3.5, 15.0), (16.5, 15.0)], a);
         }
         "orientation" => {
             pen.page(3.0, 3.0, 11.0, 15.0);
@@ -722,11 +785,20 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
                 pen.line(&[(7.0, *y), (17.0, *y)]);
             }
         }
+        // Hyphenation: lines of text, one broken with a hyphen at its end.
         "hyphenation" => {
-            pen.text(7.0, 7.0, 8.0, "ab-", c, false);
-            pen.text(9.0, 14.5, 8.0, "cd", a, false);
+            pen.lines(3.0, 17.0, &[5.0, 15.0]);
+            pen.line(&[(3.0, 10.0), (11.0, 10.0)]);
+            pen.p.line_segment([pen.pt(12.5, 10.0), pen.pt(16.0, 10.0)], Stroke::new(2.2 * pen.s(), a));
         }
-        "position" | "wrapText" => {
+        // Position: a page with a picture placed in its top corner.
+        "position" => {
+            pen.page(3.5, 2.0, 16.5, 18.0);
+            pen.frect(5.5, 4.5, 10.0, 8.5, a);
+            pen.lines(11.5, 14.5, &[8.0]);
+            pen.lines(5.5, 14.5, &[11.5, 14.5]);
+        }
+        "wrapText" => {
             pen.lines(3.0, 17.0, &[3.0, 17.0]);
             pen.lines(3.0, 6.0, &[7.0, 10.0, 13.0]);
             pen.frect(7.5, 6.0, 12.5, 14.0, a);
@@ -740,9 +812,13 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.frect(3.0, 3.0, 12.0, 12.0, a);
             pen.rect(8.0, 8.0, 17.0, 17.0, c);
         }
+        // Selection Pane: a pane listing objects, each a small shape and a name.
         "selectionPane" => {
-            pen.rect(3.0, 3.0, 17.0, 17.0, c);
-            pen.lines(6.0, 14.0, &[7.0, 10.0, 13.0]);
+            pen.rect(2.5, 2.5, 17.5, 17.5, c);
+            for y in [6.5, 10.0, 13.5] {
+                pen.rect(5.0, y - 1.1, 7.4, y + 1.1, a);
+                pen.line(&[(9.5, y), (15.0, y)]);
+            }
         }
         "align" => {
             pen.line_c(&[(3.0, 2.0), (3.0, 18.0)], a);
@@ -754,13 +830,24 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.rect(5.0, 5.0, 11.0, 11.0, c);
             pen.fcircle(13.0, 13.0, 3.0, c);
         }
+        // Rotate: a shape with a curved arrow turning round it.
         "rotate" => {
-            pen.circle(10.0, 10.0, 6.0, c);
-            pen.fill(&[(14.5, 3.0), (17.5, 6.0), (13.5, 7.0)], a);
+            pen.rect(3.0, 8.0, 11.0, 16.0, c);
+            pen.arc(10.0, 10.0, 7.0, 215.0, 345.0, a);
+            pen.arc_head(10.0, 10.0, 7.0, 345.0, a);
         }
-        "indentLeft" | "indentRight" | "spaceBefore" | "spaceAfter" => {
-            pen.lines(3.0, 17.0, &[6.0, 10.0, 14.0]);
-            pen.fcircle(if name.contains("Right") { 15.0 } else { 5.0 }, 10.0, 1.6, a);
+        "indentLeft" | "indentRight" => {
+            pen.lines(9.0, 17.0, &[4.0, 8.0, 12.0, 16.0]);
+            if name == "indentRight" { pen.arrow(2.5, 10.0, 7.0, 10.0, a, false) } else { pen.arrow(7.0, 10.0, 2.5, 10.0, a, false) }
+        }
+        "spaceBefore" | "spaceAfter" => {
+            if name == "spaceBefore" {
+                pen.lines(8.0, 17.0, &[9.0, 12.5, 16.0]);
+                pen.arrow(4.0, 2.5, 4.0, 8.0, a, true);
+            } else {
+                pen.lines(8.0, 17.0, &[4.0, 7.5, 11.0]);
+                pen.arrow(4.0, 12.0, 4.0, 17.5, a, true);
+            }
         }
         // References
         "toc" => {
@@ -775,9 +862,28 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.line_c(&[(15.0, 11.0), (15.0, 17.0)], a);
             pen.line_c(&[(12.0, 14.0), (18.0, 14.0)], a);
         }
-        "updateTable" | "update" => {
-            pen.circle(10.0, 10.0, 6.0, c);
-            pen.fill(&[(14.5, 3.0), (17.5, 6.0), (13.5, 7.0)], green);
+        // Refresh (Zotero) and Update: two arrows chasing round a circle.
+        "update" | "refresh" => pen.refresh(10.0, 10.0, 6.5, a),
+        // The Update Table buttons: what they update, with a small refresh badge.
+        "updateTable" | "updateToc" => {
+            pen.page(2.5, 2.0, 11.5, 16.5);
+            pen.lines(4.0, 7.5, &[7.0, 9.5, 12.0]);
+            for y in [7.0, 9.5] {
+                pen.fcircle(9.5, y, 0.7, a);
+            }
+            pen.refresh(15.0, 15.0, 3.3, a);
+        }
+        "updateFigures" => {
+            pen.page(2.5, 2.0, 11.5, 16.5);
+            pen.frect(4.0, 5.0, 7.5, 8.0, a);
+            pen.lines(4.0, 9.5, &[11.0, 13.5]);
+            pen.refresh(15.0, 15.0, 3.3, a);
+        }
+        "updateIndex" | "updateAuthorities" => {
+            pen.page(2.5, 2.0, 11.5, 16.5);
+            pen.text(6.0, 7.0, 6.5, if name == "updateIndex" { "A" } else { "§" }, a, true);
+            pen.lines(4.0, 9.5, &[11.0, 13.5]);
+            pen.refresh(15.0, 15.0, 3.3, a);
         }
         "footnote" => {
             pen.text(6.5, 7.0, 10.0, "ab", c, false);
@@ -796,9 +902,12 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.line_c(&[(6.0, 15.0), (14.0, 15.0)], a);
             pen.line_c(&[(11.5, 12.5), (14.0, 15.0), (11.5, 17.5)], a);
         }
+        // Show Notes: a page whose foot holds the notes under a short separator.
         "showNotes" => {
             pen.page(4.0, 2.0, 16.0, 18.0);
-            pen.frect(5.5, 13.0, 14.5, 16.5, a.linear_multiply(0.5));
+            pen.lines(6.0, 14.0, &[6.5, 9.0]);
+            pen.line_c(&[(6.0, 12.5), (10.0, 12.5)], a);
+            pen.line_c(&[(6.0, 15.0), (13.0, 15.0)], a);
         }
         "researcher" => {
             pen.circle(9.0, 9.0, 5.0, c);
@@ -843,10 +952,19 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.text(6.0, 9.0, 14.0, "“", a, true);
             pen.lines(9.0, 17.0, &[6.0, 10.0, 14.0]);
         }
-        "sources" | "bibliography" => {
+        // Manage Sources: books on a shelf.
+        "sources" => {
             pen.rect(4.0, 3.0, 9.0, 17.0, c);
             pen.rect(9.0, 3.0, 13.0, 17.0, a);
             pen.closed(&[(13.5, 4.0), (16.5, 3.5), (18.0, 16.5), (15.0, 17.0)], c);
+        }
+        // Bibliography: a page listing entries with hanging indents.
+        "bibliography" => {
+            pen.page(3.5, 2.0, 16.5, 18.0);
+            for y in [6.5, 12.0] {
+                pen.line_c(&[(5.5, y), (12.0, y)], a);
+                pen.line(&[(7.5, y + 2.5), (14.5, y + 2.5)]);
+            }
         }
         "caption" => {
             pen.rect(3.0, 2.5, 17.0, 11.5, c);
@@ -858,9 +976,17 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.frect(6.0, 5.0, 10.0, 8.0, a);
             pen.lines(6.0, 14.0, &[11.0, 14.0]);
         }
-        "markEntry" | "index" | "markCitation" | "tableOfAuthorities" => {
+        // Mark Entry / Mark Citation: the letter or § highlighted, with a marker pen.
+        "markEntry" | "markCitation" => {
+            pen.frect(2.0, 10.0, 11.5, 15.0, yellow);
+            pen.text(6.75, 10.0, 11.0, if name == "markEntry" { "A" } else { "§" }, c, true);
+            pen.pencil(11.0, 18.0, a);
+        }
+        // Insert Index / Table of Authorities: a page with a heading letter and entries.
+        "index" | "tableOfAuthorities" => {
             pen.page(4.0, 2.0, 16.0, 18.0);
-            pen.text(10.0, 10.0, 8.0, if name == "index" || name == "markEntry" { "A" } else { "§" }, a, true);
+            pen.text(7.5, 6.5, 6.5, if name == "index" { "A" } else { "§" }, a, true);
+            pen.lines(6.0, 14.0, &[10.5, 13.0, 15.5]);
         }
         // Mailings
         "envelope" => {
@@ -874,15 +1000,72 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.frect(5.0, 11.0, 9.5, 15.0, a);
             pen.frect(10.5, 11.0, 15.0, 15.0, a);
         }
-        "mailMerge" | "recipients" | "editRecipients" => {
+        // Start Mail Merge: a letter with an envelope in front of it.
+        "mailMerge" => {
+            pen.line(&[(7.0, 16.0), (2.0, 16.0), (2.0, 2.0), (8.0, 2.0), (12.0, 6.0), (12.0, 10.0)]);
+            pen.line(&[(8.0, 2.0), (8.0, 6.0), (12.0, 6.0)]);
+            pen.lines(4.0, 6.5, &[5.0]);
+            pen.lines(4.0, 10.0, &[8.0]);
+            pen.lines(4.0, 5.5, &[12.5]);
+            pen.rect(7.0, 10.0, 18.0, 17.5, c);
+            pen.line_c(&[(7.0, 10.0), (12.5, 14.0), (18.0, 10.0)], a);
+        }
+        "recipients" => {
             pen.fcircle(7.0, 7.0, 2.5, a);
             pen.line(&[(3.0, 15.0), (3.0, 13.0), (7.0, 10.5), (11.0, 13.0), (11.0, 15.0)]);
             pen.fcircle(13.5, 6.0, 2.0, c);
             pen.line(&[(11.5, 10.0), (13.5, 9.0), (17.0, 11.0), (17.0, 14.0)]);
         }
-        "mergeField" | "addressBlock" | "greetingLine" | "rules" | "matchFields" | "highlightFields" => {
+        // Edit Recipient List: the people and a pencil.
+        "editRecipients" => {
+            pen.fcircle(6.0, 5.5, 2.2, a);
+            pen.line(&[(2.5, 13.0), (2.5, 11.5), (6.0, 9.0), (9.5, 11.5), (9.5, 13.0)]);
+            pen.fcircle(12.0, 4.5, 1.8, c);
+            pen.line(&[(10.0, 8.5), (12.0, 7.5), (15.0, 9.0)]);
+            pen.pencil(10.0, 18.5, a);
+        }
+        "mergeField" => {
             pen.rect(2.5, 6.0, 17.5, 14.0, c);
             pen.text(10.0, 10.0, 7.0, "«»", a, true);
+        }
+        // Address Block: a card with a name and address lines.
+        "addressBlock" => {
+            pen.rect(2.5, 4.0, 17.5, 16.0, c);
+            pen.line_c(&[(5.0, 7.5), (12.5, 7.5)], a);
+            pen.lines(5.0, 15.0, &[10.5]);
+            pen.lines(5.0, 11.0, &[13.5]);
+        }
+        // Greeting Line: a field and a comma, then the letter's lines.
+        "greetingLine" => {
+            pen.rect(2.5, 3.5, 11.0, 8.5, c);
+            pen.text(6.75, 6.0, 5.5, "«»", a, true);
+            pen.fcircle(13.0, 7.5, 0.9, c);
+            pen.line(&[(13.6, 7.6), (12.6, 9.4)]);
+            pen.lines(2.5, 17.5, &[12.5, 15.5]);
+        }
+        // Rules: a decision with two outcomes.
+        "rules" => {
+            pen.closed(&[(2.0, 10.0), (4.75, 7.25), (7.5, 10.0), (4.75, 12.75)], c);
+            pen.line_c(&[(7.5, 10.0), (14.0, 4.5)], a);
+            pen.line_c(&[(7.5, 10.0), (14.0, 15.5)], a);
+            pen.rect(14.0, 2.5, 18.0, 6.5, c);
+            pen.rect(14.0, 13.5, 18.0, 17.5, c);
+        }
+        // Match Fields: two lists of fields wired to each other.
+        "matchFields" => {
+            for y in [5.0, 10.0, 15.0] {
+                pen.rect(2.5, y - 1.5, 7.0, y + 1.5, c);
+                pen.rect(13.0, y - 1.5, 17.5, y + 1.5, c);
+            }
+            pen.line_c(&[(7.0, 5.0), (13.0, 10.0)], a);
+            pen.line_c(&[(7.0, 10.0), (13.0, 5.0)], a);
+            pen.line_c(&[(7.0, 15.0), (13.0, 15.0)], a);
+        }
+        // Highlight Merge Fields: a field marked with the highlighter.
+        "highlightFields" => {
+            pen.frect(2.5, 6.0, 17.5, 14.0, yellow);
+            pen.rect(2.5, 6.0, 17.5, 14.0, c);
+            pen.text(10.0, 10.0, 7.0, "«»", c, true);
         }
         "preview" => {
             pen.text(10.0, 10.0, 8.0, "ABC", a, true);
@@ -932,7 +1115,7 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
                 pen.line_c(&[(x0, y), (x1, y)], c);
             }
         }
-        "translate" | "language" => {
+        "translate" => {
             pen.text(6.5, 7.0, 9.0, "A", c, true);
             // あ drawn as strokes, like the rest of the icon set: the interface fonts need not
             // carry Japanese (craft-fonts is optional), and a letter without a glyph drew a box.
@@ -941,6 +1124,21 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.line_c(&[(11.0, 13.9), (16.2, 13.9)], a);
             pen.circle(13.5, 16.1, 1.8, a);
             pen.line_c(&[(15.0, 17.1), (15.8, 18.0)], a);
+        }
+        // Language: a globe.
+        "language" => {
+            pen.circle(10.0, 10.0, 7.5, c);
+            let meridian: Vec<(f32, f32)> = (0..=16)
+                .map(|i| {
+                    let t = i as f32 * std::f32::consts::PI / 8.0;
+                    (10.0 + 3.5 * t.cos(), 10.0 + 7.5 * t.sin())
+                })
+                .collect();
+            pen.line_c(&meridian, a);
+            pen.line_c(&[(10.0, 2.5), (10.0, 17.5)], a);
+            pen.line_c(&[(2.5, 10.0), (17.5, 10.0)], a);
+            pen.line(&[(4.0, 6.0), (16.0, 6.0)]);
+            pen.line(&[(4.0, 14.0), (16.0, 14.0)]);
         }
         "deleteComment" => {
             pen.closed(&[(2.5, 3.5), (17.5, 3.5), (17.5, 13.5), (9.0, 13.5), (5.0, 17.0), (5.0, 13.5), (2.5, 13.5)], c);
@@ -953,9 +1151,10 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
                 if name == "nextComment" { &[(8.0, 6.0), (12.0, 8.5), (8.0, 11.0)] } else { &[(12.0, 6.0), (8.0, 8.5), (12.0, 11.0)] };
             pen.line_c(pts, a);
         }
+        // Show Comments: comment balloons stacked.
         "showComments" => {
-            pen.rect(3.0, 3.0, 17.0, 17.0, c);
-            pen.frect(12.0, 3.0, 17.0, 17.0, a.linear_multiply(0.4));
+            pen.line_c(&[(6.0, 6.5), (6.0, 2.5), (17.5, 2.5), (17.5, 10.0), (13.5, 10.0)], a);
+            pen.closed(&[(2.5, 6.5), (13.5, 6.5), (13.5, 14.0), (7.5, 14.0), (4.5, 17.0), (4.5, 14.0), (2.5, 14.0)], c);
         }
         "resolve" => {
             pen.closed(&[(2.5, 3.5), (17.5, 3.5), (17.5, 13.5), (9.0, 13.5), (5.0, 17.0), (5.0, 13.5), (2.5, 13.5)], c);
@@ -967,10 +1166,20 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
             pen.line_c(&[(6.0, 11.0), (14.0, 11.0)], a);
             pen.lines(6.0, 11.0, &[15.0]);
         }
-        "markup" | "reviewingPane" => {
-            pen.page(4.0, 2.0, 16.0, 18.0);
-            pen.line_c(&[(6.0, 8.0), (13.0, 8.0)], red);
-            pen.lines(6.0, 13.0, &[12.0]);
+        // Markup: a page with a change and a comment balloon in its margin.
+        "markup" => {
+            pen.page(2.0, 2.0, 12.0, 18.0);
+            pen.line_c(&[(4.0, 7.0), (10.0, 7.0)], red);
+            pen.lines(4.0, 10.0, &[10.5, 14.0]);
+            pen.closed(&[(13.0, 5.0), (18.5, 5.0), (18.5, 10.5), (15.5, 10.5), (13.5, 12.5), (13.5, 10.5), (13.0, 10.5)], a);
+        }
+        // Reviewing Pane: a window with a list of changes down its side.
+        "reviewingPane" => {
+            pen.rect(2.5, 3.0, 17.5, 17.0, c);
+            pen.line(&[(8.0, 3.0), (8.0, 17.0)]);
+            pen.lines(4.0, 6.5, &[6.5, 9.5, 12.5]);
+            pen.line_c(&[(10.0, 7.0), (15.5, 7.0)], red);
+            pen.lines(10.0, 15.5, &[10.0, 13.0]);
         }
         "accept" => {
             pen.page(4.0, 2.0, 15.0, 17.0);
@@ -987,14 +1196,38 @@ fn paint_draw_to_review(pen: &Pen, name: &str) -> bool {
                 if name == "nextChange" { &[(8.5, 7.0), (11.5, 10.0), (8.5, 13.0)] } else { &[(11.5, 7.0), (8.5, 10.0), (11.5, 13.0)] };
             pen.line_c(pts, a);
         }
-        "compare" | "combine" => {
-            pen.page(2.0, 3.0, 10.0, 15.0);
-            pen.page(10.0, 5.0, 18.0, 17.0);
-            pen.line_c(&[(6.0, 18.5), (14.0, 18.5)], a);
+        // Compare: two pages side by side, checked against each other.
+        "compare" => {
+            pen.page(1.5, 2.0, 9.0, 12.0);
+            pen.page(11.0, 2.0, 18.5, 12.0);
+            pen.arrow(5.0, 14.75, 15.0, 14.75, a, false);
+            pen.arrow(15.0, 18.0, 5.0, 18.0, a, false);
         }
-        "protect" | "restrict" | "blockAuthors" => {
+        // Combine: two pages merging into one.
+        "combine" => {
+            pen.page(1.5, 1.5, 7.5, 9.0);
+            pen.page(12.5, 1.5, 18.5, 9.0);
+            pen.line_c(&[(4.5, 10.5), (7.5, 13.5)], a);
+            pen.line_c(&[(15.5, 10.5), (12.5, 13.5)], a);
+            pen.page(7.0, 12.0, 13.0, 19.0);
+        }
+        "protect" => {
             pen.rect(5.0, 9.0, 15.0, 17.5, c);
             pen.line_c(&[(7.0, 9.0), (7.0, 6.0), (10.0, 3.0), (13.0, 6.0), (13.0, 9.0)], a);
+        }
+        // Restrict Editing: a page with a lock.
+        "restrict" => {
+            pen.page(2.5, 2.0, 11.0, 18.0);
+            pen.lines(4.5, 9.0, &[7.0, 10.0, 13.0]);
+            pen.frect(11.5, 12.5, 18.0, 18.5, a);
+            pen.line_c(&[(13.0, 12.5), (13.0, 10.5), (14.75, 8.75), (16.5, 10.5), (16.5, 12.5)], a);
+        }
+        // Block Authors: a person with a lock.
+        "blockAuthors" => {
+            pen.fcircle(7.0, 6.0, 2.8, c);
+            pen.line(&[(2.0, 16.5), (2.0, 13.5), (7.0, 10.5), (12.0, 13.5), (12.0, 16.5)]);
+            pen.frect(11.5, 12.5, 18.0, 18.5, a);
+            pen.line_c(&[(13.0, 12.5), (13.0, 10.5), (14.75, 8.75), (16.5, 10.5), (16.5, 12.5)], a);
         }
         "hideInk" => {
             pen.line_c(&[(3.0, 13.0), (6.0, 8.0), (9.0, 13.0), (12.0, 8.0)], a);
@@ -1050,9 +1283,11 @@ fn paint_view_and_tables(pen: &Pen, name: &str) -> bool {
             pen.page(5.0, 1.0, 15.0, 9.0);
             pen.page(5.0, 11.0, 15.0, 19.0);
         }
+        // Side to Side: two pages, turned sideways.
         "sideToSide" => {
-            pen.page(1.5, 4.0, 9.5, 16.0);
-            pen.page(10.5, 4.0, 18.5, 16.0);
+            pen.page(1.5, 2.5, 9.5, 14.5);
+            pen.page(10.5, 2.5, 18.5, 14.5);
+            pen.arrow(4.0, 17.5, 16.0, 17.5, a, false);
         }
         "ruler" => {
             pen.rect(2.0, 7.0, 18.0, 13.0, c);
@@ -1077,19 +1312,22 @@ fn paint_view_and_tables(pen: &Pen, name: &str) -> bool {
             pen.line(&[(6.0, 8.5), (11.0, 8.5)]);
             pen.line(&[(8.5, 6.0), (8.5, 11.0)]);
         }
+        // Zoom In / Out: a plus or minus in a ring (the magnifier is Zoom's).
         "zoomIn" | "zoomOut" => {
-            pen.circle(8.5, 8.5, 5.5, c);
-            pen.line_c(&[(12.5, 12.5), (17.5, 17.5)], a);
-            pen.line(&[(6.0, 8.5), (11.0, 8.5)]);
+            pen.circle(10.0, 10.0, 7.0, a);
+            pen.line(&[(6.0, 10.0), (14.0, 10.0)]);
             if name == "zoomIn" {
-                pen.line(&[(8.5, 6.0), (8.5, 11.0)]);
+                pen.line(&[(10.0, 6.0), (10.0, 14.0)]);
             }
         }
         "zoom100" => pen.text(10.0, 10.0, 7.5, "100", a, true),
         "onePage" => pen.page(5.0, 2.0, 15.0, 18.0),
+        // Multiple Pages: four pages in a grid.
         "multiplePages" => {
-            pen.page(1.5, 4.0, 9.5, 16.0);
-            pen.page(10.5, 4.0, 18.5, 16.0);
+            for (x, y) in [(2.0, 1.5), (10.5, 1.5), (2.0, 10.5), (10.5, 10.5)] {
+                pen.rect(x, y, x + 7.5, y + 8.0, c);
+            }
+            pen.lines(3.5, 8.0, &[4.5, 6.5]);
         }
         "pageWidth" => {
             pen.page(4.0, 2.0, 16.0, 18.0);
@@ -1129,13 +1367,35 @@ fn paint_view_and_tables(pen: &Pen, name: &str) -> bool {
             pen.line_c(&[(15.0, 14.0), (12.0, 11.5)], a);
             pen.line_c(&[(5.0, 14.0), (8.0, 11.5)], a);
         }
-        "sideBySide" | "syncScroll" | "switchWindows" => {
-            pen.rect(2.0, 4.0, 9.5, 16.0, c);
-            pen.rect(10.5, 4.0, 18.0, 16.0, a);
+        // View Side by Side: two windows next to each other.
+        "sideBySide" => {
+            for x in [1.5, 10.5] {
+                pen.rect(x, 3.5, x + 8.0, 16.5, c);
+                pen.line_c(&[(x, 6.0), (x + 8.0, 6.0)], a);
+            }
+        }
+        // Synchronous Scrolling: two pages scrolling together.
+        "syncScroll" => {
+            pen.rect(2.0, 3.0, 8.0, 17.0, c);
+            pen.rect(12.0, 3.0, 18.0, 17.0, c);
+            pen.arrow(10.0, 4.0, 10.0, 16.0, a, true);
+        }
+        // Switch Windows: windows stacked, with an arrow to the next.
+        "switchWindows" => {
+            pen.line(&[(6.0, 5.5), (6.0, 2.5), (17.5, 2.5), (17.5, 11.5), (13.0, 11.5)]);
+            pen.rect(2.5, 5.5, 13.0, 15.0, c);
+            pen.line_c(&[(2.5, 8.0), (13.0, 8.0)], a);
+            pen.arrow(14.5, 17.5, 17.5, 14.0, a, false);
         }
         "macros" => {
             pen.rect(3.0, 3.0, 17.0, 17.0, c);
             pen.fill(&[(8.0, 6.5), (8.0, 13.5), (14.0, 10.0)], a);
+        }
+        // Commands (Help): a command line with its prompt.
+        "commands" => {
+            pen.rect(2.0, 5.0, 18.0, 15.0, c);
+            pen.line_c(&[(5.0, 7.5), (7.5, 10.0), (5.0, 12.5)], a);
+            pen.line(&[(9.5, 12.5), (14.0, 12.5)]);
         }
         // A page with a filled band at the top and a style mark: the document's template.
         "documentTemplate" => {
@@ -1143,10 +1403,18 @@ fn paint_view_and_tables(pen: &Pen, name: &str) -> bool {
             pen.frect(6.0, 5.0, 11.5, 7.0, a);
             pen.text(10.0, 13.0, 8.0, "A", a, false);
         }
-        "properties" | "info" => {
+        "info" => {
             pen.circle(10.0, 10.0, 7.0, c);
             pen.line_c(&[(10.0, 9.0), (10.0, 14.5)], a);
             pen.fcircle(10.0, 6.3, 1.0, a);
+        }
+        // Properties: a sheet of named fields.
+        "properties" => {
+            pen.rect(2.5, 2.5, 17.5, 17.5, c);
+            for y in [7.0, 13.0] {
+                pen.line(&[(5.0, y), (8.0, y)]);
+                pen.rect(10.0, y - 1.5, 15.0, y + 1.5, a);
+            }
         }
         // Table tools
         "insertAbove" | "insertBelow" | "insertLeft" | "insertRight" => {
@@ -1165,21 +1433,55 @@ fn paint_view_and_tables(pen: &Pen, name: &str) -> bool {
             pen.line_c(&[(12.0, 12.0), (18.0, 18.0)], red);
             pen.line_c(&[(18.0, 12.0), (12.0, 18.0)], red);
         }
+        // Merge Cells: two cells pushed into one.
         "merge" => {
-            pen.rect(3.0, 5.0, 17.0, 15.0, c);
-            pen.line_c(&[(5.0, 10.0), (15.0, 10.0)], a);
-            pen.line_c(&[(7.0, 8.0), (5.0, 10.0), (7.0, 12.0)], a);
-            pen.line_c(&[(13.0, 8.0), (15.0, 10.0), (13.0, 12.0)], a);
+            pen.rect(2.5, 5.0, 17.5, 15.0, c);
+            pen.arrow(3.5, 10.0, 8.5, 10.0, a, false);
+            pen.arrow(16.5, 10.0, 11.5, 10.0, a, false);
         }
-        "splitCells" | "splitTable" => {
-            pen.rect(3.0, 5.0, 17.0, 15.0, c);
-            pen.line_c(&[(10.0, 5.0), (10.0, 15.0)], a);
+        // Split Cells: a cell divided, its halves pushed apart.
+        "splitCells" => {
+            pen.rect(2.5, 5.0, 17.5, 15.0, c);
+            pen.line(&[(10.0, 5.0), (10.0, 15.0)]);
+            pen.arrow(8.5, 10.0, 4.0, 10.0, a, false);
+            pen.arrow(11.5, 10.0, 16.0, 10.0, a, false);
         }
-        "autofit" | "distributeRows" | "distributeCols" | "rowHeight" | "colWidth" => {
+        // Split Table: a table broken in two.
+        "splitTable" => {
+            for (y0, y1) in [(2.5, 8.0), (12.0, 17.5)] {
+                pen.rect(3.0, y0, 17.0, y1, c);
+                pen.line(&[(10.0, y0), (10.0, y1)]);
+            }
+            for x in [1.5, 6.0, 10.5, 15.0] {
+                pen.line_c(&[(x, 10.0), (x + 3.0, 10.0)], a);
+            }
+        }
+        "autofit" => {
             pen.rect(3.0, 4.0, 17.0, 16.0, c);
             pen.line_c(&[(5.0, 10.0), (15.0, 10.0)], a);
             pen.line_c(&[(7.0, 8.0), (5.0, 10.0), (7.0, 12.0)], a);
             pen.line_c(&[(13.0, 8.0), (15.0, 10.0), (13.0, 12.0)], a);
+        }
+        // Distribute Rows / Columns: rows (columns) of one size, an arrow across them.
+        "distributeRows" => {
+            pen.rect(3.0, 3.0, 17.0, 17.0, c);
+            pen.lines(3.0, 17.0, &[7.67, 12.33]);
+            pen.arrow(13.5, 4.5, 13.5, 15.5, a, true);
+        }
+        "distributeCols" => {
+            pen.rect(3.0, 3.0, 17.0, 17.0, c);
+            pen.line(&[(7.67, 3.0), (7.67, 17.0)]);
+            pen.line(&[(12.33, 3.0), (12.33, 17.0)]);
+            pen.arrow(4.5, 13.5, 15.5, 13.5, a, true);
+        }
+        // Row Height / Column Width: a row (column) and its size.
+        "rowHeight" => {
+            pen.rect(2.5, 6.5, 13.0, 13.5, c);
+            pen.arrow(16.0, 4.0, 16.0, 16.0, a, true);
+        }
+        "colWidth" => {
+            pen.rect(6.5, 2.5, 13.5, 13.0, c);
+            pen.arrow(4.0, 16.0, 16.0, 16.0, a, true);
         }
         "cellAlign" => {
             pen.rect(3.0, 3.0, 17.0, 17.0, c);
@@ -1495,6 +1797,12 @@ fn paint_file_and_tools(pen: &Pen, name: &str) -> bool {
             pen.page(4.0, 2.0, 16.0, 18.0);
             pen.line_c(&[(7.0, 8.0), (13.0, 14.0)], red);
             pen.line_c(&[(13.0, 8.0), (7.0, 14.0)], red);
+        }
+        // Check for Updates: refresh arrows round a download arrow.
+        "checkForUpdates" => {
+            pen.refresh(10.0, 10.0, 7.0, c);
+            pen.line_c(&[(10.0, 6.0), (10.0, 12.0)], a);
+            pen.arrow_down(10.0, 13.0, a);
         }
         "help" => {
             pen.circle(10.0, 10.0, 7.0, c);

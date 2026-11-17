@@ -125,16 +125,19 @@ pub(crate) fn body(app: &mut WordApp, ui: &mut Ui, f: &mut SaveFileForm) -> bool
         }
         more = link.clicked();
         ui.with_layout(crate::rtl::far_side(ui, egui::Align::Center), |ui| {
-            let button = |b: egui::Button<'static>| b.min_size(vec2(84.0, 30.0));
+            // Both buttons as wide as the wider one (the shared push button spec).
+            ui.spacing_mut().item_spacing.x = crate::widgets::PUSH_GAP;
+            let w = crate::widgets::push_width(ui, &[tl!("Save"), tl!("Cancel")]);
+            let save_button = |ui: &mut Ui| ui.add(crate::widgets::primary_button(tl!("Save")).min_width(w));
             // Cancel: no fill, a neutral grey outline. In the platform's order (see
             // `ok_cancel_responses`): macOS puts Cancel left of Save.
-            let cancel_button = |ui: &mut Ui| ui.add(button(crate::widgets::outline_button(tl!("Cancel"), t.input_border, t.text)));
+            let cancel_button = |ui: &mut Ui| ui.add(crate::widgets::neutral_button(tl!("Cancel")).min_width(w));
             let (ok, cancelb) = if cfg!(target_os = "macos") {
-                let ok = ui.add(button(crate::widgets::primary_button(ui, tl!("Save"))));
+                let ok = save_button(ui);
                 (ok, cancel_button(ui))
             } else {
                 let c = cancel_button(ui);
-                (ui.add(button(crate::widgets::primary_button(ui, tl!("Save")))), c)
+                (save_button(ui), c)
             };
             save |= ok.clicked();
             cancel |= cancelb.clicked();

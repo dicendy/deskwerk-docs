@@ -142,13 +142,13 @@ pub fn customize_ribbon(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm) -> b
         };
         ui.label(ask);
         ui.horizontal(|ui| {
-            if ui.button(tl!("Yes")).clicked() {
+            if ui.add(crate::widgets::primary_button(tl!("Yes"))).clicked() {
                 let what = if f.page == Page::Ribbon { "ribbon" } else { "qat" };
                 change(app, f, json!({"reset": what}));
                 f.selected = TreeItem { tab: app.session.ribbon.tabs().first().map(|t| t.name.clone()).unwrap_or_default(), ..Default::default() };
                 f.confirm_reset = false;
             }
-            if ui.button(tl!("No")).clicked() {
+            if ui.add(crate::widgets::neutral_button(tl!("No"))).clicked() {
                 f.confirm_reset = false;
             }
         });
@@ -164,7 +164,7 @@ pub fn customize_ribbon(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm) -> b
             f.confirm_reset = true;
         }
         ui.with_layout(crate::rtl::far_side(ui, egui::Align::Center), |ui| {
-            if ui.button(tl!("Close")).clicked() {
+            if ui.add(crate::widgets::neutral_button(tl!("Close"))).clicked() {
                 close = true;
             }
         });
@@ -286,13 +286,13 @@ fn ribbon_page(app: &mut WordApp, ui: &mut Ui, f: &mut RibbonForm, h: f32) {
                 let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
                 // macOS puts Cancel before OK.
                 let mac = cfg!(target_os = "macos");
-                if mac && ui.button(tl!("Cancel")).clicked() {
+                if mac && ui.add(crate::widgets::neutral_button(tl!("Cancel"))).clicked() {
                     done = Some(None);
                 }
-                if ui.button(tl!("OK")).clicked() || enter {
+                if ui.add(crate::widgets::primary_button(tl!("OK"))).clicked() || enter {
                     done = Some(Some(name.clone()));
                 }
-                if !mac && ui.button(tl!("Cancel")).clicked() {
+                if !mac && ui.add(crate::widgets::neutral_button(tl!("Cancel"))).clicked() {
                     done = Some(None);
                 }
             });
