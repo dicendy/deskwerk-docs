@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?ifndef HasCraftFontLicences ?>
   <?define HasCraftFontLicences=0 ?>
   <?endif?>
@@ -17,25 +17,16 @@
     <Property Id="ARPURLUPDATEINFO" Value="https://github.com/dicendy/deskwerk-docs/releases" />
     <Property Id="ARPHELPLINK" Value="https://github.com/dicendy/deskwerk-docs/issues" />
 
-    <!-- Installer UI (#198): welcome, progress, then a finish page so people can see the install
-         worked. There is no licence page: the licence texts are installed as plain files next to the
-         app (AppNotices). WixUI_InstallDir's licence and folder pages are skipped: Next on the
-         welcome page goes straight to the ready page, and Back there returns to the welcome page.
-         Its dialogs and bitmaps are WiX's own (WixToolset.UI.wixext); the unreachable licence
-         dialog still gets an RTF built by package.ps1 from LICENSE-MIT and LICENSE-APACHE instead
-         of WiX's sample text. The finish page offers to launch Deskwerk Docs (ticked by default)
-         through WixShellExec (WixToolset.Util.wixext); silent installs (/qn) never show it. -->
-    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Deskwerk Docs" />
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
-    <Property Id="WixShellExecTarget" Value="[#DeskwerkDocsExe]" />
-    <CustomAction Id="LaunchDeskwerkDocs" BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)" DllEntry="WixShellExec" Impersonate="yes" Return="ignore" />
-    <UI>
-      <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
-      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg" Order="9" Condition="NOT Installed" />
-      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="9" Condition="NOT Installed" />
-      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchDeskwerkDocs" Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed" />
-    </UI>
+    <!-- Installer UI: the same wizard as Deskwerk Sheets (installer-ui.wxi, shared verbatim):
+         welcome, ready to install (with "Create a desktop shortcut"), progress, finish (with
+         "Launch Deskwerk Docs"). No licence page and no folder page: the licence texts are
+         installed as plain files next to the app (AppNotices). -->
+    <?define AppName="Deskwerk Docs" ?>
+    <?define AppExeId="DeskwerkDocsExe" ?>
+    <?define InstallerKey="Software\Deskwerk\Docs\Installer" ?>
+    <!-- 0.15.6 and earlier kept only a marker here; it still counts as the saved choice. -->
+    <?define LegacyInstallerKey="Software\DeskwerkDocs\Installer" ?>
+    <?include $(sys.SOURCEFILEDIR)installer-ui.wxi?>
 
     <StandardDirectory Id="ProgramFiles6432Folder">
       <Directory Id="CraftSuiteFolder" Name="Deskwerk">
@@ -44,11 +35,6 @@
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder" />
     <StandardDirectory Id="DesktopFolder" />
-
-    <!-- Desktop shortcut, on by default; DESKTOPSHORTCUT=0 on the msiexec command line skips it.
-         It follows the install context (the common desktop for Everyone, the user's own for
-         Only for me) and goes away on uninstall. -->
-    <Property Id="DESKTOPSHORTCUT" Value="1" Secure="yes" />
 
     <Feature Id="Main" Title="Deskwerk Docs" Level="1">
       <ComponentGroupRef Id="AppNotices" />
@@ -166,12 +152,21 @@
   </Fragment>
 
   <Fragment>
+    <!-- Desktop shortcut, chosen on the ready page (ticked on a new installation) or with
+         DESKTOPSHORTCUT=0/1 on the msiexec command line; see installer-ui.wxi. It follows the
+         install context (the common desktop for Everyone, the user's own for Only for me) and
+         goes away on uninstall. -->
     <ComponentGroup Id="DeskwerkDocsDesktop">
-      <Component Id="DeskwerkDocsDesktopShortcut" Directory="DesktopFolder" Condition="DESKTOPSHORTCUT = &quot;1&quot;">
+      <!-- The choice itself (1 or 0), read back by the next upgrade in the same context. -->
+      <Component Id="DesktopShortcutPreference" Directory="INSTALLFOLDER" Guid="AFA51737-D498-4006-95C5-3D7CDCE58075">
+        <RegistryValue Root="HKMU" Key="Software\Deskwerk\Docs\Installer" Name="DesktopShortcut" Value="[DESKTOPSHORTCUT]" Type="string" KeyPath="yes" />
+      </Component>
+      <!-- New GUID: the key path moved from Software\DeskwerkDocs\Installer (0.15.6). HKMU follows
+           the install context, so the marker (and the shortcut with it) is removed by whichever
+           account uninstalls; MSI root -1 also satisfies ICE43. -->
+      <Component Id="DeskwerkDocsDesktopShortcut" Directory="DesktopFolder" Guid="1A610325-E692-43DB-98C6-21DACF415754" Condition="DESKTOPSHORTCUT = &quot;1&quot;">
         <Shortcut Id="DesktopShortcut" Name="Deskwerk Docs" Description="Deskwerk Docs word processor" Target="[#DeskwerkDocsExe]" WorkingDirectory="INSTALLFOLDER" Icon="DeskwerkDocsIcon.ico" IconIndex="0" />
-        <!-- HKMU follows the install context, so the marker (and the shortcut with it) is removed
-             by whichever account uninstalls; MSI root -1 also satisfies ICE43. -->
-        <RegistryValue Root="HKMU" Key="Software\DeskwerkDocs\Installer" Name="DesktopShortcut" Value="1" Type="integer" KeyPath="yes" />
+        <RegistryValue Root="HKMU" Key="Software\Deskwerk\Docs\Installer" Name="DesktopShortcutComponent" Value="1" Type="integer" KeyPath="yes" />
       </Component>
     </ComponentGroup>
   </Fragment>

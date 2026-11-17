@@ -290,8 +290,14 @@
     ],
     [
       "-1",
-      "Software\\DeskwerkDocs\\Installer",
+      "Software\\Deskwerk\\Docs\\Installer",
       "DesktopShortcut",
+      "[DESKTOPSHORTCUT]"
+    ],
+    [
+      "-1",
+      "Software\\Deskwerk\\Docs\\Installer",
+      "DesktopShortcutComponent",
       "#1"
     ]
   ],

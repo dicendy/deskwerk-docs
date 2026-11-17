@@ -216,7 +216,8 @@ The installer is one dual-scope package. By default it installs for your account
 into `%LOCALAPPDATA%\Programs\Deskwerk\Docs`, and needs no administrator rights; choosing
 "Everyone on this computer" on the first page installs into `C:\Program Files\Deskwerk\Docs` (`Program Files (x86)` for the 32-bit build)
 and asks for an administrator. Install only one copy: a copy for another scope is refused, so
-uninstall first to change who Deskwerk Docs is installed for. Installers and executables are code-signed.
+uninstall first to change who Deskwerk Docs is installed for. Installers and executables are code-signed. The MSI installer offers a desktop shortcut
+(ticked on a new installation; an upgrade keeps the previous choice).
 
 **If the app doesn't open on Windows:** the desktop app initializes only DirectX 12 by default.
 Letting wgpu also create an OpenGL instance can crash some graphics drivers (AMD's

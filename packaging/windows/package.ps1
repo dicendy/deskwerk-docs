@@ -121,35 +121,8 @@ if ($env:CRAFT_FONTS_DIR) {
 # ---- end font notices for the MSI --------------------------------------------------------------
 
 # ---- MSI ---------------------------------------------------------------------------------------
-# The installer shows no licence page, but WiX's licence dialog stays in the MSI (unreachable): give it
-# an RTF built from LICENSE-MIT and LICENSE-APACHE instead of WiX's sample text. Hard-wrapped lines are rejoined into paragraphs so the text wraps
-# to the dialog's width.
-function ConvertTo-RtfText([string] $Text) {
-  $sb = [System.Text.StringBuilder]::new()
-  foreach ($ch in $Text.ToCharArray()) {
-    $c = [int] $ch
-    if ($c -eq 0x5C -or $c -eq 0x7B -or $c -eq 0x7D) { [void] $sb.Append('\').Append($ch) }
-    elseif ($c -gt 127) { [void] $sb.Append("\u$(if ($c -gt 32767) { $c - 65536 } else { $c })?") }
-    else { [void] $sb.Append($ch) }
-  }
-  return $sb.ToString()
-}
-$paragraphs = [System.Collections.Generic.List[string]]::new()
-$paragraphs.Add('\b Deskwerk Docs\b0')
-$paragraphs.Add((ConvertTo-RtfText 'Deskwerk Docs is dual-licensed under the MIT License or the Apache License, Version 2.0, at your option. Both license texts follow. Bundled fonts and other third-party material keep their own open licenses, listed in NOTICE and ATTRIBUTION.md at https://github.com/dicendy/deskwerk-docs.'))
-foreach ($file in 'LICENSE-MIT', 'LICENSE-APACHE') {
-  $title = $true  # each file opens with its license's name: show it bold
-  foreach ($para in ((Get-Content -Raw (Join-Path $Root $file)) -split '\r?\n\s*\r?\n')) {
-    $joined = (($para -split '\r?\n') | ForEach-Object { $_.Trim() } | Where-Object { $_ }) -join ' '
-    if (-not $joined) { continue }
-    $paragraphs.Add($(if ($title) { "\b $(ConvertTo-RtfText $joined)\b0" } else { ConvertTo-RtfText $joined }))
-    $title = $false
-  }
-}
-$LicenseRtf = Join-Path $Stage 'license.rtf'
-$rtf = '{\rtf1\ansi\ansicpg1252\deff0{\fonttbl{\f0\fswiss\fcharset0 Tahoma;}}\viewkind4\uc1\pard\sa120\f0\fs16 ' +
-  ($paragraphs -join "\par`r`n") + "\par`r`n}`r`n"
-[System.IO.File]::WriteAllText($LicenseRtf, $rtf, [System.Text.Encoding]::ASCII)
+# The installer shows no licence page (installer-ui.wxi): the licence texts are installed as plain
+# files next to the app (app-notices above).
 
 # One MSI from one dual-scope source (see deskwerk-docs.wxs and install-policy.wxi): per user by default into
 # %LOCALAPPDATA%\Programs\Deskwerk\Docs (#39), per machine into Program Files\Deskwerk on request.
@@ -159,7 +132,6 @@ Invoke-Native "wix build" {
   wix build (Join-Path $PSScriptRoot 'deskwerk-docs.wxs') -arch $Arch `
     -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext `
     -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\deskwerk-docs.ico')" `
-    -d "LicenseRtf=$LicenseRtf" `
     -d "AppNoticesDir=$AppNotices" -d "DocsDir=$Docs" -d "HasCraftFontLicences=$HasCraftFontLicences" -d "Scope=perUserOrMachine" `
     -o $Msi
 }
