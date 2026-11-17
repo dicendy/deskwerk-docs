@@ -24,6 +24,14 @@ mod vertical;
 
 const WRAP_TEST_FONT: &str = "Source Sans 3";
 
+/// A document set in the bundled wrap-test font, so line breaks (and so which page a line is on)
+/// don't depend on the fonts installed on the machine running the tests.
+fn bundled_font_text(text: &str) -> Document {
+    let mut d = Document::from_text(text);
+    Arc::make_mut(&mut d.styles).default_chr.font = Some(WRAP_TEST_FONT.into());
+    d
+}
+
 fn lay(doc: &Document) -> DocLayout {
     let mut c = LayoutCache::new();
     layout(doc, &mut c, &LayoutOptions::default())
@@ -6419,7 +6427,7 @@ fn a_float_anchored_two_pages_into_its_paragraph_is_drawn_on_that_page() {
 /// A long paragraph with a long footnote on page one, and a page-placed square float anchored at
 /// line `k` of page two as laid out without it.
 fn footnoted_float(k: usize) -> DocLayout {
-    let mut d = Document::from_text(&"The quick brown fox jumps over the lazy dog. ".repeat(400));
+    let mut d = bundled_font_text(&"The quick brown fox jumps over the lazy dog. ".repeat(400));
     let mut note =
         deskwerk_docs_doc::Paragraph::with_text(&"The note text runs on for a while. ".repeat(30), Default::default()).styled("FootnoteText");
     note.props.space_after = Some(0.0);
@@ -6459,14 +6467,16 @@ fn a_float_whose_anchor_comes_back_to_page_one_stays_there_with_the_text_around_
 /// back to page two; the note goes with it, once, not left on page one as well.
 #[test]
 fn a_footnote_pushed_on_by_a_float_coming_back_is_on_its_reference_s_page_only() {
-    let mut d = Document::from_text(&"The quick brown fox jumps over the lazy dog. ".repeat(400));
+    let mut d = bundled_font_text(&"The quick brown fox jumps over the lazy dog. ".repeat(400));
     let note = |text: &str| {
         let mut p = deskwerk_docs_doc::Paragraph::with_text(text, Default::default()).styled("FootnoteText");
         p.props.space_after = Some(0.0);
         vec![deskwerk_docs_doc::para_block(p)]
     };
     let noteref = |id| InlineObject::NoteRef { kind: deskwerk_docs_doc::para::NoteKind::Footnote, id, custom: String::new() };
-    let long = d.add_part(deskwerk_docs_doc::PartKind::Footnote, note(&"The note text runs on for a while. ".repeat(30)));
+    // Long enough that page two's first line comes back to page one beside the float, short enough
+    // that the short note's reference beside it doesn't (measured with the bundled font).
+    let long = d.add_part(deskwerk_docs_doc::PartKind::Footnote, note(&"The note text runs on for a while. ".repeat(25)));
     d.insert_object(&Pos::body(0, 4), noteref(long), &Default::default()).unwrap();
     let anchor = lines_on(&lay(&d), 1)[0].2;
     let short = d.add_part(deskwerk_docs_doc::PartKind::Footnote, note("A short note."));
@@ -6490,7 +6500,7 @@ fn a_footnote_pushed_on_by_a_float_coming_back_is_on_its_reference_s_page_only()
 /// there; the other is still drawn on page two.
 #[test]
 fn of_two_floats_held_back_only_the_one_whose_anchor_comes_back_stays_on_page_one() {
-    let mut d = Document::from_text(&"The quick brown fox jumps over the lazy dog. ".repeat(400));
+    let mut d = bundled_font_text(&"The quick brown fox jumps over the lazy dog. ".repeat(400));
     let mut note =
         deskwerk_docs_doc::Paragraph::with_text(&"The note text runs on for a while. ".repeat(30), Default::default()).styled("FootnoteText");
     note.props.space_after = Some(0.0);
@@ -6536,8 +6546,8 @@ fn a_float_anchored_on_a_line_a_footnote_pushes_on_is_drawn_on_the_next_page() {
 #[test]
 fn a_float_anchored_on_a_line_widow_control_takes_on_is_drawn_on_the_next_page() {
     // A paragraph of three pages whose last two lines are on the third only by widow control.
-    let (mut d, l) = (150..300)
-        .map(|k| Document::from_text(&"The quick brown fox jumps over the lazy dog. ".repeat(k)))
+    let (mut d, l) = (100..300)
+        .map(|k| bundled_font_text(&"The quick brown fox jumps over the lazy dog. ".repeat(k)))
         .map(|d| {
             let l = lay(&d);
             (d, l)
