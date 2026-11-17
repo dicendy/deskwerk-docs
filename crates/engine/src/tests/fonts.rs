@@ -275,7 +275,7 @@ fn a_font_only_a_style_names_is_not_reported_missing() {
 fn missing_fonts_are_what_layout_drew_in_shown_text() {
     let mut doc = doc_of(vec![
         para_in("one", "DeskwerkDocs Nowhere Face"),
-        para_in("two", "deskwerk-docs nowhere face"),
+        para_in("two", "deskwerkdocs nowhere face"),
         para_in("three", "JetBrains Mono"),
         // Spaces, a picture's placeholder and zero-width characters show no font.
         para_in(" \u{FFFC}\t\u{200B}\u{FEFF}\u{FE0F}\u{3164}\u{034F}", "DeskwerkDocs Blank Face"),
