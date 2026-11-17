@@ -10,7 +10,13 @@ pub(super) fn picture_format(app: &mut WordApp, ui: &mut Ui) {
         menu_button(
             ui,
             app,
-            crate::widgets::MenuButtonOptions::new("picture", Some("Corrections"), "Brightness, contrast and sharpness", true, "picture.corrections"),
+            crate::widgets::MenuButtonOptions::new(
+                "pictureCorrections",
+                Some("Corrections"),
+                "Brightness, contrast and sharpness",
+                true,
+                "picture.corrections",
+            ),
             |ui, app| {
                 for (l, b, c) in
                     [("Brighter +20%", 20.0, 0.0), ("Darker −20%", -20.0, 0.0), ("More Contrast +20%", 0.0, 20.0), ("Less Contrast −20%", 0.0, -20.0)]
@@ -25,7 +31,7 @@ pub(super) fn picture_format(app: &mut WordApp, ui: &mut Ui) {
         menu_button(
             ui,
             app,
-            crate::widgets::MenuButtonOptions::new("picture", Some("Color"), "Saturation and recolor", true, "picture.color"),
+            crate::widgets::MenuButtonOptions::new("pictureColor", Some("Color"), "Saturation and recolor", true, "picture.color"),
             |ui, app| {
                 for (l, v) in [("Full Saturation 100%", 100.0), ("Muted 50%", 50.0), ("Gray 0%", 0.0), ("Vivid 200%", 200.0)] {
                     mi(ui, app, l, "picture.color", json!({"mode": "saturation", "saturation": v}));
@@ -40,7 +46,7 @@ pub(super) fn picture_format(app: &mut WordApp, ui: &mut Ui) {
             ui,
             app,
             crate::widgets::MenuButtonOptions::new(
-                "icons",
+                "iconColor",
                 Some("Icon Color"),
                 "Recolor a one-color picture, such as an icon",
                 true,
@@ -54,7 +60,7 @@ pub(super) fn picture_format(app: &mut WordApp, ui: &mut Ui) {
         menu_button(
             ui,
             app,
-            crate::widgets::MenuButtonOptions::new("picture", Some("Transparency"), "Picture transparency", true, "picture.transparency"),
+            crate::widgets::MenuButtonOptions::new("pictureTransparency", Some("Transparency"), "Picture transparency", true, "picture.transparency"),
             |ui, app| {
                 for v in [0.0, 15.0, 30.0, 50.0, 65.0, 80.0, 95.0] {
                     mi(ui, app, &format!("{v:.0}%"), "picture.transparency", json!({"percent": v}));
@@ -81,15 +87,22 @@ pub(super) fn picture_format(app: &mut WordApp, ui: &mut Ui) {
             },
         );
         stack(ui, |ui| {
-            small(ui, app, "picture", Some("Change"), "Change Picture", crate::widgets::ButtonAction::new("ui.changePicture", json!({}), false));
-            small(ui, app, "picture", Some("Reset"), "Reset Picture", crate::widgets::ButtonAction::new("picture.reset", json!({}), false));
+            small(
+                ui,
+                app,
+                "changePicture",
+                Some("Change"),
+                "Change Picture",
+                crate::widgets::ButtonAction::new("ui.changePicture", json!({}), false),
+            );
+            small(ui, app, "resetPicture", Some("Reset"), "Reset Picture", crate::widgets::ButtonAction::new("picture.reset", json!({}), false));
         });
     });
     group(ui, "Picture Styles", None, app, |ui, app| {
         menu_button(
             ui,
             app,
-            crate::widgets::MenuButtonOptions::new("picture", Some("Styles"), "Frames and effects", true, "picture.style"),
+            crate::widgets::MenuButtonOptions::new("pictureStyles", Some("Styles"), "Frames and effects", true, "picture.style"),
             |ui, app| {
                 for (l, s) in [
                     ("Simple Frame", "simpleFrame"),
@@ -105,7 +118,7 @@ pub(super) fn picture_format(app: &mut WordApp, ui: &mut Ui) {
         menu_button(
             ui,
             app,
-            crate::widgets::MenuButtonOptions::new("picture", Some("Border"), "Picture border", true, "picture.border"),
+            crate::widgets::MenuButtonOptions::new("pictureBorder", Some("Border"), "Picture border", true, "picture.border"),
             |ui, app| {
                 // The picture's outline, as Word's Picture Border menu sets it (`a:ln`).
                 let theme = app.session.doc.settings.theme_colors.clone();

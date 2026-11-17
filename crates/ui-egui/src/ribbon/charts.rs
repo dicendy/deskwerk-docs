@@ -14,8 +14,8 @@ pub(super) fn smart_art_design(app: &mut WordApp, ui: &mut Ui) {
         big(ui, app, "addShape", "Add\nShape", "smartArt.addShape", current.map_or(json!({}), |i| json!({"after": i})), false);
         stack(ui, |ui| {
             let idx = current.map_or(json!({}), |i| json!({"index": i}));
-            small(ui, app, "promote", Some("Promote"), "Promote", crate::widgets::ButtonAction::new("smartArt.promote", idx.clone(), false));
-            small(ui, app, "demote", Some("Demote"), "Demote", crate::widgets::ButtonAction::new("smartArt.demote", idx, false));
+            small(ui, app, "smartArtPromote", Some("Promote"), "Promote", crate::widgets::ButtonAction::new("smartArt.promote", idx.clone(), false));
+            small(ui, app, "smartArtDemote", Some("Demote"), "Demote", crate::widgets::ButtonAction::new("smartArt.demote", idx, false));
             small(
                 ui,
                 app,

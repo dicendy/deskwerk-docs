@@ -56,7 +56,7 @@ pub(super) fn shape_format(app: &mut WordApp, ui: &mut Ui) {
             menu_button(
                 ui,
                 app,
-                crate::widgets::MenuButtonOptions::new("shading", Some("Shape Fill"), "Shape Fill", false, "shape.fill"),
+                crate::widgets::MenuButtonOptions::new("shapeFill", Some("Shape Fill"), "Shape Fill", false, "shape.fill"),
                 |ui, app| {
                     mi(ui, app, "No Color", "shape.fill", json!({"color": null}));
                     crate::colors::menu(ui, app, &theme, Target::cmd("shape.fill"));
@@ -67,7 +67,7 @@ pub(super) fn shape_format(app: &mut WordApp, ui: &mut Ui) {
             menu_button(
                 ui,
                 app,
-                crate::widgets::MenuButtonOptions::new("pen", Some("Shape Outline"), "Shape Outline", false, "shape.outline"),
+                crate::widgets::MenuButtonOptions::new("shapeOutline", Some("Shape Outline"), "Shape Outline", false, "shape.outline"),
                 |ui, app| {
                     mi(ui, app, "No Color", "shape.outline", json!({"color": null}));
                     crate::colors::menu(ui, app, &theme, Target::cmd("shape.outline"));
@@ -91,19 +91,24 @@ pub(super) fn shape_format(app: &mut WordApp, ui: &mut Ui) {
     alt_text_group(ui, app);
     if deskwerk_docs_engine::cmd::canvas::selected_canvas(&app.session).is_some() {
         group(ui, "Drawing Canvas", None, app, |ui, app| {
-            menu_button(ui, app, crate::widgets::MenuButtonOptions::new("canvas", Some("Drawing\nCanvas"), "Drawing Canvas", true, ""), |ui, app| {
-                mi(ui, app, "Fit", "canvas.fit", json!({}));
-                mi(ui, app, "Expand", "canvas.expand", json!({}));
-                ui.menu_button(tl!("Scale Drawing"), |ui| {
-                    for pct in [50, 75, 125, 150, 200] {
-                        mi(ui, app, &format!("{pct}%"), "canvas.scale", json!({"factor": pct as f32 / 100.0}));
-                    }
-                });
-            });
+            menu_button(
+                ui,
+                app,
+                crate::widgets::MenuButtonOptions::new("canvasFormat", Some("Drawing\nCanvas"), "Drawing Canvas", true, ""),
+                |ui, app| {
+                    mi(ui, app, "Fit", "canvas.fit", json!({}));
+                    mi(ui, app, "Expand", "canvas.expand", json!({}));
+                    ui.menu_button(tl!("Scale Drawing"), |ui| {
+                        for pct in [50, 75, 125, 150, 200] {
+                            mi(ui, app, &format!("{pct}%"), "canvas.scale", json!({"factor": pct as f32 / 100.0}));
+                        }
+                    });
+                },
+            );
         });
     }
     group(ui, "WordArt Styles", None, app, |ui, app| {
-        menu_button(ui, app, crate::widgets::MenuButtonOptions::new("wordArt", Some("Styles"), "WordArt Styles", true, ""), |ui, app| {
+        menu_button(ui, app, crate::widgets::MenuButtonOptions::new("wordArtStyles", Some("Styles"), "WordArt Styles", true, ""), |ui, app| {
             crate::wordart_menus::style_gallery(ui, app, "wordArt.style")
         });
         stack(ui, |ui| {

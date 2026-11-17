@@ -347,7 +347,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
             small(
                 ui,
                 app,
-                "equation",
+                "unicodeMath",
                 Some("Unicode"),
                 "Type equations in the linear format (UnicodeMath)",
                 crate::widgets::ButtonAction::new("equation.inputFormat", json!({"format": "unicode"}), !latex),
@@ -355,7 +355,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
             small(
                 ui,
                 app,
-                "formula",
+                "latex",
                 Some("LaTeX"),
                 "Type equations in LaTeX",
                 crate::widgets::ButtonAction::new("equation.inputFormat", json!({"format": "latex"}), latex),
@@ -364,7 +364,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                 ui,
                 app,
                 crate::widgets::MenuButtonOptions::new(
-                    "replace",
+                    "equationConvert",
                     Some("Convert"),
                     "Convert between built-up and linear form",
                     false,
@@ -392,7 +392,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
             small(
                 ui,
                 app,
-                "case",
+                "normalText",
                 Some("Normal Text"),
                 "Type normal (non-math) text in the equation",
                 crate::widgets::ButtonAction::new("equation.normalText", json!({}), normal),
@@ -415,7 +415,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
             small(
                 ui,
                 app,
-                "alignCenter",
+                "equationDisplay",
                 Some("Display"),
                 "Show the equation on a line of its own",
                 crate::widgets::ButtonAction::new("equation.display", json!({"value": true}), display),
@@ -423,7 +423,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
             small(
                 ui,
                 app,
-                "alignLeft",
+                "equationInline",
                 Some("Inline"),
                 "Show the equation in the line of text",
                 crate::widgets::ButtonAction::new("equation.display", json!({"value": false}), !display),
@@ -431,7 +431,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
             small(
                 ui,
                 app,
-                "numbering",
+                "equationNumber",
                 Some("Number"),
                 "Number the equation; the number sits at the right margin (or type # then the number)",
                 crate::widgets::ButtonAction::new("equation.number", json!({}), numbered),
@@ -443,7 +443,7 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                 ui,
                 app,
                 crate::widgets::MenuButtonOptions::new(
-                    "justify",
+                    "equationJustify",
                     Some("Justification"),
                     "Justification of a display equation",
                     false,

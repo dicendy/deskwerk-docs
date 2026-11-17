@@ -115,6 +115,19 @@ impl Pen<'_> {
     fn arrow_down(&self, x: f32, y: f32, c: Color32) {
         self.fill(&[(x - 2.5, y - 1.2), (x + 2.5, y - 1.2), (x, y + 1.5)], c);
     }
+    /// A photo in a frame from (x0, y0) to (x1, y1): a hill in front of a mountain under the sun
+    /// at the top left. `fade` (0–1) scales the colours, for a see-through picture.
+    fn landscape(&self, x0: f32, y0: f32, x1: f32, y1: f32, frame: Color32, fade: f32) {
+        let (w, h) = (x1 - x0, y1 - y0);
+        let at = |u: f32, v: f32| (x0 + u * w, y0 + v * h);
+        let green = Color32::from_rgb(0x2E, 0x8B, 0x57).linear_multiply(fade);
+        let yellow = Color32::from_rgb(0xF2, 0xC8, 0x11).linear_multiply(fade);
+        self.fill(&[at(0.37, 0.94), at(0.67, 0.33), at(0.97, 0.94)], self.a.linear_multiply(fade));
+        self.fill(&[at(0.04, 0.94), at(0.33, 0.5), at(0.63, 0.94)], green);
+        let (sx, sy) = at(0.23, 0.26);
+        self.fcircle(sx, sy, 0.11 * w.min(h), yellow);
+        self.rect(x0, y0, x1, y1, frame);
+    }
 }
 
 /// Paint icon `name` into `r`. `c` is the line colour; the accent comes from the theme.
@@ -129,6 +142,7 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
         || paint_draw_to_review(&pen, name)
         || paint_view_and_tables(&pen, name)
         || paint_file_and_tools(&pen, name)
+        || paint_contextual(&pen, name)
     {
         return;
     }
@@ -400,12 +414,8 @@ fn paint_clipboard_to_insert(pen: &Pen, name: &str) -> bool {
             pen.line(&[(8.0, 3.0), (8.0, 17.0)]);
             pen.line(&[(12.5, 3.0), (12.5, 17.0)]);
         }
-        "picture" => {
-            pen.rect(2.5, 4.0, 17.5, 16.0, c);
-            pen.fill(&[(4.0, 14.5), (8.5, 8.0), (12.0, 14.5)], a);
-            pen.fill(&[(9.5, 14.5), (13.0, 10.0), (16.0, 14.5)], green);
-            pen.fcircle(13.5, 7.0, 1.5, yellow);
-        }
+        // Pictures: a landscape photo, a hill before a mountain with the sun at the top left.
+        "picture" => pen.landscape(2.5, 4.0, 17.5, 16.0, c, 1.0),
         "onlinePicture" => {
             paint(pen.p, Rect::from_min_size(pen.r.min, pen.r.size() * 0.8), "picture", c, a);
             pen.circle(15.0, 15.0, 3.5, a);
@@ -446,14 +456,6 @@ fn paint_clipboard_to_insert(pen: &Pen, name: &str) -> bool {
             pen.line(&[(6.0, 8.0), (6.0, 12.0)]);
             pen.line_c(&[(14.5, 10.5), (14.5, 17.5)], green);
             pen.line_c(&[(11.0, 14.0), (18.0, 14.0)], green);
-        }
-        "promote" => {
-            pen.lines(9.0, 17.5, &[5.0, 10.0, 15.0]);
-            pen.line_c(&[(6.5, 7.5), (3.0, 10.0), (6.5, 12.5)], a);
-        }
-        "demote" => {
-            pen.lines(9.0, 17.5, &[5.0, 10.0, 15.0]);
-            pen.line_c(&[(3.0, 7.5), (6.5, 10.0), (3.0, 12.5)], a);
         }
         "textPane" => {
             pen.rect(2.5, 3.0, 17.5, 17.0, c);
@@ -1872,6 +1874,179 @@ fn paint_file_and_tools(pen: &Pen, name: &str) -> bool {
             pen.line(&[(4.0, 16.0), (16.0, 16.0), (4.0, 4.0), (4.0, 16.0)]);
             pen.line_c(&[(4.0, 12.0), (8.0, 16.0)], a);
             pen.line(&[(7.0, 13.0), (7.0, 12.0)]);
+        }
+        _ => return false,
+    }
+    true
+}
+
+/// Icons of the contextual tabs (Picture Format, Shape Format, SmartArt Design, Equation); false
+/// when `name` is not one of them.
+fn paint_contextual(pen: &Pen, name: &str) -> bool {
+    let (c, a) = (pen.c, pen.a);
+    let red = Color32::from_rgb(0xD1, 0x3B, 0x3B);
+    let yellow = Color32::from_rgb(0xF2, 0xC8, 0x11);
+    let shadow = Color32::from_rgba_unmultiplied(0, 0, 0, 60);
+    match name {
+        // Picture Format › Corrections: a sun whose disc is half dark (contrast), rays round it.
+        "pictureCorrections" => {
+            let half: Vec<(f32, f32)> = (0..=12)
+                .map(|i| {
+                    let t = (90.0 + 180.0 * i as f32 / 12.0_f32).to_radians();
+                    (10.0 + 4.5 * t.cos(), 10.0 + 4.5 * t.sin())
+                })
+                .collect();
+            pen.fill(&half, c);
+            pen.circle(10.0, 10.0, 4.5, c);
+            for k in 0..8 {
+                let t = (k as f32 * 45.0).to_radians();
+                pen.line_c(&[(10.0 + 6.5 * t.cos(), 10.0 + 6.5 * t.sin()), (10.0 + 8.5 * t.cos(), 10.0 + 8.5 * t.sin())], yellow);
+            }
+        }
+        // Color: the photo over three colour bars (saturation and recolour).
+        "pictureColor" => {
+            pen.landscape(2.5, 2.5, 17.5, 12.5, c, 1.0);
+            pen.frect(2.5, 15.0, 7.0, 18.5, red);
+            pen.frect(7.75, 15.0, 12.25, 18.5, yellow);
+            pen.frect(13.0, 15.0, 17.5, 18.5, a);
+        }
+        // Icon Color: a pictogram (a person) over the fill colour's bar.
+        "iconColor" => {
+            pen.fcircle(10.0, 5.5, 3.0, c);
+            let body: Vec<(f32, f32)> = (0..=12)
+                .map(|i| {
+                    let t = (180.0 + 180.0 * i as f32 / 12.0_f32).to_radians();
+                    (10.0 + 5.5 * t.cos(), 14.5 + 5.0 * t.sin())
+                })
+                .collect();
+            pen.fill(&body, c);
+            pen.frect(2.5, 16.0, 17.5, 19.0, a);
+        }
+        // Transparency: a faded photo in front of a checkerboard.
+        "pictureTransparency" => {
+            for (i, x) in [6.0, 10.0, 14.0].into_iter().enumerate() {
+                for (j, y) in [6.0, 10.0, 14.0].into_iter().enumerate() {
+                    if (i + j) % 2 == 0 {
+                        pen.frect(x, y, x + 4.0, y + 4.0, Color32::from_gray(150));
+                    }
+                }
+            }
+            pen.rect(6.0, 6.0, 18.0, 18.0, Color32::from_gray(150));
+            pen.landscape(2.0, 2.0, 13.5, 12.5, c, 0.45);
+        }
+        // Change Picture: the photo with two arrows going round (swap it for another).
+        "changePicture" => {
+            pen.landscape(2.0, 2.5, 13.5, 12.0, c, 1.0);
+            pen.refresh(14.5, 14.5, 3.8, a);
+        }
+        // Reset Picture: the photo with an arrow turning back.
+        "resetPicture" => {
+            pen.landscape(2.0, 2.5, 13.5, 12.0, c, 1.0);
+            pen.line_c(&[(18.0, 18.5), (18.0, 14.5), (11.5, 14.5)], a);
+            pen.line_c(&[(13.5, 12.5), (11.5, 14.5), (13.5, 16.5)], a);
+        }
+        // Picture Styles: the photo in a white mat with a drop shadow.
+        "pictureStyles" => {
+            pen.frect(4.0, 4.0, 19.0, 19.0, shadow);
+            pen.frect(1.5, 1.5, 17.0, 17.0, Color32::WHITE);
+            pen.rect(1.5, 1.5, 17.0, 17.0, c);
+            pen.landscape(4.5, 4.5, 14.0, 14.0, c, 1.0);
+        }
+        // Picture Border: the photo outlined in colour, a pencil drawing the outline.
+        "pictureBorder" => {
+            pen.landscape(2.0, 2.0, 14.0, 12.0, a, 1.0);
+            pen.rect(1.0, 1.0, 15.0, 13.0, a);
+            pen.pencil(10.5, 18.5, c);
+        }
+        // Shape Format › Shape Fill: a filled shape with the paint bucket above it.
+        "shapeFill" => {
+            pen.frect(8.0, 8.5, 18.0, 18.0, a);
+            pen.rect(8.0, 8.5, 18.0, 18.0, c);
+            pen.closed(&[(1.5, 6.5), (5.5, 2.5), (9.5, 6.5), (5.5, 10.5)], c);
+            pen.line(&[(5.5, 2.5), (5.5, 0.8)]);
+            pen.fcircle(4.0, 13.5, 1.3, a);
+        }
+        // Shape Outline: a shape drawn in a coloured outline by a pencil.
+        "shapeOutline" => {
+            pen.rect(2.5, 3.0, 13.0, 13.5, a);
+            pen.rect(3.5, 4.0, 12.0, 12.5, a);
+            pen.pencil(10.5, 18.5, c);
+        }
+        // Drawing Canvas (Fit, Expand, Scale): the canvas with its sizing handles.
+        "canvasFormat" => {
+            pen.rect(3.5, 3.5, 16.5, 16.5, c);
+            pen.line_c(&[(6.0, 13.5), (9.0, 9.0), (11.5, 11.5), (14.0, 7.0)], a);
+            for (x, y) in [(3.5, 3.5), (16.5, 3.5), (3.5, 16.5), (16.5, 16.5), (10.0, 3.5), (10.0, 16.5), (3.5, 10.0), (16.5, 10.0)] {
+                pen.frect(x - 1.3, y - 1.3, x + 1.3, y + 1.3, a);
+            }
+        }
+        // WordArt Styles: a styled letter in a gallery tile.
+        "wordArtStyles" => {
+            pen.rect(2.0, 2.5, 18.0, 17.5, c);
+            pen.text(10.5, 10.5, 13.0, "A", shadow, true);
+            pen.text(10.0, 10.0, 13.0, "A", a, true);
+        }
+        // SmartArt Promote / Demote: an item of a hierarchy moving up a level or down one.
+        "smartArtPromote" | "smartArtDemote" => {
+            pen.rect(2.5, 2.5, 9.0, 6.5, c);
+            pen.line(&[(5.75, 6.5), (5.75, 15.0), (9.0, 15.0)]);
+            pen.frect(9.0, 13.0, 17.5, 17.0, a);
+            if name == "smartArtPromote" {
+                pen.arrow(16.0, 10.5, 11.0, 4.5, a, false);
+            } else {
+                pen.arrow(11.0, 4.5, 16.0, 10.5, a, false);
+            }
+        }
+        // Equation › Unicode: the linear (UnicodeMath) form, a root and a letter.
+        "unicodeMath" => {
+            pen.line_c(&[(2.5, 11.0), (4.5, 10.0), (7.0, 16.0), (10.0, 4.0), (18.0, 4.0)], a);
+            pen.text(13.5, 10.5, 10.0, "x", c, false);
+        }
+        // LaTeX: a backslash command with its braces.
+        "latex" => {
+            pen.text(5.0, 10.0, 12.0, "\\", a, true);
+            pen.text(13.0, 10.0, 11.0, "{}", c, false);
+        }
+        // Convert: the linear a/b and the built-up fraction, with an arrow both ways.
+        "equationConvert" => {
+            pen.text(5.0, 6.5, 7.5, "a/b", c, false);
+            pen.text(15.0, 3.5, 6.5, "a", c, false);
+            pen.line(&[(12.5, 6.5), (17.5, 6.5)]);
+            pen.text(15.0, 9.5, 6.5, "b", c, false);
+            pen.arrow(3.0, 15.5, 17.0, 15.5, a, true);
+        }
+        // Normal Text: plain letters inside an equation.
+        "normalText" => {
+            pen.text(10.0, 9.5, 9.0, "abc", c, false);
+            pen.line_c(&[(3.0, 15.5), (17.0, 15.5)], a);
+        }
+        // Display: the equation on a line of its own, centred between paragraphs.
+        "equationDisplay" => {
+            pen.lines(2.5, 17.5, &[3.0, 17.0]);
+            pen.frect(6.0, 8.0, 14.0, 12.0, a);
+        }
+        // Inline: the equation inside a line of text.
+        "equationInline" => {
+            pen.lines(2.5, 17.5, &[4.0, 16.0]);
+            pen.line(&[(2.5, 10.0), (6.5, 10.0)]);
+            pen.frect(8.0, 8.0, 13.0, 12.0, a);
+            pen.line(&[(14.5, 10.0), (17.5, 10.0)]);
+        }
+        // Number: an equation with its number in brackets at the right margin.
+        "equationNumber" => {
+            pen.frect(2.5, 8.0, 10.0, 12.0, a);
+            pen.text(15.0, 10.0, 7.0, "(1)", c, false);
+        }
+        // Justification: the lines of an equation lined up at their equals signs.
+        "equationJustify" => {
+            pen.frect(4.0, 4.5, 8.5, 7.5, c);
+            pen.frect(2.0, 12.5, 8.5, 15.5, c);
+            for y in [6.0, 14.0] {
+                pen.line_c(&[(9.5, y - 1.0), (12.0, y - 1.0)], a);
+                pen.line_c(&[(9.5, y + 1.0), (12.0, y + 1.0)], a);
+            }
+            pen.frect(13.0, 4.5, 17.0, 7.5, c);
+            pen.frect(13.0, 12.5, 18.0, 15.5, c);
         }
         _ => return false,
     }
